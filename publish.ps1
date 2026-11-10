@@ -1,4 +1,4 @@
-﻿# FTork-Gamma 배포 스크립트
+﻿# FTolk-G 배포 스크립트
 # 사용법 (프로젝트 폴더에서):  powershell -ExecutionPolicy Bypass -File .\publish.ps1
 #
 # 하는 일:
@@ -20,7 +20,7 @@ if ($LASTEXITCODE -ne 0) { throw '빌드 실패' }
 $code = [int]((Select-String -Path version.properties -Pattern '^VERSION_CODE=(\d+)').Matches[0].Groups[1].Value)
 $version = '{0}.{1}' -f [math]::Floor($code / 10), ($code % 10)
 $tag = "v$version"
-$apk = "app\build\outputs\apk\release\FTork-Gamma-$tag-release.apk"
+$apk = "app\build\outputs\apk\release\FTolk-G-$tag-release.apk"
 if (-not (Test-Path $apk)) { throw "APK 가 없어요: $apk" }
 Write-Host "   -> $apk"
 
@@ -33,12 +33,12 @@ if ($LASTEXITCODE -eq 0) {
 Write-Host '2) Git 커밋 + 올리기...'
 git add -A
 git diff --cached --quiet
-if ($LASTEXITCODE -ne 0) { git commit -m "FTork-Gamma $tag" | Out-Null }
+if ($LASTEXITCODE -ne 0) { git commit -m "FTolk-G $tag" | Out-Null }
 git push origin HEAD
 if ($LASTEXITCODE -ne 0) { throw 'git push 실패' }
 
 Write-Host "3) GitHub 릴리스 $tag 만들기..."
-gh release create $tag $apk --title "FTork-Gamma $tag" --notes "FTork-Gamma $tag 번역기 앱. 아래 APK 를 받아 설치하세요."
+gh release create $tag $apk --title "FTolk-G $tag" --notes "FTolk-G $tag 번역기 앱. 아래 APK 를 받아 설치하세요."
 if ($LASTEXITCODE -ne 0) { throw '릴리스 만들기 실패' }
 
 $repo = gh repo view --json url -q .url

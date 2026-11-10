@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "FTork-Gamma"
+rootProject.name = "FTolk-G"
 include(":app")

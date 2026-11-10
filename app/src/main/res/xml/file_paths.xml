@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 카메라 앱이 찍은 사진을 넣을 임시 폴더 (앱 캐시 안) -->
+<paths>
+    <cache-path name="photos" path="photos/" />
+</paths>

@@ -6,7 +6,6 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 // ---------- 버전 자동 증가 ----------
@@ -15,7 +14,7 @@ plugins {
 //   0.3 → 0.4 → ... → 0.9 → 1.0 → 1.1
 // 아무것도 수정하지 않고 다시 빌드하면 버전은 그대로예요.
 // Android Studio 의 Gradle Sync 만 할 때도 올라가지 않아요.
-val appName = "FTork-Gamma"
+val appName = "FTolk-G"
 val versionFile = rootProject.file("version.properties")
 val versionProps = Properties().apply {
     if (versionFile.exists()) versionFile.inputStream().use { load(it) }
@@ -48,7 +47,7 @@ if (isPackagingBuild) {
         versionProps.setProperty("VERSION_CODE", buildNumber.toString())
         versionProps.setProperty("SOURCE_HASH", fingerprint)
         versionFile.outputStream().use {
-            versionProps.store(it, "FTork-Gamma version. VERSION_CODE 3 = v0.3. Goes up by 1 (= +0.1) when sources change.")
+            versionProps.store(it, "FTolk-G version. VERSION_CODE 3 = v0.3. Goes up by 1 (= +0.1) when sources change.")
         }
     }
 }
@@ -84,7 +83,7 @@ android {
         }
     }
 
-    // 출력 파일 이름: FTork-Gamma-v0.4-release.apk
+    // 출력 파일 이름: FTolk-G-v0.6-release.apk
     applicationVariants.all {
         val variant = this
         outputs.all {
@@ -105,8 +104,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
-        compose = true
-        buildConfig = true // 앱 화면에 버전을 보여 주려고 켰어요.
+        buildConfig = true // 설정 화면 "앱 정보"에 버전을 보여 주려고 켰어요.
     }
 }
 
@@ -115,30 +113,24 @@ kotlin {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
-    implementation(composeBom)
+    // 화면: FTalk Beta 의 index.html 을 WebView 로 띄워요.
     implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    implementation("androidx.navigation:navigation-compose:2.8.5")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.compose.ui:ui")
+    implementation("androidx.activity:activity-ktx:1.9.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.webkit:webkit:1.12.1")
+    implementation("androidx.exifinterface:exifinterface:1.3.7") // 사진 방향 바로잡기 (Android 8 이하)
 
     // 기기 안 번역 + 언어 감지 (Google ML Kit, 무료, API 키 불필요)
     implementation("com.google.mlkit:translate:17.0.3")
     implementation("com.google.mlkit:language-id:17.0.6")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
-    // 카메라 번역: 사진 속 글자 인식 (라틴·한국어·중국어·일본어·데바나가리 문자)
+    // 사진 번역: 사진 속 글자 인식 (라틴=영어·베트남어, 한국어, 중국어)
     implementation("com.google.mlkit:text-recognition:16.0.1")
     implementation("com.google.mlkit:text-recognition-korean:16.0.1")
     implementation("com.google.mlkit:text-recognition-chinese:16.0.1")
-    implementation("com.google.mlkit:text-recognition-japanese:16.0.1")
-    implementation("com.google.mlkit:text-recognition-devanagari:16.0.1")
 
-    // 카메라 미리보기·촬영 (CameraX)
+    // 실시간 카메라 번역: 미리보기 · 장면 분석 · 고화질 촬영 (CameraX)
     val cameraX = "1.4.1"
     implementation("androidx.camera:camera-core:$cameraX")
     implementation("androidx.camera:camera-camera2:$cameraX")

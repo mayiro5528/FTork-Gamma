@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 언어 팩(번역 모델) 다운로드에만 필요해요. 받은 뒤에는 인터넷 없이 번역돼요. -->
+    <!-- 언어 팩(번역 모델) 다운로드, 휴대폰 음성 인식, 계산기 환율 -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- 음성 입력·실시간 번역 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- 눌러 말하기 · 실시간 대화 · 듣기 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- "듣기" 모드에서 번역을 통화 스피커(귀)로 보내기 -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <!-- 카메라 번역 -->
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+    <!-- 실시간 카메라 번역 -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
-    <!-- Android 11+ 에서 TTS 엔진과 음성 인식 앱을 찾으려면 선언이 필요해요. -->
+    <!-- Android 11+ 에서 TTS 엔진, 음성 인식, 카메라 앱을 찾으려면 선언이 필요해요. -->
     <queries>
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
         <intent>
-            <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>
     </queries>
 
@@ -34,6 +38,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
             android:windowSoftInputMode="adjustResize">
 
             <intent-filter>
@@ -48,14 +53,14 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
 
-            <!-- 글자 선택 메뉴에 "FTork-Gamma 번역" 표시 -->
+            <!-- 글자 선택 메뉴에 "FTolk-G 번역" 표시 -->
             <intent-filter android:label="@string/process_text_label">
                 <action android:name="android.intent.action.PROCESS_TEXT" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
 
-            <!-- 딥링크: ftorkgamma://translate?text=hello&to=ko -->
+            <!-- 딥링크: ftorkgamma://translate?text=hello -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -63,5 +68,23 @@
                 <data android:scheme="ftorkgamma" android:host="translate" />
             </intent-filter>
         </activity>
+
+        <!-- 실시간 카메라 번역 화면 -->
+        <activity
+            android:name=".photo.LiveCameraActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.FTorkGamma.Camera" />
+
+        <!-- 카메라 앱이 찍은 사진을 앱 캐시에 넣게 해 주는 통로 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

@@ -1,0 +1,1619 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#202124"><meta name="description" content="FriendlyTalk v6.9 무료 양방향 음성 번역 웹앱"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><title>FriendlyTalk v6.9</title><script>try{let t=JSON.parse(localStorage.getItem('friendlytalk-beta-settings-v5')||'{}').theme;if(t==='light')document.documentElement.dataset.theme='light'}catch(e){}</script><style>
+:root{--bg:#080d18;--panel:#111b2e;--blue:#22baff;--violet:#d277fb;--scale:1;color-scheme:dark;font-family:system-ui,'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);color:#f7f9ff}*{box-sizing:border-box}html,body{margin:0;min-height:100%;}button,select,textarea,input{font:inherit}button{cursor:pointer;color:inherit;touch-action:manipulation}button:disabled{opacity:.45}.app{max-width:560px;margin:auto;min-height:100dvh;display:flex;flex-direction:column;gap:10px;padding:12px 16px calc(16px + env(safe-area-inset-bottom))}.header{display:flex;align-items:center;justify-content:center;gap:10px;min-height:45px}.logo{background:linear-gradient(130deg,#04bbef,#1852ff);padding:8px;border-radius:13px;font-weight:900;font-size:19px}.header-title{font-size:20px;font-weight:850}.sub{font-size:12px;color:#bbcae3}.partner-mic-wrap,.me-mic-wrap{display:flex;justify-content:center;align-items:center;flex-direction:column;gap:3px}.partner-mic-wrap .miccontent{transform:rotate(180deg);display:flex;align-items:center;flex-direction:column;gap:3px}.mic-circle{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;border:3px solid #d7ecff;background:linear-gradient(155deg,#14c9ff,#0046cb);box-shadow:0 0 12px #168dff8a}.mic-circle.partner{background:linear-gradient(145deg,#cb65f5,#65229a);border-color:#f2cdff;box-shadow:0 0 12px #c83cff7e}.mic-circle svg{width:34px;height:34px}.mic-caption{font-size:12px;font-weight:750;white-space:nowrap}.mic-circle.listening{animation:pulse 1s infinite alternate}@keyframes pulse{to{box-shadow:0 0 22px #fff9}}.card{position:relative;min-height:clamp(215px,28dvh,330px);flex:1 0 auto;display:flex;align-items:stretch;border-radius:22px;background:linear-gradient(135deg,#1a2946,#101827);border:2px solid var(--blue);box-shadow:0 0 12px #008ffd58;padding:12px}.card.partner{border-color:var(--violet);box-shadow:0 0 14px #b849fc62}.card-content{display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;width:100%;min-height:100%;gap:12px}.card-content.reverse{transform:rotate(180deg)}.card-label{font-size:13px;font-weight:760}.trans-text{font-size:calc(clamp(21px,5.8vw,33px)*var(--scale));font-weight:800;line-height:1.35;white-space:pre-wrap;overflow-wrap:anywhere;text-align:center;align-self:center;margin:auto;max-height:30vh;overflow-y:auto}.card-actions{display:flex;align-items:center;justify-content:space-between}.roundbtn{display:grid;place-items:center;background:#111a2b;border:1px solid #61718e;border-radius:50%;width:47px;height:47px}.roundbtn svg{width:26px;height:26px}.mini{width:36px;height:36px}.mini svg{width:21px;height:21px}.swap-row{position:relative;height:0;z-index:2;display:flex;justify-content:center;align-items:center}.swap-btn{width:52px;height:52px;border:2px solid #dce9ff;background:#131f36;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 10px #0009}.swap-btn svg{width:27px;height:27px}.action-zone{display:flex;flex-direction:column;gap:10px;margin-top:6px}.live-controls{display:grid;grid-template-rows:34px 61px;align-content:center;justify-items:center;gap:8px;margin-top:0;padding-top:2px}.live-button{border:2px solid #a9ffe7;background:linear-gradient(90deg,#12af71,#17d26b);border-radius:40px;font-weight:850;font-size:21px;display:flex;align-items:center;justify-content:center;gap:12px;min-width:170px;min-height:61px}.live-button.started{background:linear-gradient(90deg,#b82046,#ff4359);border-color:#ffd3dc}.live-button svg{width:28px;height:28px}.live-info{height:34px;min-height:34px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;color:#a8c4e2;line-height:1.35;max-width:92%;margin:0 auto}.status{font-size:12px;color:#a5b8d7;min-height:18px;text-align:center;padding-top:6px}.modebar{display:flex;padding:4px;border:1px solid #73849c;border-radius:35px;background:#1a263c;gap:5px}.modebar button{flex:1;background:transparent;border:0;padding:11px 2px;border-radius:30px;font-size:13px;font-weight:780;display:flex;align-items:center;justify-content:center;gap:6px}.modebar button.active{background:linear-gradient(110deg,#09b8ff,#1856ef);box-shadow:0 0 8px #14b6ff88}.modebar svg{width:20px;height:20px}.utilitybar{display:flex;gap:10px}.utilitybar button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#141e30;border:1px solid #7484a0;border-radius:14px;padding:11px 8px;font-weight:760;font-size:14px}.utilitybar svg{width:21px;height:21px}.hide{display:none!important}.sheet-backdrop{display:none;position:fixed;inset:0;z-index:10;background:#000a;align-items:flex-end;justify-content:center}.sheet-backdrop.open{display:flex}.sheet{width:min(560px,100%);max-height:91dvh;overflow:auto;background:#131d30;border:1px solid #687999;border-radius:22px 22px 0 0;padding:19px 18px calc(24px + env(safe-area-inset-bottom));box-shadow:0 0 40px #0009}.sheethead{display:flex;align-items:center;justify-content:space-between;font-size:23px;font-weight:850;margin-bottom:12px}.close{background:#25314a;border:1px solid #596b89;border-radius:10px;padding:6px 12px;font-size:22px}.section{border:1px solid #526381;border-radius:16px;background:#18253b;margin:9px 0;padding:12px}.section h3{font-size:16px;margin:0 0 10px}.setting{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0}.setting label{font-size:14px}.setting select{background:#253651;color:white;padding:9px 6px;border:1px solid #6e85a5;border-radius:9px;max-width:48%}.setting input[type=checkbox]{width:25px;height:25px;accent-color:#15a0ff}.setting input[type=range]{width:55%;accent-color:#17aaff}.hint{font-size:12px;color:#a6b7d2;line-height:1.55}.textarea{width:100%;height:115px;border-radius:12px;background:#0c1629;color:white;border:1px solid #62789c;padding:12px;resize:vertical}.fullbtn{width:100%;padding:13px;border-radius:12px;border:1px solid #80a0cf;background:#2063d5;font-weight:800;margin-top:9px}.result-history{max-height:46vh;overflow:auto}.history-item{border-bottom:1px solid #3c4c68;padding:12px 0;line-height:1.6}.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#233d64;border:1px solid #6c93c2;color:white;border-radius:12px;padding:10px 15px;text-align:center;max-width:90vw;z-index:50;display:none}.unsupported{font-size:12px;color:#ffd08e}.small-flag{font-size:18px}@media(max-height:780px){.app{gap:7px;padding-top:7px}.card{min-height:clamp(155px,24dvh,250px);padding:9px}.mic-circle{width:53px;height:53px}.mic-circle svg{width:28px;height:28px}.card-actions .roundbtn{width:41px;height:41px}.trans-text{font-size:calc(clamp(19px,5.2vw,27px)*var(--scale))}.action-zone{gap:7px}.utilitybar button{padding:8px}.modebar button{padding:9px}}
+
+/* v5.5: fixed geometric layout in both translation modes */
+.app{height:100dvh;min-height:0;overflow:hidden;gap:7px;padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+.header{flex:0 0 43px;min-height:43px}
+.partner-mic-wrap{flex:0 0 84px;height:84px;min-height:84px}
+.partner-mic-wrap.mode-invisible{visibility:hidden;pointer-events:none}
+.card{flex:1 1 0;min-height:0;max-height:none;overflow:hidden;padding:11px}
+.card-content{min-height:0;overflow:hidden}
+.trans-text{min-height:0;max-height:100%;overflow-y:auto}
+.swap-row{flex:0 0 0;height:0}
+.action-zone{flex:0 0 118px;height:118px;min-height:118px;position:relative;margin-top:0;display:block}
+.me-mic-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;margin:0}.live-controls{position:absolute;inset:0;display:grid;grid-template-rows:34px 61px;align-content:center;justify-items:center;gap:8px;margin:0;padding-top:2px}
+.mode-invisible{visibility:hidden!important;pointer-events:none!important}
+.live-button{min-height:59px}
+.modebar{flex:0 0 49px;height:49px;min-height:49px}
+.utilitybar{flex:0 0 45px;height:45px;min-height:45px}
+.utilitybar button{padding:7px}
+.card-actions .roundbtn:not(.mini){width:54px;height:54px}
+@media(max-height:700px){.partner-mic-wrap{flex-basis:69px;height:69px;min-height:69px}.mic-circle{width:51px;height:51px}.mic-circle svg{width:25px;height:25px}.action-zone{flex-basis:100px;height:100px;min-height:100px}.header{flex-basis:37px;min-height:37px}.modebar{flex-basis:43px;height:43px;min-height:43px}.utilitybar{flex-basis:39px;height:39px;min-height:39px}.utilitybar button{font-size:12px}.card{padding:8px}.card-actions .roundbtn:not(.mini){width:44px;height:44px}.trans-text{font-size:calc(clamp(18px,5vw,28px)*var(--scale))}}
+@media(max-height:540px){.app{min-height:540px;height:auto;overflow-y:auto}.card{height:135px;flex:0 0 135px}}
+
+/* Make the live start/stop control visible on top of the reserved action slot. */
+.live-controls:not(.mode-invisible){visibility:visible;z-index:2;pointer-events:auto}
+.me-mic-wrap:not(.mode-invisible){z-index:2}
+.engine-info{background:#0e1a2e;border:1px solid #3f6ca3;border-radius:12px;padding:12px;margin-top:10px;line-height:1.65}.engine-status{color:#88d9ff;font-weight:800;font-size:14px}.engine-quota{font-size:14px;font-weight:700}.setting select option:disabled{color:#7c8291}
+/* FriendlyTalk Beta v5.33 — Chrome dark grey palette, color-only adjustment */
+:root {--bg:#202124;--panel:#303134; color-scheme:dark; background:#202124;}
+html,body {background:#202124;}
+.app {background:#202124;}
+.card {background:#303134;box-shadow:0 0 5px #0005;}
+.card.partner {background:#303134;box-shadow:0 0 5px #0005;}
+.roundbtn {background:#292a2d;border-color:#5f6368;}
+.swap-btn {background:#292a2d;}
+.modebar {background:#292a2d;border-color:#5f6368;}
+.utilitybar button {background:#303134;border-color:#5f6368;}
+.sheet {background:#202124;border-color:#5f6368;}
+.section {background:#292a2d;border-color:#5f6368;}
+.close,.setting select {background:#303134;border-color:#5f6368;}
+.textarea {background:#303134;border-color:#5f6368;}
+.engine-info {background:#303134;border-color:#5f6368;}
+.toast {background:#3c4043;border-color:#5f6368;}
+#fullscreenBtn {background:#303134!important;border-color:#5f6368!important;}
+
+/* FriendlyTalk Beta v5.33 — theme colors only, same geometry */
+:root[data-theme="light"]{color-scheme:light;--bg:#f8f9fa;--panel:#fff;background:#f8f9fa;color:#202124;}
+html:has([data-theme="light"]),html[data-theme="light"],html[data-theme="light"] body,html[data-theme="light"] .app{background:#f8f9fa;color:#202124;}
+html[data-theme="light"] .card,html[data-theme="light"] .card.partner{background:#fff;box-shadow:0 1px 7px #20212417;}
+html[data-theme="light"] .roundbtn,html[data-theme="light"] .swap-btn,html[data-theme="light"] .modebar,html[data-theme="light"] .utilitybar button{background:#f1f3f4;color:#202124;border-color:#dadce0;}
+html[data-theme="light"] .swap-btn{border-color:#aab0b6;}
+html[data-theme="light"] .modebar button{color:#303134;}
+html[data-theme="light"] .modebar button.active{color:#fff;}
+html[data-theme="light"] .sub,html[data-theme="light"] .status,html[data-theme="light"] .live-info{color:#5f6368;}
+html[data-theme="light"] .sheet{background:#f8f9fa;border-color:#dadce0;color:#202124;}
+html[data-theme="light"] .section{background:#fff;border-color:#dadce0;}
+html[data-theme="light"] .close,html[data-theme="light"] .setting select,html[data-theme="light"] .textarea,html[data-theme="light"] #fullscreenBtn{background:#f1f3f4!important;color:#202124!important;border-color:#bdc1c6!important;}
+html[data-theme="light"] .engine-info{background:#f1f3f4;border-color:#dadce0;}
+html[data-theme="light"] .engine-status{color:#1765bd;}
+html[data-theme="light"] .hint{color:#5f6368;}
+html[data-theme="light"] .history-item{border-bottom-color:#dadce0;}
+html[data-theme="light"] .toast{background:#fff;color:#202124;border-color:#dadce0;box-shadow:0 3px 12px #0002;}
+html[data-theme="light"] .fullbtn,html[data-theme="light"] .live-button,html[data-theme="light"] .live-button.started{color:#fff;}
+html[data-theme="light"] .mic-caption,html[data-theme="light"] .card-label,html[data-theme="light"] .trans-text{color:#202124;}
+html[data-theme="light"] .setting select option{background:#fff;color:#202124;}
+/* FriendlyTalk v5.14: unified launcher/header icon; title moved to About only. */
+.header{justify-content:center;gap:9px;min-height:42px;flex-basis:42px}
+.brand-icon{width:34px;height:34px;object-fit:contain;flex:none}
+.header .sub{font-size:13px;font-weight:700;color:var(--text,#e8eaed)}
+@media(max-height:700px){.header{min-height:36px;flex-basis:36px}.brand-icon{width:28px;height:28px}}
+/* v5.14: three equal mode tabs, preserving all screen/card dimensions */
+.modebar{gap:2px}.modebar button{min-width:0;white-space:nowrap;font-size:clamp(10px,2.7vw,13px);gap:3px;padding-left:1px;padding-right:1px}.modebar svg{width:17px;height:17px;flex-shrink:0}
+
+/* v5.14: maintain exact outer geometry while switching among three modes */
+.translation-stack{flex:1 1 0;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) 0 minmax(0,1fr);position:relative;gap:0}
+.translation-stack>.card{height:100%;min-height:0;min-width:0;flex:none;}
+.translation-stack>.swap-row{height:0;min-height:0;z-index:3}
+.translation-stack.listen-view>.card:not(.listen-card),.translation-stack.listen-view>.swap-row{visibility:hidden;pointer-events:none}
+.translation-stack>.listen-card{position:absolute;inset:0;display:flex;flex-direction:column;gap:0;z-index:2;border-color:#5c98ba;background:#303134;padding:0;overflow:hidden}
+.translation-stack>.listen-card.hide{display:none!important}
+.listen-head{height:48px;min-height:48px;display:flex;justify-content:space-between;align-items:center;padding:0 15px;border-bottom:1px solid #595c62;gap:10px;font-size:14px;font-weight:750}
+.listen-count{white-space:nowrap;font-size:11px;font-weight:500;color:#acb7c4}
+.listen-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#83858c transparent;padding:13px 15px 20px;touch-action:pan-y}
+.listen-empty{text-align:center;color:#b2b6bf;font-size:14px;margin-top:22px}
+.listen-entry{padding:11px 5px 14px;border-bottom:1px solid #53565b;line-height:1.55;overflow-wrap:anywhere}
+.listen-entry .source{font-size:calc(12px * var(--scale));color:#bdc5d2;margin-bottom:5px}
+.listen-entry .target{font-size:calc(22px * var(--scale));line-height:1.45;font-weight:700;color:#fafafa;white-space:pre-wrap}
+.listen-card{position:relative}
+.listen-entry .target.pending{color:#8e959e;font-weight:600}
+#listenInterim .li-src{font-size:calc(13px * var(--scale));color:#9aa3ae;margin:10px 5px 4px;line-height:1.5}
+#listenInterim .li-dst{font-size:calc(22px * var(--scale));line-height:1.45;font-weight:700;color:#8e959e;padding:0 5px;white-space:pre-wrap}
+html[data-theme="light"] #listenInterim .li-dst{color:#9aa0a6}
+.listen-latest{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;border:1px solid #6c93c2;background:#233d64;color:#fff;font-size:13px;font-weight:700;z-index:4}
+.listen-latest.hide{display:none}
+.listen-entry .time{font-size:10px;color:#9da3ae;margin-bottom:4px}
+.trans-text{width:100%;flex:1 1 auto;min-height:0;max-height:none;margin:0;display:block;text-align:left;align-self:stretch;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;touch-action:pan-y}
+.trans-empty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center}
+.trans-log{display:flex;flex-direction:column;gap:4px}
+.trans-line{font-size:calc(clamp(17px,4.5vw,25px)*var(--scale));line-height:1.45;font-weight:700;padding:9px 3px 11px;white-space:pre-wrap;overflow-wrap:anywhere;border-bottom:1px solid #ffffff24}
+.trans-line .tiny-time{display:block;font-size:10px;font-weight:400;opacity:.66;margin-bottom:4px}
+.trans-interim{font-size:13px;color:#a3b8c3;padding:6px 0;overflow-wrap:anywhere}
+/* The two mode start buttons are the same single control, and are exactly 10% smaller. */
+.live-button{width:145px;min-width:145px;height:52px;min-height:52px;font-size:18px;flex-shrink:0;padding:0 12px}
+.live-button svg{width:24px;height:24px}
+.live-controls{grid-template-rows:29px 55px;gap:7px;align-content:center}
+.live-info{height:29px;min-height:29px;font-size:12px}
+/* Smaller utility actions without moving the mode bar. */
+.utilitybar button{font-size:12.6px;gap:6px;min-width:0;border-radius:13px}
+.utilitybar svg{width:19px;height:19px}
+/* Reduce vibrancy by approximately ten percent, not screen contrast. */
+:root{--blue:#36abe0;--violet:#be79dd}
+.card.partner{border-color:#be79dd}.card:not(.partner){border-color:#36abe0}
+.mic-circle{background:linear-gradient(155deg,#36b9e7,#1455c6);box-shadow:0 0 10px #2489d96b}
+.mic-circle.partner{background:linear-gradient(145deg,#b77bd9,#732e99);box-shadow:0 0 10px #aa52d46b}
+.modebar button.active{background:linear-gradient(110deg,#28abe9,#2a63dd);box-shadow:0 0 7px #229fdd66}
+.live-button:not(.started){background:linear-gradient(90deg,#20a874,#26c57d)}
+.swap-btn{border-color:#c7d4e6}
+html[data-theme="light"] .translation-stack>.listen-card{background:#fff}
+html[data-theme="light"] .listen-head{border-bottom-color:#d6d6d6}
+html[data-theme="light"] .listen-entry{border-bottom-color:#e5e7eb}
+html[data-theme="light"] .listen-entry .target{color:#202124}
+html[data-theme="light"] .listen-entry .source,html[data-theme="light"] .listen-empty,html[data-theme="light"] .listen-count{color:#5f6368}
+html[data-theme="light"] .trans-line{border-bottom-color:#20212425}
+
+/* v5.14: layout-only refinements. Preserve mode-specific fixed layout. */
+.translation-stack{grid-template-rows:minmax(0,1fr) 8px minmax(0,1fr);gap:0}
+.translation-stack>.swap-row{height:8px;min-height:8px;align-self:center;position:relative;z-index:3}
+.translation-stack>.swap-row .swap-btn{position:relative;z-index:4}
+/* In listen mode the single translation card still fills the same full stack. */
+/* Speak microphones visually 5% smaller, without changing reserved layout space. */
+.partner-mic-wrap .mic-circle,.me-mic-wrap .mic-circle{transform:scale(.95);transform-origin:center}
+/* Live & listen share the same start/stop button: 3% smaller than v5.12. */
+.live-button{width:141px;min-width:141px;height:50px;min-height:50px;font-size:17.5px}
+.live-button svg{width:23px;height:23px}
+/* Primary three mode choices stand out; settings and reset recede. */
+.modebar button{font-size:clamp(12px,3.15vw,14px);font-weight:850}
+.modebar svg{width:18px;height:18px}
+.utilitybar button{font-size:11.3px;font-weight:650}
+.utilitybar svg{width:17px;height:17px}
+/* Breathing room at the very bottom, including device safe insets. */
+.app{padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+@media(max-height:700px){.app{padding-bottom:calc(13px + env(safe-area-inset-bottom))}.modebar button{font-size:clamp(11.5px,3vw,13px)}}
+
+/* v5.14 — global style axis + compact five mode geometry */
+.app{padding-bottom:calc(14px + env(safe-area-inset-bottom));}
+.modebar{gap:1px;padding:3px;flex-shrink:0}
+.modebar button{flex:1 1 0;min-width:0;gap:2px;font-size:clamp(9px,2.2vw,11px);padding:5px 0;flex-direction:column;line-height:1.1}
+.modebar svg{width:19px;height:19px}
+.app.tool-mode .partner-mic-wrap,.app.tool-mode .translation-stack,.app.tool-mode .action-zone{display:none!important}
+.tool-panel{display:none;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.app.photo-mode #photoPanel,.app.calc-mode #calcPanel{display:flex;flex-direction:column;gap:12px}
+.tool-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px;font-weight:800}
+.tool-head select{min-width:0;max-width:62%;font-size:13px;padding:10px;color:inherit;background:var(--surface,#303134);border:1px solid var(--stroke,#5d636d);border-radius:10px}
+.calc-stage{flex:1 1 auto;min-height:220px;background:var(--surface,#303134);border:2px solid var(--blue);border-radius:22px;display:flex;flex-direction:column;padding:18px 14px;justify-content:center;gap:15px}
+.calc-label{font-size:14px;font-weight:800;opacity:.8}
+.amount-wrap{display:flex;justify-content:center;align-items:center;width:100%;gap:4px}
+.amount-input{min-width:0;width:100%;background:transparent;border:0;outline:none;color:var(--amount-color,#fff);font-size:calc(clamp(35px,10vw,60px) * var(--amount-scale,1));font-weight:850;text-align:center;letter-spacing:-1.8px;line-height:1.25;font-variant-numeric:tabular-nums;caret-color:var(--blue)}
+.amount-input:focus{outline:0}
+.calc-rate{border-top:1px solid var(--separator,#53565b);padding:18px 0 2px;text-align:center;line-height:1.65}
+.calc-rate strong{font-size:20px}
+.calc-rate small{display:block;opacity:.68;font-size:12px}
+.calc-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.calc-actions button,.photo-actions button{background:var(--surface,#303134);border:1px solid var(--stroke,#53565b);border-radius:14px;padding:13px 5px;font-size:12px;font-weight:700}
+.calc-rotate-preview{font-size:12px;opacity:.74;text-align:center;min-height:14px}
+.photo-stage{position:relative;flex:1 1 auto;min-height:180px;border-radius:16px;overflow:hidden;background:var(--surface,#303134);display:flex;justify-content:center;align-items:center}
+.photo-stage img{display:none;max-width:100%;max-height:100%;object-fit:contain;touch-action:none;transform-origin:center center}
+.photo-stage.has-photo img{display:block}
+.photo-placeholder{text-align:center;line-height:1.7;padding:20px;color:var(--muted,#b5bac3);font-size:15px}
+.photo-stage.has-photo .photo-placeholder{display:none}
+.photo-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.photo-actions label{display:flex;justify-content:center;align-items:center;background:var(--surface,#303134);border:1px solid var(--stroke,#53565b);border-radius:14px;padding:13px 6px;font-size:14px;font-weight:750;cursor:pointer}
+.photo-note{font-size:12px;line-height:1.5;color:var(--muted,#b9bec7);text-align:center}
+#photoFile,#cameraFile{display:none}
+.style-preview{font-size:12px;color:var(--muted,#a7b9ce);padding:4px 0}
+.style-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.style-tabs button{flex:1 1 40%;padding:10px;border-radius:12px;border:1px solid var(--stroke,#697385);background:var(--surface,#303134);font-size:13px;font-weight:750}
+.style-tabs button.chosen{outline:2px solid var(--blue)}
+.setting select,.setting input{min-width:0}
+/* all surfaces driven by two independent theme axes */
+html[data-theme="dark"]{--surface:#303134;--stroke:#606773;--muted:#b6c0cd;--separator:#515763;--base-contrast:#f4f6f8}
+html[data-theme="light"]{--surface:#fff;--stroke:#ced3da;--muted:#626871;--separator:#d5d9df;--base-contrast:#22252a}
+html[data-style="simple"]{--blue:#7b8b9d;--violet:#7b8b9d}
+html[data-style="simple"] .card,html[data-style="simple"] .card.partner,html[data-style="simple"] .translation-stack>.listen-card,html[data-style="simple"] .calc-stage{border:0;box-shadow:none;background:var(--surface);}
+html[data-style="simple"] .swap-btn,html[data-style="simple"] .modebar,html[data-style="simple"] .utilitybar button,html[data-style="simple"] .calc-actions button,html[data-style="simple"] .photo-actions label,html[data-style="simple"] .section,html[data-style="simple"] .roundbtn,html[data-style="simple"] .sheet,html[data-style="simple"] .close{box-shadow:none;border:0}
+html[data-style="simple"] .modebar button.active{background:var(--surface);color:var(--base-contrast);box-shadow:none}
+html[data-style="simple"] .mic-circle,html[data-style="simple"] .mic-circle.partner,html[data-style="simple"] .live-button:not(.started){background:var(--surface);border:0;color:var(--base-contrast);box-shadow:none}
+html[data-style="simple"] .mic-circle.started,html[data-style="simple"] .live-button.started{border:0;box-shadow:none}
+html[data-style="simple"] .modebar{background:transparent}
+html[data-style="simple"] .card.partner{background:var(--surface)}
+html[data-style="simple"] .logo{background:var(--surface)}
+html[data-style="simple"] .utilitybar button{background:var(--surface)}
+html[data-style="simple"] .trans-line,html[data-style="simple"] .listen-entry{border-bottom-color:var(--separator)}
+html[data-style="simple"] .amount-input{color:var(--amount-color)}
+html[data-theme="light"] .calc-stage,html[data-theme="light"] .photo-stage,html[data-theme="light"] .calc-actions button,html[data-theme="light"] .photo-actions label{background:var(--surface);color:#202124}
+html[data-theme="light"] .amount-input{color:var(--amount-color,#202124)}
+html[data-theme="light"] .calc-rate{color:#202124}
+html[data-theme="light"] .style-tabs button{color:#202124}
+html[data-theme="light"] .tool-head select{color:#202124}
+@media(max-height:720px){.calc-stage{min-height:180px;padding:10px}.calc-actions button{padding:10px 3px}.photo-stage{min-height:145px}}
+
+/* v5.16: footer shortcut for travel phrases, consistent with both styles and themes */
+.utilitybar{gap:6px}.utilitybar button{min-width:0;gap:5px;padding:10px 3px;font-size:clamp(10px,2.85vw,12px)}.utilitybar svg{width:17px;height:17px}
+.header{display:none!important}.app{padding-top:calc(8px + env(safe-area-inset-top))}
+.phrase-sheet{display:flex;flex-direction:column;max-height:93dvh}.phrase-tools{display:flex;gap:7px;align-items:center;margin:5px 0 10px}.phrase-tools input{flex:1;min-width:0;border-radius:10px;border:1px solid var(--stroke,#596272);background:var(--surface,#303134);color:inherit;padding:11px;font-size:14px}.phrase-tools button{border-radius:10px;border:1px solid var(--stroke,#596272);background:var(--surface,#303134);padding:10px;font-size:12px}
+.phrase-tree{flex:1;min-height:120px;overflow:auto;overscroll-behavior:contain;padding-bottom:8px}.phrase-cat,.phrase-sub,.phrase-item{width:100%;text-align:left;border:0;color:inherit;background:transparent}.phrase-cat{display:flex;align-items:center;gap:9px;border-radius:11px;padding:11px 9px;margin:3px 0;background:var(--surface,#303134);font-weight:750;font-size:14px}.phrase-cat .arrow{margin-left:auto;opacity:.65}.phrase-sub{font-weight:700;font-size:13px;padding:11px 7px 5px 21px;color:var(--muted,#b7bbc2)}.phrase-item{font-size:14px;border-radius:8px;padding:10px 9px 10px 33px;line-height:1.4}.phrase-item.selected{background:var(--surface,#303134);box-shadow:inset 3px 0 0 var(--blue,#6f8ca0)}
+.phrase-work{border-top:1px solid var(--stroke,#53565b);padding-top:10px;background:var(--sheet,#131d30)}.phrase-work textarea{width:100%;box-sizing:border-box;min-height:62px;max-height:95px;resize:vertical;border:1px solid var(--stroke,#53565b);border-radius:10px;padding:10px;background:var(--surface,#303134);color:inherit;font-size:15px}.phrase-actions{display:flex;gap:7px;margin-top:7px}.phrase-actions button{flex:1;min-width:0;padding:10px 4px;border-radius:10px;background:var(--surface,#303134);border:1px solid var(--stroke,#53565b);font-size:12px;font-weight:700}.phrase-actions .primary{background:var(--blue,#2377d8);color:#fff;border:0}.phrase-output{border-radius:10px;background:var(--surface,#303134);margin-top:8px;padding:12px;max-height:140px;overflow:auto}.phrase-result-text{font-size:clamp(19px,5.5vw,28px);font-weight:750;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap}.phrase-muted{font-size:11px;color:var(--muted,#b7bbc2);margin-bottom:5px}.phrase-hidden{display:none!important}
+html[data-theme="light"] .phrase-work{background:#f8f9fa}html[data-style="simple"] .phrase-cat,html[data-style="simple"] .phrase-work textarea,html[data-style="simple"] .phrase-actions button,html[data-style="simple"] .phrase-output{border-color:transparent;box-shadow:none}
+
+/* v5.17: quick-entry shortcut is compact and visible only in push-to-talk. */
+.quick-input-btn{border:0;border-radius:10px;padding:7px 9px;background:var(--surface,#283447);color:inherit;font-size:clamp(10px,2.6vw,12px);font-weight:800;white-space:nowrap;min-height:36px;cursor:pointer}
+html[data-style="color"] .quick-input-btn{background:rgba(46,129,211,.20);outline:1px solid rgba(80,150,235,.45)}
+html[data-style="simple"] .quick-input-btn{background:rgba(125,125,125,.14)}
+html[data-theme="light"] .quick-input-btn{color:#202124}
+@media(max-width:350px){.quick-input-btn{font-size:10px;padding:6px 5px}.card-actions .mini{width:30px;height:30px}.card-actions .mini svg{width:18px;height:18px}}
+
+.retry-translation{border:1px solid #6b8ca8;border-radius:9px;background:transparent;color:inherit;padding:8px 12px;font-size:13px;margin-top:8px;min-height:36px}
+.ai-h{margin:16px 0 6px;font-size:14px;opacity:.9}.ai-row{display:flex;gap:8px;margin:8px 0}.ai-row button{flex:1;min-height:40px;border-radius:10px;border:1px solid #5f6368;background:transparent;color:inherit;font-weight:700}
+.key-input,.model-input{width:100%;box-sizing:border-box;min-height:42px;border-radius:10px;border:1px solid #5f6368;background:transparent;color:inherit;padding:8px 10px;font-size:14px}.model-input{max-width:52%}
+.ai-progress{width:100%;height:10px}.ai-test{white-space:pre-wrap;font-size:13px}.ai-test:empty{display:none}
+
+/* ===== v5.33 layout: give freed space to the translation windows ===== */
+.app.stream-mode .partner-mic-wrap{display:none!important}
+.app.stream-mode .action-zone{flex:0 0 90px!important;height:90px!important;min-height:90px!important}
+.app.stream-mode .live-controls{grid-template-rows:24px 52px;gap:6px}
+.app.push-mode .partner-mic-wrap{flex:0 0 72px!important;height:74px!important;min-height:74px!important;justify-content:center;padding-top:4px;box-sizing:border-box}
+.app.push-mode .action-zone{flex:0 0 98px!important;height:98px!important;min-height:98px!important}
+.app.push-mode .status{position:absolute;top:0;left:0;right:0;padding-top:1px;z-index:3;pointer-events:none}
+.app.push-mode .me-mic-wrap{top:18px;justify-content:flex-start;gap:1px}
+.listen-entry .target{font-size:calc(21px * var(--scale))}
+.listen-entry .source{font-size:calc(13px * var(--scale))}
+.listen-head{height:40px;min-height:40px}
+/* ===== v5.33 situation phrases ===== */
+.phrase-sheet{height:92dvh;max-height:92dvh;display:flex;flex-direction:column}
+.phrase-guide{font-size:12px;color:var(--muted,#b7bbc2);margin:0 2px 8px}
+.phrase-tools button.on{background:var(--blue,#2377d8);color:#fff;border-color:transparent}
+.phrase-grid{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;align-content:start;padding-bottom:10px}
+.phrase-grid.as-list{display:block}
+.phrase-tile{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;min-height:68px;padding:11px 12px;border-radius:16px;border:1px solid var(--stroke,#53565b);background:var(--surface,#303134);color:inherit}
+.phrase-tile:active{transform:scale(.97)}
+.tile-emoji{grid-row:1 / span 2;font-size:30px;line-height:1}
+.tile-name{font-size:15px;font-weight:800;line-height:1.25}
+.tile-count{font-size:11px;color:var(--muted,#b7bbc2)}
+.phrase-item{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--separator,#4a4d52);background:transparent;color:inherit;font-size:17px;line-height:1.45;padding:14px 8px;border-radius:0}
+.phrase-item.fav::before{content:'';display:inline-block;width:14px;height:14px;margin-right:6px;vertical-align:-1px;background:#f5c542;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z'/%3E%3C/svg%3E") center/contain no-repeat}
+.phrase-item:active,.phrase-item.selected{background:var(--surface,#303134)}
+.phrase-sub{font-size:13px;font-weight:800;color:var(--muted,#b7bbc2);padding:16px 6px 4px;letter-spacing:.2px}
+.phrase-pick{height:82dvh;max-height:82dvh;display:flex;flex-direction:column}
+.phrase-pick-list{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding-bottom:16px}
+.phrase-compose{border-top:1px solid var(--stroke,#53565b);padding-top:9px}
+.phrase-compose.hidden{display:none}
+.phrase-compose textarea{width:100%;box-sizing:border-box;min-height:52px;max-height:96px;resize:none;border:1px solid var(--stroke,#53565b);border-radius:12px;padding:10px 12px;background:var(--surface,#303134);color:inherit;font-size:16px;line-height:1.4}
+.phrase-actions{display:flex;gap:8px;margin-top:8px}
+.phrase-actions button{min-height:50px;border-radius:13px;background:var(--surface,#303134);border:1px solid var(--stroke,#53565b);color:inherit;font-size:20px;padding:0 16px}
+.phrase-actions .primary{flex:1;background:linear-gradient(90deg,#2a8de0,#2a63dd);color:#fff;border:0;font-size:17px;font-weight:850}
+html[data-style="simple"] .phrase-actions .primary{background:#4c6a8a}
+.phrase-show-backdrop{align-items:stretch!important;background:#0d0f12f2}
+.phrase-show{flex:1;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));gap:12px;max-width:760px;margin:0 auto;width:100%;box-sizing:border-box}
+.phrase-show-card{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:22px 20px;border-radius:24px;background:#ffffff;color:#111;overflow:auto;transition:transform .25s}
+.phrase-show-card.rotated{transform:rotate(180deg)}
+.phrase-show-lang{font-size:15px;font-weight:800;color:#555}
+.phrase-show-text{font-weight:850;line-height:1.36;overflow-wrap:anywhere;white-space:pre-wrap;text-align:center}
+.phrase-show-lang,.phrase-show-src{text-align:center}
+.phrase-show-src{font-size:15px;color:#666;line-height:1.45;border-top:1px solid #ddd;padding-top:12px;overflow-wrap:anywhere}
+.phrase-show-actions{display:grid;grid-template-columns:1fr 1fr 1fr 1.3fr auto;gap:7px}
+.phrase-show-actions button{min-height:52px;border-radius:14px;border:0;background:#303134;color:#fff;font-size:14px;font-weight:800;padding:0 8px}
+.phrase-show-actions #phraseShowSpeak{background:#2a7fe0}
+
+/* ===== v5.33 ===== */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+*{-webkit-tap-highlight-color:transparent}
+/* Mic buttons: always perfect circles, same size top and bottom, no press deformation */
+.mic-circle,.me-mic-wrap .mic-circle,.partner-mic-wrap .mic-circle{width:52px!important;height:52px!important;min-width:52px;min-height:52px;flex:0 0 52px!important;aspect-ratio:1/1;transform:none!important;padding:0;box-sizing:border-box;border-radius:50%}
+.mic-circle svg{width:26px!important;height:26px!important;flex:none}
+.mic-circle:active,.mic-circle:focus,.roundbtn:active,.swap-btn:active,.live-button:active,.phrase-tile:active{transform:none!important}
+.mic-caption{font-size:11px!important;line-height:13px;font-weight:750;flex:none}
+.app.push-mode .partner-mic-wrap{flex:0 0 68px!important;height:68px!important;min-height:68px!important;padding-top:1px}
+.app.push-mode .action-zone{flex:0 0 88px!important;height:88px!important;min-height:88px!important}
+.app.push-mode .status{font-size:11px;line-height:14px;padding-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app.push-mode .me-mic-wrap{top:16px;gap:2px}
+/* Color style: photo screen gets the same outline as the other modes */
+html[data-style="color"] .photo-stage{border:2px solid #36abe0;box-shadow:0 0 10px #008ffd40}
+html[data-style="color"][data-theme="light"] .photo-stage{box-shadow:0 1px 7px #20212417}
+
+/* ===== v5.33: one text size for push / live / listen, no timestamps ===== */
+:root{--tx-size:calc(clamp(18px,5vw,24px) * var(--scale,1))}
+.tiny-time,.listen-entry .time{display:none!important}
+.trans-line{font-size:var(--tx-size)!important;line-height:1.42;padding:8px 3px 9px}
+.listen-entry .target{font-size:var(--tx-size)!important;line-height:1.42}
+.listen-entry .source{font-size:calc(var(--tx-size) * .62)!important;margin-bottom:3px}
+.listen-entry{padding:8px 4px 10px}
+.trans-interim{font-size:calc(var(--tx-size) * .75)}
+
+/* v5.33: keep everything clear of the camera hole / status bar on any device or rotation.
+   The Android app already pads the WebView by the system-bar and cutout insets; env() covers
+   any case where the page still reaches under the cutout (e.g. browser preview). */
+.app{padding-top:max(8px,env(safe-area-inset-top))!important;padding-left:max(16px,env(safe-area-inset-left))!important;padding-right:max(16px,env(safe-area-inset-right))!important;padding-bottom:calc(14px + env(safe-area-inset-bottom))!important;box-sizing:border-box}
+.sheet{padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.phrase-show{padding-top:max(16px,env(safe-area-inset-top))!important}
+
+/* ===== v5.33: push-to-talk mic shows its state by colour (shape unchanged) ===== */
+.mic-circle.listening,html[data-style="simple"] .mic-circle.listening,html[data-style="simple"] .mic-circle.partner.listening{background:linear-gradient(90deg,#b82046,#ff4359)!important;color:#fff!important;border:0!important;box-shadow:0 0 0 4px #ff435933!important;animation:micGlow 1s ease-in-out infinite alternate}
+.mic-circle.processing,html[data-style="simple"] .mic-circle.processing{background:linear-gradient(90deg,#c46a00,#f0a020)!important;color:#fff!important;border:0!important;box-shadow:0 0 0 4px #f0a02033!important;animation:none}
+@keyframes micGlow{from{box-shadow:0 0 0 3px #ff435930}to{box-shadow:0 0 0 9px #ff435915}}
+
+/* ===== v5.33 ===== */
+.live-button.stopping,html[data-style="simple"] .live-button.stopping{background:linear-gradient(90deg,#c46a00,#f0a020)!important;color:#fff!important;border:0!important;opacity:1}
+.auto-speak{position:absolute;left:0;bottom:6px;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:62px;height:56px;border-radius:14px;border:1px solid var(--stroke,#5f6368);background:var(--surface,#303134);color:var(--muted,#b6c0cd);font-size:10px;font-weight:750;line-height:1.1;padding:0}
+.auto-speak .as-icon{font-size:17px;line-height:1}
+.auto-speak .as-state{font-size:9.5px;font-weight:800;opacity:.85}
+.auto-speak{width:64px;height:60px;gap:2px}.auto-speak .as-label{white-space:nowrap;font-size:10px;letter-spacing:-.3px}
+.auto-speak.on{background:#1f6fd1;border-color:#1f6fd1;color:#fff}
+.auto-speak:active{transform:none}
+.app.tool-mode .auto-speak{display:none}
+.guide-btn{margin-top:8px}
+.guide-sheet,.history-sheet{max-height:90dvh;display:flex;flex-direction:column}
+.guide-body{overflow:auto;overscroll-behavior:contain;padding-bottom:8px;font-size:14px;line-height:1.6}
+.guide-lead{margin:2px 0 10px}
+.guide-body details{border:1px solid var(--stroke,#53565b);border-radius:12px;margin:8px 0;padding:2px 12px;background:var(--surface,#303134)}
+.guide-body summary{font-weight:800;padding:10px 0;cursor:pointer}
+.guide-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:4px 0 8px}
+.guide-table th,.guide-table td{border-bottom:1px solid var(--separator,#4a4d52);padding:6px 4px;text-align:left;vertical-align:top}
+.guide-table th{font-size:11.5px;color:var(--muted,#b7bbc2)}
+.guide-steps{padding-left:20px;margin:4px 0 8px}.guide-steps li{margin:5px 0}
+.hist-tabs{display:flex;gap:6px;margin:2px 0 8px}
+.hist-tabs button{flex:1;min-height:40px;border-radius:11px;border:1px solid var(--stroke,#53565b);background:transparent;color:inherit;font-weight:800;font-size:14px}
+.hist-tabs button.on{background:var(--surface,#303134);border-color:transparent;box-shadow:inset 0 -3px 0 #2a7fe0}
+.hist-body{flex:1;min-height:120px;overflow:auto;overscroll-behavior:contain}
+.hist-entry{padding:9px 4px;border-bottom:1px solid var(--separator,#4a4d52);line-height:1.45}
+.hist-entry .h-src{font-size:13px;color:var(--muted,#b7bbc2)}
+.hist-entry .h-dst{font-size:16px;font-weight:750}
+.hist-entry .h-meta{font-size:10.5px;color:var(--muted,#b7bbc2);margin-bottom:2px}
+.hist-session{border:1px solid var(--stroke,#53565b);border-radius:13px;margin:8px 0;overflow:hidden}
+.hist-session-head{display:flex;align-items:center;gap:8px;padding:11px 12px;background:var(--surface,#303134);cursor:pointer}
+.hist-session-head .hs-title{flex:1;min-width:0}
+.hist-session-head .hs-date{font-weight:800;font-size:14px}
+.hist-session-head .hs-sub{font-size:12px;color:var(--muted,#b7bbc2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-session-head button{min-width:40px;height:36px;border-radius:10px;border:1px solid var(--stroke,#53565b);background:transparent;color:inherit;font-size:15px}
+.hist-session-body{padding:0 10px 8px}
+.hist-foot{display:flex;gap:8px;padding-top:8px}
+.hist-foot button{flex:1;min-height:46px;border-radius:12px;border:0;background:var(--surface,#303134);color:inherit;font-weight:800;font-size:13.5px}
+.hist-foot button.danger{background:#7a2230;color:#fff}
+.hist-foot .hist-info{flex:1;font-size:11.5px;color:var(--muted,#b7bbc2);align-self:center}
+.hist-empty{text-align:center;color:var(--muted,#b7bbc2);padding:30px 8px;font-size:14px}
+.phrase-auto.on{background:#1f6fd1!important;color:#fff!important;border-color:#1f6fd1!important}
+/* ===== v5.33: auto-speak icon ===== */
+.auto-speak{width:48px!important;height:48px!important;border-radius:14px!important;bottom:10px!important;flex-direction:row!important;color:var(--muted,#8f98a6)!important;background:var(--surface,#303134)!important;border:1px solid var(--stroke,#5f6368)!important}
+.auto-speak svg,.phrase-auto svg{width:26px;height:26px}
+.auto-speak .as-wave,.phrase-auto .as-wave{opacity:.35}
+.auto-speak.on,.phrase-auto.on{background:#1f6fd1!important;border-color:#1f6fd1!important;color:#fff!important}
+.auto-speak.on .as-wave,.phrase-auto.on .as-wave{opacity:1}
+.auto-speak.on .as-slash,.phrase-auto.on .as-slash{display:none}
+/* ===== v5.33: push-to-talk button styles (A/B/C) ===== */
+html[data-mic="a"] .mic-caption{font-size:19px!important;line-height:23px!important;font-weight:850}
+html[data-mic="a"] .app.push-mode .partner-mic-wrap{flex:0 0 84px!important;height:84px!important;min-height:84px!important}
+html[data-mic="a"] .app.push-mode .action-zone{flex:0 0 100px!important;height:100px!important;min-height:100px!important}
+html[data-mic="b"] .mic-circle{width:auto!important;min-width:214px;height:56px!important;min-height:56px;flex:0 0 auto!important;aspect-ratio:auto!important;border-radius:28px!important;display:flex!important;align-items:center;justify-content:center;gap:10px;padding:0 24px!important}
+html[data-mic="b"] .mic-circle .mic-caption{font-size:21px!important;line-height:1!important;font-weight:850;color:inherit!important;white-space:nowrap}
+html[data-mic="b"] .mic-circle svg{width:27px!important;height:27px!important}
+html[data-mic="b"][data-style="simple"] .mic-circle{border:2px solid #3d8bd9!important;background:var(--surface)!important}
+html[data-mic="b"][data-style="simple"] .mic-circle.partner{border-color:#a26bd4!important}
+html[data-mic="b"] .app.push-mode .partner-mic-wrap{flex:0 0 66px!important;height:66px!important;min-height:66px!important}
+html[data-mic="b"] .app.push-mode .action-zone{flex:0 0 84px!important;height:84px!important;min-height:84px!important}
+html[data-mic="b"] .app.push-mode .me-mic-wrap{top:20px}
+html[data-mic="c"] .me-mic-wrap,html[data-mic="c"] .partner-mic-wrap .miccontent{flex-direction:row!important;gap:12px!important}
+html[data-mic="c"] .mic-caption{font-size:20px!important;line-height:24px!important;font-weight:850}
+html[data-mic="c"] .mic-caption::before{content:'◀ ';font-size:14px;opacity:.7}
+html[data-mic="c"] .app.push-mode .partner-mic-wrap{flex:0 0 66px!important;height:66px!important;min-height:66px!important}
+html[data-mic="c"] .app.push-mode .action-zone{flex:0 0 84px!important;height:84px!important;min-height:84px!important}
+html[data-mic="c"] .app.push-mode .me-mic-wrap{top:20px;align-items:center}
+/* ===== v5.33: offline badge ===== */
+.net-badge{position:absolute;right:0;bottom:10px;z-index:4;width:56px;height:48px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:#5b3a00;color:#ffd58a;border:1px solid #8a5a00;font-size:10px;font-weight:800;padding:0}
+.net-badge .nb-icon{font-size:16px;line-height:1}
+.net-badge.ok{background:#20452a;color:#b6f0c2;border-color:#2f6b3d}
+.net-badge.hide{display:none}
+
+/* ===== v5.33b: status shown on the button itself; clearer "working" state ===== */
+.app.push-mode .status{display:none!important}
+html[data-mic="b"] .app.push-mode .action-zone{flex:0 0 72px!important;height:72px!important;min-height:72px!important}
+html[data-mic="b"] .app.push-mode .me-mic-wrap{top:0!important;justify-content:center!important}
+html[data-mic="a"] .app.push-mode .action-zone{flex:0 0 86px!important;height:86px!important;min-height:86px!important}
+html[data-mic="a"] .app.push-mode .me-mic-wrap{top:0!important;justify-content:center!important}
+html[data-mic="c"] .app.push-mode .action-zone{flex:0 0 68px!important;height:68px!important;min-height:68px!important}
+html[data-mic="c"] .app.push-mode .me-mic-wrap{top:0!important;justify-content:center!important}
+html[data-mic="b"] .mic-circle .mic-caption{min-width:7.5em;text-align:center}
+html[data-mic="b"] .mic-circle.listening,html[data-mic="b"] .mic-circle.processing{border-color:transparent!important}
+.app.is-live .translation-stack>.card,.app.is-live .translation-stack>.listen-card{box-shadow:0 0 0 2px #ff4359,0 0 14px #ff435955!important;transition:box-shadow .2s}
+.app.is-live .live-info{color:#ff6b7d!important;font-weight:850;font-size:13px!important}
+.app.is-live .live-info::before{content:'●';margin-right:6px;color:#ff4359;animation:liveDot 1s ease-in-out infinite alternate}
+@keyframes liveDot{from{opacity:1}to{opacity:.2}}
+.app.is-live .listen-head::after{content:'● LIVE';color:#ff4359;font-size:11px;font-weight:900;letter-spacing:.5px;animation:liveDot 1s ease-in-out infinite alternate;margin-left:auto;margin-right:8px}
+.phrase-actions .primary.busy,#phraseTranslate.busy{background:linear-gradient(90deg,#c46a00,#f0a020)!important;color:#fff!important;opacity:1}
+
+html[data-mic] .mic-circle.listening,html[data-mic][data-style] .mic-circle.listening,html[data-mic][data-style] .mic-circle.partner.listening{background:linear-gradient(90deg,#b82046,#ff4359)!important;color:#fff!important;border-color:transparent!important}
+html[data-mic] .mic-circle.processing,html[data-mic][data-style] .mic-circle.processing,html[data-mic][data-style] .mic-circle.partner.processing{background:linear-gradient(90deg,#c46a00,#f0a020)!important;color:#fff!important;border-color:transparent!important}
+.phrase-compose .phrase-actions button:not(.primary){flex:0 0 54px!important;padding:0!important}
+.phrase-compose .phrase-actions .primary{flex:1 1 auto!important;white-space:nowrap}
+
+/* ===== v5.33 icons ===== */
+.ic{display:inline-flex;vertical-align:-0.2em;line-height:0}.ic svg{width:1.15em;height:1.15em}
+h3 .ic svg{width:1.05em;height:1.05em}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid #0006;margin-right:5px;vertical-align:-2px}
+.net-badge .nb-icon svg{width:18px;height:18px}
+.spin{display:inline-block;width:15px;height:15px;border-radius:50%;border:2.5px solid #fff6;border-top-color:#fff;animation:spin .8s linear infinite;vertical-align:-2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.phrase-show-actions button{display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.guide-body summary .ic{margin-right:4px}
+/* ===== v5.33 photo translation: Lens style ===== */
+.app.photo-mode .modebar,.app.photo-mode .utilitybar{display:none!important}
+.app.photo-mode #photoPanel{display:flex!important;flex:1 1 auto;min-height:0;position:relative;gap:0;overflow:hidden;margin:-4px -6px 0}
+.photo-lens .pl-capture,.photo-lens .pl-result{position:absolute;inset:0;display:flex;flex-direction:column}
+.photo-lens .hide{display:none!important}
+.pl-top{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 8px;z-index:3}
+.pl-top.overlay{position:absolute;top:0;left:0;right:0;padding:8px;background:linear-gradient(#000b,#0000)}
+.pl-title{font-weight:850;font-size:17px}
+.pl-spacer{width:44px}
+.pl-icon{width:44px;height:44px;border:0;border-radius:50%;background:#0007;color:#fff;display:grid;place-items:center;padding:0}
+.pl-icon .ic svg{width:24px;height:24px}
+.pl-top:not(.overlay) .pl-icon{background:transparent;color:inherit}
+.pl-icon.plain{background:transparent;color:inherit}
+.pl-finder{position:relative;flex:1;min-height:120px;margin:2px 6px 12px;border-radius:18px;background:var(--surface,#2a2c30);display:grid;place-items:center}
+.pl-finder i{position:absolute;width:34px;height:34px;border:4px solid var(--base-contrast,#fff);opacity:.85}
+.pl-finder .c1{top:14px;left:14px;border-right:0;border-bottom:0;border-radius:12px 0 0 0}.pl-finder .c2{top:14px;right:14px;border-left:0;border-bottom:0;border-radius:0 12px 0 0}.pl-finder .c3{bottom:14px;left:14px;border-right:0;border-top:0;border-radius:0 0 0 12px}.pl-finder .c4{bottom:14px;right:14px;border-left:0;border-top:0;border-radius:0 0 12px 0}
+.pl-hint{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;color:var(--muted,#b9c0c8);padding:0 30px}
+.pl-hint .ic svg{width:34px;height:34px}.pl-hint b{font-size:16px;color:var(--base-contrast,#e8eaed)}.pl-hint small{font-size:12px}
+.pl-lang{display:flex;align-items:center;gap:8px;padding:0 6px 10px}
+.pl-chip{flex:1;height:48px;border:0;border-radius:16px;background:var(--surface,#3a3c42);color:inherit;font-weight:850;font-size:16px}
+.pl-shutter-row{display:flex;align-items:center;justify-content:space-between;padding:4px 30px 14px}
+.pl-round{width:54px;height:54px;border-radius:50%;border:0;background:var(--surface,#2e3035);color:inherit;display:grid;place-items:center;overflow:hidden;padding:0}
+.pl-round .ic svg{width:26px;height:26px}.pl-round img{width:100%;height:100%;object-fit:cover}
+.pl-shutter{width:78px;height:78px;border-radius:50%;border:5px solid var(--base-contrast,#fff);background:transparent;display:grid;place-items:center;padding:0}
+.pl-shutter span{width:62px;height:62px;border-radius:50%;background:var(--base-contrast,#fff);display:block}
+.pl-shutter:active span{opacity:.75}
+.pl-result{background:#000;border-radius:18px;overflow:hidden}
+.pl-result .photo-stage{flex:1;min-height:0;border-radius:0;background:#000;border:0!important;box-shadow:none!important}
+.pl-result .photo-stage img{display:block!important}
+.pl-seg{display:flex;background:#000b;border-radius:999px;padding:4px}
+.pl-seg button{border:0;background:transparent;color:#ddd;font-weight:850;font-size:15px;padding:8px 18px;border-radius:999px}
+.pl-seg button.on{background:#e8eaed;color:#111}
+.pl-busy{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:4;display:flex;align-items:center;gap:10px;background:linear-gradient(90deg,#c46a00,#f0a020);color:#fff;font-weight:850;font-size:15px;padding:12px 20px;border-radius:999px;box-shadow:0 4px 20px #0008}
+.pl-bottom{background:var(--app-bg,#202124);border-radius:20px 20px 0 0;padding:12px 0 6px;color:var(--base-contrast,#e8eaed)}
+html[data-theme="light"] .pl-bottom{background:#f8f9fa}
+.pl-status{font-size:11.5px;color:var(--muted,#9aa3ad);text-align:center;padding:0 10px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-chips{display:flex;gap:7px;overflow-x:auto;padding:0 6px 4px;scrollbar-width:none}
+.pl-chips button{flex:none;display:flex;align-items:center;gap:6px;border:1px solid var(--stroke,#4a4d55);background:transparent;color:inherit;border-radius:999px;padding:9px 14px;font-size:14px;font-weight:800}
+.pl-text-sheet{max-height:85dvh;display:flex;flex-direction:column}
+.pl-text-tools{display:flex;gap:7px;margin:0 0 6px}
+.pl-text-tools button{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;min-height:42px;border-radius:12px;border:1px solid var(--stroke,#4a4d55);background:transparent;color:inherit;font-weight:800;font-size:13px}
+.pl-text-list{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+.pl-li{display:grid;grid-template-columns:1fr auto;column-gap:8px;padding:10px 2px;border-bottom:1px solid var(--separator,#3a3d42)}
+.pl-li-src{font-size:12.5px;color:var(--muted,#9aa3ad);grid-column:1}
+.pl-li-dst{font-size:calc(18px * var(--scale,1));font-weight:800;line-height:1.35;grid-column:1}
+.pl-li-act{grid-column:2;grid-row:1 / span 2;display:flex;gap:4px;align-items:center}
+.pl-li-act button{width:38px;height:38px;border-radius:50%;border:0;background:var(--surface,#2e3035);color:inherit;display:grid;place-items:center}
+
+/* ===== v5.33: one button language for push / live / listen ===== */
+/* shared size: 52px tall, pill shape, 18px bold label, 24px icon; width follows the text */
+html[data-mic="b"] .mic-circle{min-width:0!important;height:52px!important;min-height:52px!important;border-radius:26px!important;padding:0 26px!important;gap:8px!important}
+html[data-mic="b"] .mic-circle .mic-caption{min-width:0!important;font-size:18px!important;font-weight:850}
+html[data-mic="b"] .mic-circle svg{width:24px!important;height:24px!important}
+html[data-mic="b"][data-style="simple"] .mic-circle,html[data-mic="b"][data-style="simple"] .mic-circle.partner{border:0!important;background:var(--surface)!important;box-shadow:none!important}
+.live-button,html[data-style="simple"] .live-button{width:auto!important;min-width:0!important;height:52px!important;min-height:52px!important;border-radius:26px!important;padding:0 26px!important;gap:8px!important;font-size:18px!important;font-weight:850}
+.live-button svg{width:24px!important;height:24px!important}
+/* same vertical layout: small guide line on top (24px), button below */
+html[data-mic] .app.push-mode .action-zone,html[data-mic] .app.stream-mode .action-zone{flex:0 0 86px!important;height:86px!important;min-height:86px!important}
+.app.push-mode .status{display:block!important;position:absolute;top:0;left:0;right:0;height:24px;line-height:24px;padding:0!important;font-size:12px!important;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-mic] .app.push-mode .me-mic-wrap{top:30px!important;bottom:auto!important;height:52px;justify-content:center!important;align-items:center}
+.app.stream-mode .live-controls{grid-template-rows:24px 52px!important;gap:6px!important;align-content:start!important;padding-top:0!important}
+.app.stream-mode .live-info{height:24px!important;min-height:24px!important;line-height:24px;font-size:12px}
+.app.push-mode .auto-speak,.app.stream-mode .auto-speak,.net-badge{bottom:2px!important}
+html[data-mic="b"] .app.push-mode .partner-mic-wrap{flex:0 0 62px!important;height:62px!important;min-height:62px!important}
+html[data-style="simple"] .auto-speak{border:0!important}
+html[data-style="simple"] .auto-speak.on{background:#1f6fd1!important}
+
+/* ===== v5.34 study mode (photo text) + listen segment chip ===== */
+.pl-text-tools button.src{border-color:#2a7fe0;color:#8cc2ff}
+.pl-text-tools button .code,.pl-li-act button b{font-size:10px;letter-spacing:.5px;opacity:.85}
+.pl-study{display:flex;gap:7px;margin:0 0 6px}.pl-study button{flex:1;min-height:40px;border:0;border-radius:12px;background:var(--surface,#2c2e33);color:inherit;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;gap:5px}
+.pl-study button.on{background:#e8eaed;color:#111}.pl-study button.mini{flex:none;width:44px}.pl-study button.hide,.pl-legend.hide{display:none}
+.pl-legend{font-size:11.5px;color:var(--muted,#9aa3ad);line-height:1.55;margin:0 2px 6px}.pl-legend b{color:#f5a524}
+.pl-li{grid-template-columns:1fr auto;align-items:center}.pl-li-txt{grid-column:1;min-width:0}
+.pl-li-src{font-size:calc(15px * var(--scale,1))!important;font-weight:800;color:#8cc2ff!important;overflow-wrap:anywhere}
+.pl-li-dst{overflow-wrap:anywhere}
+.pl-pr{font-size:14px;color:var(--muted,#c9ced4);display:flex;flex-wrap:wrap;gap:2px 9px;margin:2px 0 3px}.pl-pr i{font-style:normal;font-size:12px;font-weight:900;color:#f5a524;margin-left:1px}
+.pl-li-act{grid-column:2;grid-row:1;gap:5px}
+.pl-li-act button{width:44px!important;height:48px!important;border-radius:14px!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:0}
+.pl-li-act button.vi{background:#1d3a5c;color:#8cc2ff}
+.pl-li.play{background:#2a7fe01a;border-radius:12px}.pl-li.play .pl-li-act button.vi{background:#2a7fe0;color:#fff}
+html[data-theme="light"] .pl-li-src{color:#1a63c4!important}html[data-theme="light"] .pl-li-act button.vi{background:#dbe9fb;color:#1a63c4}html[data-theme="light"] .pl-text-tools button.src{color:#1a63c4}
+.listen-seg{margin-left:auto;border:0;border-radius:999px;background:var(--surface,#3a3c42);color:inherit;font-size:12px;font-weight:800;padding:5px 11px;white-space:nowrap}
+.app.is-live .listen-head::after{margin-left:8px}
+
+/* ===== v5.37 phrase big card follows the theme (dark = app grey, light = white) ===== */
+.phrase-show-backdrop{background:#202124f7}
+.phrase-show-card{background:#303134;color:#f1f3f4}
+.phrase-show-lang{color:#bdc1c6}.phrase-show-src{color:#9aa0a6;border-top-color:#5f6368}
+html[data-theme="light"] .phrase-show-backdrop{background:#f1f3f4f7}
+html[data-theme="light"] .phrase-show-card{background:#ffffff;color:#111;box-shadow:0 1px 3px #0002}
+html[data-theme="light"] .phrase-show-lang{color:#555}html[data-theme="light"] .phrase-show-src{color:#666;border-top-color:#ddd}
+html[data-theme="light"] .phrase-show-actions button{background:#e3e5e8;color:#202124}
+html[data-theme="light"] .phrase-show-actions #phraseShowSpeak{background:#2a7fe0;color:#fff}
+.phrase-show-actions{grid-template-columns:1fr 1fr 1fr 1.3fr 52px;gap:6px}
+.phrase-show-actions button{white-space:nowrap;padding:0 4px;font-size:13.5px;gap:4px}
+
+/* ===== v5.38 gallery photo: translate on request ===== */
+.pl-translate{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);margin:2px 16px 10px;height:52px;border:0;border-radius:26px;background:#2a7fe0;color:#fff;font-size:17px;font-weight:850}
+.pl-translate.hide{display:none}
+#photoTranslatedBtn.dim{opacity:.55}
+#plSave:disabled{opacity:1;color:#81c995}.pl-spacer.hide{display:none}
+
+/* ===== v6.0 favourites pinned on top of the phrase tiles ===== */
+.fav-pins{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+.fav-pins .phrase-sub{display:flex;align-items:center;gap:6px;color:#f5a524}
+
+/* ===== v6.4 live translation switch (in development) ===== */
+.dev-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#f5a524;color:#202124;font-size:11px;font-weight:850;vertical-align:1px}
+#liveEngineRow.off{opacity:.45}
+/* v6.7 one engine choice */
+.eng-pick{display:flex;flex-direction:column;gap:8px;margin:6px 0 10px}
+.eng-card{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:11px 13px;border-radius:12px;border:1px solid var(--stroke);background:transparent;color:inherit;font:inherit}
+.eng-card.on{border:2px solid #4c8df6;padding:10px 12px}
+.eng-card .rd{width:18px;height:18px;border-radius:50%;border:2px solid var(--stroke);flex:none;display:flex;align-items:center;justify-content:center}
+.eng-card.on .rd{border-color:#4c8df6}.eng-card.on .rd::after{content:"";width:8px;height:8px;border-radius:50%;background:#4c8df6}
+.eng-card b{display:block;font-size:15px}.eng-card small{display:block;color:var(--muted);font-size:12px;margin-top:1px}
+.eng-models{border:1px solid var(--stroke);border-radius:12px;padding:6px 12px;margin-bottom:8px}
+.eng-models div{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:6px 0;border-top:1px solid var(--separator)}
+.eng-models div:first-child{border-top:0}
+.eng-models span:first-child{color:var(--muted);flex:none}.eng-models span:last-child{text-align:right}
+/* v6.6 Whisper model download bar (under the header) */
+.model-bar{display:flex;align-items:center;gap:10px;margin:0 0 2px;padding:8px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--stroke);font-size:12.5px;line-height:1.35}
+.model-bar.hide{display:none}
+.model-bar>.ic{flex:none;width:18px;height:18px;opacity:.85}
+.model-bar .mb-text{flex:1;min-width:0}
+.model-bar .mb-sub{color:var(--muted);font-size:11.5px}
+.model-bar .mb-track{height:4px;border-radius:2px;background:var(--separator);margin-top:5px;overflow:hidden}
+.model-bar .mb-track.hide{display:none}
+.model-bar .mb-fill{height:100%;width:0;background:#4c8df6;transition:width .4s}
+.model-bar button{flex:none;padding:6px 10px;border-radius:9px;border:1px solid var(--stroke);background:transparent;color:inherit;font-size:12px;font-weight:700}
+.model-bar button.hide{display:none}
+</style></head><body><main class="app"><header class="header" aria-label="번역 언어"><img class="brand-icon" src="friendlytalk_icon.png" alt="FriendlyTalk 로고"><div class="sub" id="langTitle">한국어 ↔ 베트남어</div></header>
+<div class="model-bar hide" id="modelBar" role="status"><span class="ic" data-icon="download"></span><div class="mb-text"><div id="modelBarText"></div><div class="mb-sub" id="modelBarSub"></div><div class="mb-track hide" id="modelBarTrack"><div class="mb-fill" id="modelBarFill"></div></div></div><button type="button" class="hide" id="modelBarBtn"></button></div>
+<div class="partner-mic-wrap" id="partnerMicWrap"><div class="miccontent"><button class="mic-circle partner" id="partnerMic" aria-label="상대방 눌러 말하기"><span data-icon="mic"></span></button><div class="mic-caption" id="partnerMicCaption">Nhấn để nói</div></div></div>
+<div class="translation-stack" id="translationStack"><section class="card partner"><div class="card-content reverse" id="partnerContent"><div class="card-label" id="partnerLabel">🇻🇳 Tiếng Việt</div><div class="trans-text" id="partnerText"><div class="trans-empty" id="partnerEmpty">Đang chờ bản dịch</div><div class="trans-log" id="partnerLog"></div><div class="trans-interim" id="partnerInterim"></div></div><div class="card-actions"><button class="roundbtn speak" data-side="partner" aria-label="상대방 번역 듣기"><span data-icon="volume"></span></button><button class="roundbtn mini copybtn" data-side="partner" aria-label="상대방 텍스트 복사"><span data-icon="copy"></span></button></div></div></section>
+<div class="swap-row"><button class="swap-btn" id="swapBtn" aria-label="언어 방향 교환"><span data-icon="swap"></span></button></div>
+<section class="card"><div class="card-content"><div class="card-label" id="meLabel">🇰🇷 한국어</div><div class="trans-text" id="meText"><div class="trans-empty" id="meEmpty">번역 대기</div><div class="trans-log" id="meLog"></div><div class="trans-interim" id="meInterim"></div></div><div class="card-actions"><button class="roundbtn speak" data-side="me" aria-label="내 번역 듣기"><span data-icon="volume"></span></button><div style="display:flex;gap:8px"><button class="quick-input-btn" id="quickInputBtn" type="button" aria-label="빠른 입력: 상황별 문장 선택"><span class="ic" data-icon="bolt"></span> 빠른 입력</button><button class="roundbtn mini" id="keyboardBtn" title="텍스트 입력" aria-label="텍스트 입력"><span data-icon="keyboard"></span></button><button class="roundbtn mini copybtn" data-side="me" aria-label="내 텍스트 복사"><span data-icon="copy"></span></button></div></div></div></section>
+<section class="card listen-card hide" id="listenCard" aria-label="듣기 번역 기록"><div class="listen-head"><span id="listenHeading">🇻🇳 베트남어 → 🇰🇷 한국어</span><button type="button" class="listen-seg" id="listenSegBtn" aria-label="듣기 최대 구간 길이">최대 5초</button><span class="listen-count" id="listenCount">0 문장</span></div><div class="listen-scroll" id="listenScroll"><div class="listen-empty" id="listenEmpty">듣기를 시작하면 번역이 여기에 쌓입니다.</div><div id="listenLog"></div><div class="trans-interim" id="listenInterim"></div></div><button type="button" class="listen-latest hide" id="listenLatest">최신 번역 보기</button></section></div>
+<div class="action-zone"><div class="me-mic-wrap" id="meMicWrap"><button class="mic-circle" id="meMic" aria-label="내 언어 눌러 말하기"><span data-icon="mic"></span></button><div class="mic-caption" id="meMicCaption">눌러 말하기</div></div><button type="button" class="net-badge hide" id="netBadge" aria-label="오프라인 상태"><span class="nb-icon" data-icon="wifioff"></span><span class="nb-label">오프라인</span></button><button type="button" class="auto-speak" id="autoSpeakBtn" aria-pressed="false" aria-label="번역 음성 자동 읽기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5.5h10.5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H8.5L5 17.5v-3H3a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2z"/><path class="as-wave" d="M18.5 8a4 4 0 0 1 0 5.5M21.3 5.5a8 8 0 0 1 0 10.5"/><path class="as-slash" d="M2 2.5l20 19"/></svg></button><div class="live-controls mode-invisible" id="liveControls"><div class="live-info" id="liveInfo">두 언어를 번갈아 듣습니다</div><button class="live-button" id="liveButton"><span data-icon="play"></span><span id="liveButtonLabel">시작</span></button></div><div class="status" id="status">마이크 버튼을 눌러 말하세요.</div></div>
+
+<section id="photoPanel" class="tool-panel photo-lens" aria-label="사진 번역">
+ <div class="pl-capture" id="plCapture">
+  <div class="pl-top"><button type="button" class="pl-icon" id="plExit" aria-label="사진 번역 나가기"><span class="ic" data-icon="back"></span></button><div class="pl-title">사진 번역</div><span class="pl-spacer"></span></div>
+  <div class="pl-finder" id="plFinder"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><div class="pl-hint"><span class="ic" data-icon="text"></span><b>번역할 글자를 찍어 주세요</b><small>찍으면 바로 번역됩니다 · 원본과 번역본은 사진 앱에 저장</small></div></div>
+  <div class="pl-lang"><button type="button" class="pl-chip" data-role="src">베트남어</button><button type="button" class="pl-icon plain" data-role="swap" aria-label="번역 방향 바꾸기"><span class="ic" data-icon="swaph"></span></button><button type="button" class="pl-chip" data-role="dst">한국어</button></div>
+  <div class="pl-shutter-row"><button type="button" class="pl-round" id="nativeGallery" aria-label="갤러리 열기"><span class="ic" data-icon="gallery"></span></button><button type="button" class="pl-shutter" id="nativeCamera" aria-label="사진 찍기"><span></span></button><button type="button" class="pl-round pl-recent" id="plRecent" aria-label="최근 결과 보기"><span class="ic" data-icon="image"></span></button></div>
+ </div>
+ <div class="pl-result hide" id="plResult">
+  <div class="photo-stage" id="photoStage"><img id="photoPreview" alt="번역 사진"></div>
+  <div class="pl-busy hide" id="plBusy"><span class="spin"></span><span id="plBusyText">번역 중…</span></div>
+  <div class="pl-top overlay"><button type="button" class="pl-icon" id="plBack" aria-label="나가기"><span class="ic" data-icon="back"></span></button><div class="pl-seg"><button type="button" id="photoOriginalBtn">원본</button><button type="button" id="photoTranslatedBtn" class="on">번역됨</button></div><span class="pl-spacer" id="plSaveSpacer"></span><button type="button" class="pl-icon hide" id="plSave" aria-label="번역 사진 저장"><span class="ic" data-icon="download"></span></button></div>
+  <div class="pl-bottom">
+   <div class="pl-lang"><button type="button" class="pl-chip" data-role="src">베트남어</button><button type="button" class="pl-icon plain" data-role="swap" aria-label="번역 방향 바꾸기"><span class="ic" data-icon="swaph"></span></button><button type="button" class="pl-chip" data-role="dst">한국어</button></div>
+   <div class="pl-status" id="photoStatus"></div>
+   <button type="button" class="pl-translate hide" id="plTranslate"><span class="ic" data-icon="globe"></span> 번역하기</button>
+   <div class="pl-chips" id="plChips"><button type="button" id="plText"><span class="ic" data-icon="text"></span> 전체 텍스트</button><button type="button" id="plListen"><span class="ic" data-icon="volume"></span> 듣기</button><button type="button" id="plCopy"><span class="ic" data-icon="copy"></span> 복사</button><button type="button" id="plShare"><span class="ic" data-icon="share"></span> 공유</button></div>
+  </div>
+ </div>
+ <input type="file" id="cameraFile" accept="image/*" capture="environment"><input type="file" id="photoFile" accept="image/*">
+</section>
+<section id="calcPanel" class="tool-panel" aria-label="가격 계산기">
+ <div class="tool-head"><span>가격 계산기</span><select id="calcCurrency" aria-label="제시 통화"><option value="VND">🇻🇳 베트남 동 (₫)</option><option value="KRW">🇰🇷 한국 원 (원)</option><option value="USD">🇺🇸 미국 달러 ($)</option><option value="CNY">🇨🇳 중국 위안 (¥)</option><option value="JPY">🇯🇵 일본 엔 (¥)</option></select></div>
+ <div class="calc-stage"><div class="calc-label">금액 입력 / 제시 금액</div><div class="amount-wrap"><input id="amountInput" class="amount-input" type="text" inputmode="decimal" autocomplete="off" aria-label="제시할 금액" value="100,000₫"></div><div class="calc-rate"><strong id="calcKrw">약 5,800원</strong><small id="calcRate">예시 환율 · 1,000₫ ≈ 58원 (실시간 환율 아님)</small></div></div>
+ <div class="calc-actions"><button id="calcRotate"><span class="ic" data-icon="rotate"></span> 180° 회전</button><button id="calcFull"><span class="ic" data-icon="expand"></span> 크게 보기</button><button id="calcClear"><span class="ic" data-icon="close"></span> 지우기</button></div><div class="calc-rotate-preview" id="calcHint">금액은 여기서 직접 입력하고 그대로 보여줍니다.</div>
+</section>
+<nav class="modebar" aria-label="통역 모드"><button class="active" id="pushBtn"><span data-icon="mic"></span> 눌러 말하기</button><button id="liveBtn"><span data-icon="wave"></span> 실시간 대화</button><button id="listenBtn"><span data-icon="volume"></span> 듣기</button><button id="photoBtn"><span data-icon="camera"></span> 사진</button><button id="calcBtn"><span data-icon="calculator"></span> 계산기</button></nav>
+<div class="utilitybar"><button id="phraseBtn"><span data-icon="book"></span> 상황별 대화</button><button id="resetBtn"><span data-icon="refresh"></span> 대화 리셋</button><button id="settingsBtn"><span data-icon="settings"></span> 설정</button></div></main>
+<div class="sheet-backdrop" id="settingsSheet"><section class="sheet"><div class="sheethead">설정 <button class="close" data-close="settingsSheet" aria-label="닫기">×</button></div><div class="section" id="aiSection"><h3><span class="ic" data-icon="mic"></span> 음성 인식 · 번역 엔진</h3>
+<div class="eng-pick" id="engPick" role="radiogroup" aria-label="번역 엔진">
+<button type="button" class="eng-card" data-eng="device" role="radio"><span class="rd"></span><span><b>기기</b><small>무료 · 인터넷 없이 · 정확도 보통</small></span></button>
+<button type="button" class="eng-card" data-eng="google" role="radio"><span class="rd"></span><span><b>Google</b><small>빠름 · 저렴 · Google 키 필요</small></span></button>
+<button type="button" class="eng-card" data-eng="gpt" role="radio"><span class="rd"></span><span><b>GPT</b><small>가장 자연스러움 · OpenAI 키 필요</small></span></button>
+</div>
+<div class="eng-models" id="engModels"></div>
+<div class="setting"><label for="voicePick">번역 읽기 목소리</label><select id="voicePick"><option value="phone">휴대폰 음성 · 무료 (기본)</option><option value="gpt">GPT 음성 · GPT 엔진에서만</option></select></div>
+<div class="hint">번역 음성 자동 재생은 메인 화면의 스피커 버튼으로 모드마다 켜고 끕니다. 인터넷이 약하거나 키에 문제가 있으면 그때만 기기 엔진으로 처리하고 이유를 보여 줍니다.</div>
+<div class="hide" id="oldEngineRows"><div class="setting"><label for="sttEngine">음성 인식</label><select id="sttEngine"><option value="whisper">위스퍼 · 기기 내 · 무료 (기본)</option><option value="gpt">GPT 음성 인식 · 유료</option><option value="google">Google Cloud 음성 · 유료</option><option value="android">Android 기본 (이전 방식)</option></select></div>
+<div class="setting"><label for="trEngine">번역</label><select id="trEngine"><option value="mlkit">ML Kit · 기기 내 · 무료 (기본)</option><option value="gpt">GPT 번역 · 유료</option><option value="google">Google 번역 · 유료</option></select></div>
+<div class="setting"><label for="rtEngine">실시간 대화·듣기: GPT 실시간 통역</label><input type="checkbox" id="rtEngine"></div>
+<div class="setting"><label for="rtAudio">GPT 통역 음성 바로 재생</label><input type="checkbox" id="rtAudio"></div></div>
+<div class="engine-info" id="aiSummary" role="status"></div>
+<h4 class="ai-h">위스퍼 모델 (기기 내 음성 인식)</h4>
+<div class="setting" id="modelPickRow"><label for="whisperModel">모델</label><select id="whisperModel"></select></div>
+<div class="ai-row" id="modelActions"><button type="button" id="modelDownloadBtn"><span class="ic" data-icon="download"></span> 받기</button><button type="button" id="modelImportBtn"><span class="ic" data-icon="folder"></span> 파일에서</button><button type="button" id="modelDeleteBtn"><span class="ic" data-icon="trash"></span> 삭제</button></div>
+<progress id="modelProgress" class="ai-progress hide" max="1000" value="0"></progress>
+<div class="hint" id="modelStatus">모델 상태 확인 중…</div>
+<div class="setting"><label for="silenceMs">말 끝 판단 시간</label><select id="silenceMs"><option value="600">짧게 0.6초</option><option value="800">보통 0.8초</option><option value="1200">여유 1.2초</option><option value="1600">길게 1.6초</option></select></div>
+<div class="setting"><label for="fastWhisper">짧은 문장 빠른 처리</label><input type="checkbox" id="fastWhisper"></div>
+<button type="button" class="fullbtn" id="whisperTestBtn">위스퍼 속도 테스트</button>
+<h4 class="ai-h">OpenAI (GPT) API 키</h4>
+<input type="password" id="openaiKey" class="key-input" placeholder="sk-… 본인 키 입력" autocomplete="off" spellcheck="false">
+<div class="ai-row"><button type="button" id="openaiSave">저장</button><button type="button" id="openaiTest">연결 테스트</button><button type="button" id="openaiDelete">삭제</button></div>
+<div class="setting"><label for="gptSttModel">GPT 인식 모델</label><input id="gptSttModel" class="model-input" spellcheck="false"></div>
+<div class="setting"><label for="gptTrModel">GPT 번역 모델</label><input id="gptTrModel" class="model-input" spellcheck="false"></div>
+<h4 class="ai-h">Google Cloud API 키</h4>
+<input type="password" id="googleKey" class="key-input" placeholder="AIza… 본인 키 입력" autocomplete="off" spellcheck="false">
+<div class="ai-row"><button type="button" id="googleSave">저장</button><button type="button" id="googleTest">연결 테스트</button><button type="button" id="googleDelete">삭제</button></div>
+<div class="hint" id="googleRestrict"></div>
+<div class="engine-info ai-test" id="aiTestOut" role="status"></div>
+<div class="hint">키는 이 휴대폰 안에만 저장되고 OpenAI·Google 서버 외에는 보내지 않습니다. 요금은 키 주인에게 청구됩니다. 앱을 다른 사람에게 줘도 키는 함께 가지 않으니, 받는 사람은 자기 키를 넣어 쓰면 됩니다. 키가 없거나 인터넷이 끊기면 위스퍼·ML Kit로 자동 전환됩니다.</div>
+</div><div class="section"><h3><span class="ic" data-icon="image"></span> 사진 번역 · 듣기</h3><div class="setting"><label for="listenMaxSec">듣기 최대 구간</label><select id="listenMaxSec"><option value="3">3초 · 가장 빠름</option><option value="5">5초 (기본)</option><option value="7">7초</option><option value="10">10초</option><option value="15">15초</option><option value="20">20초 · 가장 정확</option></select></div><div class="hint">방송처럼 쉬지 않고 말할 때 이 길이마다 끊어서 번역합니다(숨 쉬는 틈을 찾아 자름). 짧을수록 빨리 나오고, 길수록 문장이 덜 잘려 정확합니다.</div><div class="setting"><label for="studyPron">사진 번역 한글 발음</label><input type="checkbox" id="studyPron"></div><div class="setting"><label for="pronDialect">발음 기준</label><select id="pronDialect"><option value="south">남부 · 호찌민 (기본)</option><option value="north">북부 · 하노이</option></select></div><div class="setting"><label for="liveOn">실시간 카메라 번역 <span class="dev-tag">개발 중</span></label><input type="checkbox" id="liveOn"></div><div class="hint">켜면 카메라를 비추는 동안 글자 위에 번역이 바로 뜹니다. 아직 시험 중이라 기본은 꺼져 있습니다. 끄면 카메라에서 원형 버튼을 눌러 화면을 고정한 뒤 번역합니다.</div><div class="setting hide" id="liveEngineRow"><label for="liveEngine">실시간 번역 엔진</label><select id="liveEngine"><option value="auto">자동 (Google → GPT → 기기)</option><option value="google">Google · 빠름, 월 50만 자 무료</option><option value="gpt">GPT · 가장 자연스러움</option><option value="mlkit">기기 번역 · 무료, 오프라인</option></select></div><div class="hint">카메라도 위에서 고른 번역 엔진을 씁니다. 멈추는 순간 기기 번역을 먼저 보여 주고, Google·GPT 결과가 오면 그 자리에서 바꿉니다. Google·GPT는 최대 8초까지 기다리고, 위쪽 표시에 번역한 엔진(GPT·Google·기기)이 나옵니다. 같은 장면은 한 번만 요청해 비용이 거의 늘지 않습니다(GPT 한 장면 약 $0.002).</div><div class="setting"><label for="shutterHaptic">화면 고정할 때 진동</label><input type="checkbox" id="shutterHaptic"></div><div class="hint">실시간 카메라는 셔터음 없이 화면을 고정합니다. 음량은 바꾸지 않습니다.</div></div><div class="section"><h3><span class="ic" data-icon="globe"></span> 번역 언어</h3><div class="setting"><label for="meLang">내 언어</label><select id="meLang"></select></div><div class="setting"><label for="partnerLang">상대방 언어</label><select id="partnerLang"></select></div><div class="hint">한국어·베트남어·영어·중국어 지원. 음성 인식은 Android 음성 서비스와 설치된 언어 모델에 따라 제한될 수 있습니다.</div></div><div class="section"><h3>화면 설정</h3><div class="setting"><label for="themeSelect">화면 테마</label><select id="themeSelect"><option value="dark">다크 모드</option><option value="light">라이트 모드</option></select></div><div class="setting"><label for="micStyleSelect">눌러 말하기 버튼 모양</label><select id="micStyleSelect"><option value="a">A · 큰 글씨 아래</option><option value="b">B · 가로 큰 버튼 (추천)</option><option value="c">C · 마이크 옆 설명</option></select></div><div class="setting"><label for="rotatePartner">상대방 화면 180° 회전</label><input type="checkbox" id="rotatePartner" checked></div><div class="setting"><label for="showCopy">복사(카피) 버튼 표시</label><input type="checkbox" id="showCopy"></div><div class="setting"><label for="showFullscreen">전체화면으로 사용</label><button id="fullscreenBtn" style="padding:8px;background:#253651;border:1px solid #7081a1;border-radius:9px">전체화면</button></div><div class="setting"><label for="fontScale">번역 글자 크기</label><input id="fontScale" type="range" min="70" max="150" step="5" value="90"><span id="fontLabel">100%</span></div></div><div class="section"><h3>전체 화면 디자인</h3><div class="hint">5개 모드, 설정창, 메뉴에 공통 적용됩니다.</div><div class="setting"><label for="styleSelect">디자인 스타일</label><select id="styleSelect"><option value="color">컬러 스타일</option><option value="simple">심플 스타일</option></select></div><div class="setting"><label for="themeSelect">다크 / 화이트</label><span class="style-preview" id="currentThemeLabel">다크</span></div><div class="hint">위 '화면 설정'의 화면 테마와 연동됩니다.</div></div><div class="section"><h3>가격 계산기 설정</h3><div class="setting"><label for="amountScale">금액 글자 크기</label><input id="amountScale" type="range" min="70" max="150" step="5"><span id="amountScaleLabel">100%</span></div><div class="hint">제시 금액 색상 · 기본 흰색</div><div class="style-tabs" id="amountColors"><button data-color="#ffffff"><span class="swatch" style="background:#ffffff"></span>흰색</button><button data-color="#ffe600"><span class="swatch" style="background:#ffe600"></span>노랑</button><button data-color="#00ddf5"><span class="swatch" style="background:#00ddf5"></span>하늘</button><button data-color="#8cf535"><span class="swatch" style="background:#8cf535"></span>연두</button><button data-color="#ff9e33"><span class="swatch" style="background:#ff9e33"></span>주황</button></div><div class="setting"><label for="calcRateInput">베트남 동→원화 예시 환율 (1동)</label><input id="calcRateInput" style="width:85px;background:var(--surface);color:inherit" type="number" step="0.0001" min="0"></div><div class="setting"><label for="fxAuto">환율 자동 갱신 (하루 2번까지)</label><input type="checkbox" id="fxAuto"></div><div class="hint" id="fxHint">인터넷이 될 때 실제 환율로 자동 갱신합니다. 끄면 위에 적은 환율로 계산합니다.</div></div><div class="section"><h3>음성 설정</h3><div class="hint" style="margin:4px 0 8px">번역 음성 자동 재생은 각 모드 화면 왼쪽 아래의 <b>자동 읽기</b> 버튼(말풍선 아이콘)으로 모드마다 따로 켜고 끕니다.</div><div class="setting"><label for="speechRate">음성 재생 속도</label><select id="speechRate"><option value="0.8">느림</option><option value="1" selected>보통</option><option value="1.2">빠름</option></select></div></div><div class="section"><h3>앱 정보</h3><div class="setting"><label>앱</label><strong>FriendlyTalk v6.9</strong></div><div class="setting"><label>Developer</label><strong>ROI MIK</strong></div><div class="hint">© 2026 ROI MIK</div></div><div class="section"><h3>실기기 기능 진단 (v6.9)</h3><div class="hint">아래 순서로 각각 테스트합니다. 모델 다운로드는 최초 Wi-Fi 연결이 필요합니다. 브라우저 HTML에서는 Android 네이티브 기능이 실행되지 않습니다.</div><button class="fullbtn" id="diagnoseBtn" type="button">① 기기·마이크·인터넷 확인</button><button class="fullbtn" id="testTranslateBtn" type="button">② 번역 엔진 테스트 (안녕하세요 → 베트남어)</button><button class="fullbtn" id="testMicrophoneBtn" type="button">③ 마이크 테스트 (한국어로 말하기)</button><button class="fullbtn guide-btn" id="apiGuideBtn" type="button"><span class="ic" data-icon="key"></span> API 키 만들기 · 사용 비용 안내</button><button class="fullbtn guide-btn" id="reportBtn" type="button"><span class="ic" data-icon="alert"></span> 문제 보고 (기록 복사)</button><div id="diagnosticOutput" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;background:var(--surface);border-radius:10px;margin-top:8px;font-size:13px;line-height:1.6">테스트 전</div></div><div class="section"><h3>테스트 안내</h3><div class="hint">음성 인식은 기본적으로 위스퍼가 기기 안에서 처리하고, 번역은 ML Kit가 기기 안에서 처리합니다. 처음 한 번 모델을 받을 때만 인터넷이 필요합니다. GPT·Google을 고르면 인터넷으로 처리하며, 인터넷이 끊기면 자동으로 기기 내 엔진으로 바뀝니다. 실시간 대화는 두 사람의 말을 언어별로 자동 구분하고, 듣기는 상대방 말만 계속 듣고 번역합니다. 듣는 동안 화면은 꺼지지 않습니다.</div><button class="fullbtn" id="historyBtn"><span class="ic" data-icon="history"></span> 대화 기록 보기 (현재 · 이전)</button></div></section></div>
+<div class="sheet-backdrop" id="textSheet"><section class="sheet"><div class="sheethead">텍스트 번역 <button class="close" data-close="textSheet">×</button></div><div class="setting"><label>입력 언어</label><select id="textSource"><option value="me">내 언어</option><option value="partner">상대방 언어</option></select></div><textarea id="textInput" class="textarea" placeholder="번역할 내용을 입력하세요"></textarea><button id="textTranslateBtn" class="fullbtn">번역하기</button></section></div>
+<div class="sheet-backdrop" id="historySheet"><section class="sheet history-sheet"><div class="sheethead">대화 기록 <button class="close" data-close="historySheet" aria-label="닫기">×</button></div>
+<div class="hist-tabs"><button type="button" id="histTabNow" class="on">현재 대화</button><button type="button" id="histTabPast">이전 대화</button></div>
+<div class="hist-body" id="historyList"></div>
+<div class="hist-foot" id="histFoot"></div>
+</section></div>
+<div class="sheet-backdrop" id="phraseSheet"><section class="sheet phrase-sheet" aria-label="여행 상황별 대화">
+ <div class="sheethead">상황별 대화 <button class="close" data-close="phraseSheet" aria-label="닫기">×</button></div>
+ <div class="phrase-tools"><input type="search" id="phraseSearch" placeholder="문장 검색" aria-label="상황별 문장 검색"><button id="phraseFavorites"><span class="ic" data-icon="star"></span> 즐겨찾기</button><button id="phraseCustom"><span class="ic" data-icon="edit"></span> 내 문장</button></div>
+ <div class="phrase-guide" id="phraseGuide">상황을 고르면 문장 목록이 열립니다</div>
+ <div class="phrase-grid" id="phraseTree"></div>
+ <div class="phrase-compose" id="phraseCompose">
+  <textarea id="phraseEdit" rows="2" placeholder="문장을 고르거나 직접 입력하세요"></textarea>
+  <div class="phrase-actions"><button id="phraseSave" aria-label="즐겨찾기 저장"><span class="ic" data-icon="star"></span></button><button id="phraseAuto" class="phrase-auto" aria-label="번역 음성 자동 재생"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5.5h10.5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H8.5L5 17.5v-3H3a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2z"/><path class="as-wave" d="M18.5 8a4 4 0 0 1 0 5.5M21.3 5.5a8 8 0 0 1 0 10.5"/><path class="as-slash" d="M2 2.5l20 19"/></svg></button><button class="primary" id="phraseTranslate">번역해서 보여주기 <span class="ic" data-icon="chev"></span></button></div>
+ </div>
+</section></div>
+<div class="sheet-backdrop" id="phrasePickSheet"><section class="sheet phrase-pick" aria-label="문장 선택">
+ <div class="sheethead"><span id="phrasePickTitle">문장 선택</span> <button class="close" data-close="phrasePickSheet" aria-label="닫기">×</button></div>
+ <div class="phrase-pick-list" id="phrasePickList"></div>
+</section></div>
+<div class="sheet-backdrop phrase-show-backdrop" id="phraseShowSheet"><section class="phrase-show" aria-label="상대방에게 보여주기">
+ <div class="phrase-show-card" id="phraseShowCard">
+  <div class="phrase-show-lang" id="phraseShowLang"></div>
+  <div class="phrase-show-text" id="phraseShowText"></div>
+  <div class="phrase-show-src" id="phraseShowSrc"></div>
+ </div>
+ <div class="phrase-show-actions">
+  <button id="phraseShowSpeak"><span class="ic" data-icon="volume"></span> 읽기</button><button id="phraseShowRotate"><span class="ic" data-icon="rotate"></span> 돌리기</button><button id="phraseShowCopy"><span class="ic" data-icon="copy"></span> 복사</button><button id="phraseShowBack"><span class="ic" data-icon="back"></span> 다른 문장</button><button id="phraseShowClose" aria-label="닫기"><span class="ic" data-icon="close"></span></button>
+ </div>
+</section></div>
+<div class="sheet-backdrop" id="apiGuideSheet"><section class="sheet guide-sheet" aria-label="API 키와 비용 안내"><div class="sheethead">API 키 · 비용 안내 <button class="close" data-close="apiGuideSheet" aria-label="닫기">×</button></div>
+<div class="guide-body">
+<p class="guide-lead">키가 없어도 <b>위스퍼 + ML Kit</b>로 무료로 쓸 수 있습니다. 더 정확한 인식·번역이 필요할 때만 유료 키를 넣으세요. 키는 이 폰에만 저장되고, 요금은 키 주인에게 청구됩니다.</p>
+<details open><summary><span class="ic" data-icon="coin"></span> 얼마나 드나요? (2026년 11월 기준)</summary>
+<table class="guide-table"><tr><th>기능</th><th>요금</th><th>1시간 사용 시</th></tr>
+<tr><td>위스퍼 인식 · ML Kit 번역</td><td>무료</td><td>0원</td></tr>
+<tr><td>GPT 음성 인식 (gpt-transcribe)</td><td>분당 $0.0045</td><td>약 $0.27</td></tr>
+<tr><td>GPT 번역 (gpt-5.4-mini)</td><td>문장당 약 $0.0004</td><td>300문장 약 $0.13</td></tr>
+<tr><td>GPT 실시간 통역 · 듣기</td><td>분당 $0.034</td><td>약 $2.0</td></tr>
+<tr><td>GPT 실시간 통역 · 쌍방 대화</td><td>연결 2개 (한→베·베→한 동시) · 요금 2배</td><td>약 $4.1</td></tr>
+<tr><td>Google 음성 인식</td><td>매월 60분 무료, 이후 분당 $0.024</td><td>약 $1.4</td></tr>
+<tr><td>Google 번역</td><td>매월 50만 자 무료, 이후 100만 자당 $20</td><td>대부분 무료 범위</td></tr></table>
+<p class="hint">예) 여행 7일, 하루 1시간 대화: GPT 인식+번역 약 $3 · GPT 실시간 쌍방 통역 약 $29 · 위스퍼+GPT 번역 약 $1. 1달러 ≈ 1,400원대. 실제 사용량은 말하는 시간에 따라 달라집니다. 요금은 바뀔 수 있으니 각 회사 요금표를 확인하세요.</p></details>
+<details><summary><span class="ic" data-icon="key"></span> OpenAI(GPT) 키 만들기</summary><ol class="guide-steps">
+<li>PC나 폰 브라우저에서 <b>platform.openai.com</b> 접속 → 로그인(ChatGPT 계정 사용 가능)</li>
+<li><b>Settings → Billing</b>에서 카드를 등록하고 크레딧을 충전합니다(최소 $5). <b>자동 충전(auto recharge)은 끄는 것</b>을 권장합니다.</li>
+<li><b>API keys → Create new secret key</b> → 이름 입력 → 생성</li>
+<li>나온 키(sk-로 시작)를 <b>바로 복사</b>합니다. 창을 닫으면 다시 볼 수 없습니다.</li>
+<li>앱 설정 → OpenAI 키 칸에 붙여넣기 → <b>저장 → 연결 테스트</b></li></ol>
+<p class="hint">팁: Billing의 <b>Usage limits</b>에서 월 사용 한도를 정해 두면 예상보다 많이 나가는 일을 막을 수 있습니다.</p></details>
+<details><summary><span class="ic" data-icon="key"></span> Google Cloud 키 만들기</summary><ol class="guide-steps">
+<li><b>console.cloud.google.com</b> 접속 → 로그인 → 위쪽 프로젝트 선택 → <b>새 프로젝트</b></li>
+<li><b>결제</b> 메뉴에서 결제 계정을 연결합니다. 신규 가입 시 90일간 쓸 수 있는 $300 크레딧이 있습니다.</li>
+<li><b>API 및 서비스 → 라이브러리</b>에서 <b>Cloud Speech-to-Text API</b>와 <b>Cloud Translation API</b>를 각각 검색해 <b>사용</b>을 누릅니다.</li>
+<li><b>API 및 서비스 → 사용자 인증 정보 → 사용자 인증 정보 만들기 → API 키</b></li>
+<li>보안을 위해 <b>키 제한</b>: 애플리케이션 제한 = Android 앱(이 설정 화면에 나온 패키지 이름·SHA-1 입력), API 제한 = 위 두 API만</li>
+<li>앱 설정 → Google 키 칸에 붙여넣기 → <b>저장 → 연결 테스트</b></li></ol>
+<p class="hint">팁: 결제 → <b>예산 및 알림</b>에서 예산(예: 월 $5)을 정하면 그 금액에 가까워질 때 메일로 알려 줍니다.</p></details>
+<details><summary><span class="ic" data-icon="lock"></span> 키 관리 주의</summary><ul class="guide-steps"><li>키는 비밀번호와 같습니다. 카톡·문자로 다른 사람에게 보내지 마세요.</li><li>앱을 다른 사람에게 줄 때 키는 함께 가지 않습니다. 받는 사람은 자기 키를 넣어 씁니다.</li><li>키가 노출된 것 같으면 OpenAI·Google 사이트에서 그 키를 삭제하고 새로 만드세요.</li></ul></details>
+</div></section></div>
+<div class="sheet-backdrop" id="photoTextSheet"><section class="sheet pl-text-sheet" aria-label="인식된 글자"><div class="sheethead"><span id="plTextTitle">인식된 글자</span> <button class="close" data-close="photoTextSheet" aria-label="닫기">×</button></div>
+<div class="pl-text-tools"><button type="button" id="plTextListenSrc" class="src"><span class="ic" data-icon="volume"></span> 원문 전체</button><button type="button" id="plTextListen"><span class="ic" data-icon="volume"></span> 번역 전체</button></div><div class="pl-study"><button type="button" id="plPronBtn">한글 발음</button><button type="button" id="plSlowBtn"><span class="ic" data-icon="slow"></span> 느리게</button><button type="button" class="mini" id="plTextCopy" aria-label="전체 복사"><span class="ic" data-icon="copy"></span></button><button type="button" class="mini" id="plTextShare" aria-label="공유"><span class="ic" data-icon="share"></span></button></div><div class="pl-legend" id="plLegend">성조 <b>→</b>평평 <b>↗</b>올림 <b>↘</b>내림 <b>↘↗</b>내렸다 올림 <b>↗~</b>올리며 꺾기 <b>↓</b>짧게 뚝 · 한글 발음은 참고용이며 정확한 소리는 원문 듣기로 확인하세요</div>
+<div class="pl-text-list" id="plTextList"></div></section></div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+'use strict';
+const icons={slow:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 3h6"/>',bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',download:'<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',pause:'<path d="M8 5v14M16 5v14"/>',key:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M14 9l2 2"/>',history:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',share:'<circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.4 13.4l7.2 4.2M15.6 6.4l-7.2 4.2"/>',archive:'<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',rotate:'<path d="M20 12a8 8 0 1 1-3-6.2M20 4v5h-5"/>',expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',close:'<path d="M6 6l12 12M18 6 6 18"/>',wifioff:'<path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5.2-2.8M19 13a10 10 0 0 0-2.8-1.9M2 8.8a15 15 0 0 1 4.2-2.6M22 8.8A15 15 0 0 0 10.7 5"/><circle cx="12" cy="20" r="1"/>',check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',alert:'<path d="M12 3 2 20h20zM12 10v4M12 17.5h.01"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',coin:'<circle cx="12" cy="12" r="9"/><path d="M15 9.5a3 3 0 0 0-3-1.5c-1.7 0-3 .9-3 2s1.3 1.8 3 2 3 .9 3 2-1.3 2-3 2a3 3 0 0 1-3-1.5M12 6v12"/>',lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',chev:'<path d="M9 6l6 6-6 6"/>',back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',gallery:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/>',image:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/>',text:'<path d="M5 7V5h14v2M12 5v14M9 19h6"/>',list:'<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',swaph:'<path d="M4 8h15l-3.5-3.5M20 16H5l3.5 3.5"/>',waveform:'<path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/>',book:'<path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/>',mic:'<rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>',volume:'<path d="M11 5 6 9H3v6h3l5 4V5zM15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/>',copy:'<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',keyboard:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h1m3 0h1m3 0h1m3 0h1m3 0h1M6 12h1m3 0h1m3 0h1m3 0h1"/>',camera:'<rect x="3" y="6" width="18" height="15" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l1-3h6l1 3"/>',calculator:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 10h2m4 0h2M8 14h2m4 0h2M8 18h2m4 0h2"/>',swap:'<path d="M8 3v18m-4-4 4 4 4-4M16 21V3m-4 4 4-4 4 4"/>',refresh:'<path d="M20 11a8 8 0 0 0-14-5L4 8m0-5v5h5M4 13a8 8 0 0 0 14 5l2-2m0 5v-5h-5"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.5 1.5 0 0 0 .3 1.65l.1.1-2 2-.1-.1a1.5 1.5 0 0 0-1.65-.3 1.5 1.5 0 0 0-.9 1.37V21h-3v-.3a1.5 1.5 0 0 0-.9-1.37 1.5 1.5 0 0 0-1.65.3l-.1.1-2-2 .1-.1A1.5 1.5 0 0 0 7.9 16a1.5 1.5 0 0 0-1.37-.9H6v-3h.5a1.5 1.5 0 0 0 1.4-.9 1.5 1.5 0 0 0-.3-1.65l-.1-.1 2-2 .1.1a1.5 1.5 0 0 0 1.65.3 1.5 1.5 0 0 0 .9-1.37V6h3v.5a1.5 1.5 0 0 0 .9 1.4 1.5 1.5 0 0 0 1.65-.3l.1-.1 2 2-.1.1a1.5 1.5 0 0 0-.3 1.65 1.5 1.5 0 0 0 1.37.9H21v3h-.5a1.5 1.5 0 0 0-1.1.9z"/>',play:'<path d="m8 5 11 7-11 7z"/>',square:'<rect x="5" y="5" width="14" height="14" rx="2"/>',wave:'<path d="M3 10v4M7 6v12M11 3v18M15 7v10M19 5v14"/>'};
+function ic(n){return '<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">'+(icons[n]||'')+'</svg></span>'}
+function insertIcon(el,which){el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">'+icons[which]+'</svg>'}document.querySelectorAll('[data-icon]').forEach(el=>insertIcon(el,el.dataset.icon));
+const $=id=>document.getElementById(id);const languages={ko:{name:'한국어',flag:'🇰🇷',bcp:'ko-KR'},vi:{name:'베트남어',flag:'🇻🇳',bcp:'vi-VN'},en:{name:'영어',flag:'🇺🇸',bcp:'en-US'},zh:{name:'중국어',flag:'🇨🇳',bcp:'zh-CN'}};
+
+// Android SpeechRecognizer adapter: matches the Web Speech API events used below.
+class NativeSpeechRecognition {
+ constructor(){ this.lang='ko-KR'; this.onstart=null; this.onresult=null; this.onerror=null; this.onend=null; this.id=0; }
+ start(){ this.id=++window.nativeSpeechSequence; window.nativeSpeechInstances[this.id]=this; FriendlyNative.startRecognition(this.id,this.lang); }
+ stop(){ if(this.id){FriendlyNative.finishRecognition(this.id);} }
+ abort(){ if(this.id){FriendlyNative.stopRecognition(this.id);delete window.nativeSpeechInstances[this.id];this.id=0;} }
+}
+window.nativeSpeechSequence=0; window.nativeSpeechInstances={};
+window.nativeStreamInstances={};
+window.friendlyNativeSpeechEvent=(id,kind,payload)=>{
+ const st=window.nativeStreamInstances[id];
+ if(st){try{st.handle(kind,payload)}catch(e){console.error(e)}if(kind==='end')delete window.nativeStreamInstances[id];return;}
+ const r=window.nativeSpeechInstances[id];if(!r)return;
+ if(kind==='start'){r.onstart?.();return;}
+ if(kind==='partial'||kind==='final'){
+ const piece={0:{transcript:payload||'',confidence:1},isFinal:kind==='final'};
+ r.onresult?.({resultIndex:0,results:[piece]});return;
+ }
+ if(kind==='error'){r.onerror?.({error:payload||'audio-capture'});return;}
+ if(kind==='end'){delete window.nativeSpeechInstances[id];r.onend?.();return;}
+};
+window.nativeTranslateSequence=0;window.nativeTranslateTasks={};window.nativeTranslateUpdates={};
+// v6.1: the on-device translation is shown first; a better GPT / Google text may follow
+window.friendlyNativeTranslationUpdate=(id,result)=>{const f=window.nativeTranslateUpdates[id];if(f){delete window.nativeTranslateUpdates[id];try{f(result)}catch(e){}}};
+window.friendlyNativeTranslation=(id,ok,result)=>{
+ const task=window.nativeTranslateTasks[id];delete window.nativeTranslateTasks[id];
+ if(task)ok?task.resolve(result):task.reject(new Error(result));
+};
+function translateNative(text,from,to,onUpdate){
+ return new Promise((resolve,reject)=>{
+  if(!window.FriendlyNative || typeof window.FriendlyNative.translate!=='function'){reject(new Error('Android 앱 연결 없음. HTML 미리보기에서는 번역할 수 없습니다.'));return;}
+  const id=++window.nativeTranslateSequence;
+  window.nativeTranslateTasks[id]={resolve,reject};
+  if(onUpdate){window.nativeTranslateUpdates[id]=onUpdate;setTimeout(()=>{delete window.nativeTranslateUpdates[id]},15000)}
+  FriendlyNative.translate(id,text,from,to);
+ });
+}
+
+const SpeechRec=window.FriendlyNative?NativeSpeechRecognition:(window.SpeechRecognition||window.webkitSpeechRecognition);const defaults={me:'ko',partner:'vi',rotatePartner:true,showCopy:false,autoplay:false,autoplayPush:false,autoplayLive:false,autoplayListen:false,autoplayPhrase:false,micStyle:'b',fontScale:90,speechRate:1,translationEngine:'mlkit',theme:'dark',uiStyle:'simple',amountScale:100,amountColor:'#ffffff',calculatorRate:0.058,calcCurrency:'VND',studyPron:false,pronDialect:'south',studySlow:false,listenMaxSec:5,shutterHaptic:true,liveOn:false,liveEngine:'auto',fxAuto:true,fxRates:null,fxDate:0,voice:'phone'};let settings={...defaults};try{settings={...defaults,...JSON.parse(localStorage.getItem('friendlytalk-beta-settings-v5')||'{}')}}catch(e){};let mode='push',session=0,recognizer=null,listenSide=null,liveActive=false,liveStopping=false,pushStopping=false,pendingPushSide=null,ttsHold=false,ttsHoldTimer=null,liveSide='me',history=[],abortController=null,busy=false,lastText={me:'',partner:''},toastTimer;
+try{const saved=JSON.parse(localStorage.getItem('friendlytalk-conversation-v1')||'[]');if(Array.isArray(saved))history=saved.filter(e=>e&&e.from&&e.to&&typeof e.text==='string'&&typeof e.result==='string').slice(-300).map((e,i)=>({...e,id:e.id||Date.now()+i,pending:false,error:e.pending?(e.error||'앱이 종료되어 번역이 중단됨'):e.error||''}))}catch(e){}
+try{if(!localStorage.getItem('friendlytalk-v528-autoplay')){if(settings.autoplay){settings.autoplayPush=settings.autoplayLive=settings.autoplayPhrase=true}localStorage.setItem('friendlytalk-v528-autoplay','1');localStorage.setItem('friendlytalk-beta-settings-v5',JSON.stringify(settings))}}catch(e){}
+try{if(!localStorage.getItem('friendlytalk-v525-defaults')){if(settings.uiStyle==='color')settings.uiStyle='simple';if(Number(settings.fontScale)===100)settings.fontScale=90;localStorage.setItem('friendlytalk-v525-defaults','1');localStorage.setItem('friendlytalk-beta-settings-v5',JSON.stringify(settings))}}catch(e){}
+if(!['dark','light'].includes(settings.theme))settings.theme='dark';if(!['simple','color'].includes(settings.uiStyle))settings.uiStyle='color';document.documentElement.dataset.theme=settings.theme;document.documentElement.dataset.style=settings.uiStyle;document.querySelector('meta[name="theme-color"]').content=settings.theme==='light'?'#f8f9fa':'#202124';settings.translationEngine='mlkit';function save(){try{localStorage.setItem('friendlytalk-beta-settings-v5',JSON.stringify(settings))}catch(e){}}function notice(t){const el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.display='none',3400)}function status(t){$('status').textContent=t}function lang(side){return languages[settings[side]]}function other(side){return side==='me'?'partner':'me'}
+const uiCopy={ko:{name:'한국어',waiting:'번역 대기',talk:'눌러 말하기',listening:'듣는 중 · 누르면 끝',processing:'번역 중…'},vi:{name:'Tiếng Việt',waiting:'Đang chờ bản dịch',talk:'Nhấn để nói',listening:'Đang nghe…',processing:'Đang dịch…'},en:{name:'English',waiting:'Waiting for translation',talk:'Tap to speak',listening:'Listening…',processing:'Translating…'},zh:{name:'中文',waiting:'等待翻译',talk:'点击说话',listening:'正在听…',processing:'翻译中…'}};
+// v5.33: the push-to-talk button itself shows what is happening (idle / listening / processing).
+const micState={me:'idle',partner:'idle'},micBusyEntry={me:null,partner:null};
+function micText(side){const c=uiCopy[settings[side]]||uiCopy.ko;const st=micState[side];return st==='listening'?c.listening:st==='processing'?c.processing:c.talk}
+function setMicState(side,st){micState[side]=st;const b=$(side+'Mic');if(!b)return;b.classList.toggle('listening',st==='listening');b.classList.toggle('processing',st==='processing');const cap=$(side+'MicCaption');if(cap)cap.textContent=micText(side);if(st!=='processing')micBusyEntry[side]=null;if(st==='idle'&&mode==='push'&&micState.me==='idle'&&micState.partner==='idle')status('마이크 버튼을 눌러 말하세요.')}
+function saveConversation(){try{localStorage.setItem('friendlytalk-conversation-v1',JSON.stringify(history.slice(-300)))}catch(e){}}
+function showInterim(side,text){$(side+'Interim').textContent=text; if(mode==='listen')$('listenInterim').textContent=text;}
+function clearInterims(){for(const id of ['meInterim','partnerInterim','listenInterim'])$(id).textContent=''}
+function appendTextLine(parent,time,text){const el=document.createElement('div');el.className='trans-line';const when=document.createElement('span');when.className='tiny-time';when.textContent=time;el.appendChild(when);const val=document.createElement('span');val.textContent=text;el.appendChild(val);parent.appendChild(el)}
+function appendListenEntry(parent,entry){
+ const el=document.createElement('div');el.className='listen-entry';
+ const when=document.createElement('div');when.className='time';when.textContent=entry.time||'';
+ const original=document.createElement('div');original.className='source';original.textContent=entry.text;
+ const target=document.createElement('div');target.className=entry.pending?'target pending':'target';target.textContent=entry.pending?'한국어 번역 중…':entry.error?'번역 실패: '+entry.error:(entry.result||'번역 결과 없음');
+ el.append(when,original,target);
+ if(entry.error){const retry=document.createElement('button');retry.type='button';retry.className='retry-translation';retry.innerHTML=ic('rotate')+' 이 문장 다시 번역';retry.onclick=()=>retryTranslation(entry.id);el.appendChild(retry)}
+ parent.appendChild(el)
+}
+// v6.8: keep the newest translation in view like Google Translate; stop following while the user reads older lines
+let listenFollow=true;
+function listenAtBottom(){const b=$('listenScroll');return b.scrollHeight-b.scrollTop-b.clientHeight<80}
+function followListen(){const b=$('listenScroll');if(listenFollow)b.scrollTop=b.scrollHeight;$('listenLatest').classList.toggle('hide',listenFollow||!(liveActive&&mode==='listen'))}
+$('listenScroll').addEventListener('scroll',()=>{const f=listenAtBottom();if(f!==listenFollow){listenFollow=f;$('listenLatest').classList.toggle('hide',listenFollow||!(liveActive&&mode==='listen'))}},{passive:true});
+$('listenLatest').onclick=()=>{listenFollow=true;followListen()};
+/** Listen mode, not yet confirmed: the source (small, last ~2 lines) and the translation in grey. */
+function setListenInterim(src,dst){
+ const box=$('listenInterim');box.textContent='';
+ if(src){const a=document.createElement('div');a.className='li-src';a.textContent=src.length>110?'…'+src.slice(-110):src;box.append(a)}
+ if(dst){const b=document.createElement('div');b.className='li-dst';b.textContent=dst;box.append(b)}
+ followListen();
+}
+function renderTranscripts(autoScroll){
+ const oldScrolls={me:$('meText').scrollTop,partner:$('partnerText').scrollTop,listen:$('listenScroll').scrollTop};
+ const me=$('meLog'),partner=$('partnerLog'),listen=$('listenLog');me.replaceChildren();partner.replaceChildren();listen.replaceChildren();
+ for(const entry of history){
+   const meValue=entry.from===settings.me?entry.text:entry.to===settings.me?entry.result:null;
+   const partnerValue=entry.from===settings.partner?entry.text:entry.to===settings.partner?entry.result:null;
+   if(meValue!=null)appendTextLine(me,entry.time||'',meValue);
+   if(partnerValue!=null)appendTextLine(partner,entry.time||'',partnerValue);
+   if(entry.from===settings.partner&&entry.to===settings.me)appendListenEntry(listen,entry);
+ }
+ $('meEmpty').classList.toggle('hide',me.childElementCount>0);
+ $('partnerEmpty').classList.toggle('hide',partner.childElementCount>0);
+ $('listenEmpty').classList.toggle('hide',listen.childElementCount>0);
+ $('listenCount').textContent=listen.childElementCount+'문장';
+ for(const [id,key] of [['meText','me'],['partnerText','partner'],['listenScroll','listen']]){
+  const box=$(id);if(key==='listen'){if(autoScroll)followListen();else box.scrollTop=Math.min(oldScrolls[key],box.scrollHeight);continue}
+  box.scrollTop=autoScroll?box.scrollHeight:Math.min(oldScrolls[key],box.scrollHeight);
+ }
+}
+function render(){
+for(const s of ['me','partner']){
+ const info=uiCopy[settings[s]]||uiCopy.ko;
+ $(s+'Label').textContent=lang(s).flag+' '+info.name;
+ $(s+'MicCaption').textContent=micText(s);
+ $(s+'Empty').textContent=info.waiting;
+}
+$('langTitle').textContent=lang('me').name+' ↔ '+lang('partner').name;
+document.querySelector('.app').classList.toggle('tool-mode',mode==='photo'||mode==='calc');document.querySelector('.app').classList.toggle('stream-mode',mode==='live'||mode==='listen');document.querySelector('.app').classList.toggle('push-mode',mode==='push');document.querySelector('.app').classList.toggle('photo-mode',mode==='photo');document.querySelector('.app').classList.toggle('calc-mode',mode==='calc');$('translationStack').classList.toggle('listen-view',mode==='listen');$('listenCard').classList.toggle('hide',mode!=='listen');$('listenHeading').textContent=lang('partner').flag+' '+lang('partner').name+' → '+lang('me').flag+' '+lang('me').name;
+renderTranscripts(false);
+$('partnerContent').classList.toggle('reverse',settings.rotatePartner);
+$('partnerMicWrap').querySelector('.miccontent').style.transform=settings.rotatePartner?'rotate(180deg)':'none';
+document.querySelectorAll('.copybtn').forEach(b=>b.classList.toggle('hide',!settings.showCopy));
+document.documentElement.style.setProperty('--scale',settings.fontScale/100);
+$('fontLabel').textContent=settings.fontScale+'%';
+$('keyboardBtn').classList.toggle('hide',mode!=='push');$('quickInputBtn').classList.toggle('hide',mode!=='push');
+$('status').classList.toggle('hide',mode!=='push');
+// Keep both microphone slots' footprints unchanged across mode switches.
+$('meMicWrap').classList.toggle('mode-invisible',mode!=='push');
+$('partnerMicWrap').classList.toggle('mode-invisible',mode!=='push');
+$('liveControls').classList.remove('hide');
+$('liveControls').classList.toggle('mode-invisible',mode==='push');
+$('pushBtn').classList.toggle('active',mode==='push');
+$('liveBtn').classList.toggle('active',mode==='live');
+$('listenBtn').classList.toggle('active',mode==='listen');$('photoBtn').classList.toggle('active',mode==='photo');$('calcBtn').classList.toggle('active',mode==='calc');
+$('liveButtonLabel').textContent=liveStopping?'마무리 중':(liveActive?'중지':'시작');$('liveButton').disabled=liveStopping;
+$('liveButton').setAttribute('aria-label',liveStopping?'마지막 문장 인식·번역 중':liveActive?(mode==='listen'?'듣기 중지':'실시간 통역 중지'):(mode==='listen'?'듣기 시작':'실시간 통역 시작'));
+$('liveButton').classList.toggle('started',liveActive);$('liveButton').classList.toggle('stopping',!!liveStopping);syncKeepScreen();if(typeof renderAutoSpeak==='function')renderAutoSpeak();
+insertIcon($('liveButton').querySelector('span[data-icon]'),liveActive?'square':'play');
+document.querySelector('.app').classList.toggle('is-live',!!(liveActive||liveStopping)&&(mode==='live'||mode==='listen'));
+ if(liveActive&&!liveStopping&&liveAct!=='idle'&&(mode==='live'||mode==='listen')){$('liveInfo').textContent=liveAct==='speech'?'말소리 감지 중…':'인식·번역 중…';}else
+$('liveInfo').textContent=mode==='listen'?(liveStopping?'마지막 문장 처리 중 · 번역은 계속됩니다':liveActive?'듣는 중 · 말하면 바로 번역':'상대방 말만 계속 듣습니다'):(liveActive?'듣는 중 · 두 사람 말을 자동 구분':(typeof useStream==='function'&&useStream()?'두 사람 말을 언어별로 자동 구분합니다':'두 언어를 번갈아 듣습니다'));
+}
+function stopListening(){const old=recognizer;recognizer=null;listenSide=null;if(old){old.onend=null;old.onresult=null;old.onerror=null;try{old.abort()}catch(e){}}for(const sd of ['me','partner'])setMicState(sd,'idle')}
+function stopAll(){detachStreams();session++;liveActive=false;liveStopping=false;pushStopping=false;pendingPushSide=null;ttsHold=false;clearTimeout(ttsHoldTimer);stopListening();try{FriendlyNative.stopSpeaking()}catch(e){}if(abortController){abortController.abort();abortController=null}busy=false;render()}
+function setMode(m,opt){if(mode===m)return;if(m==='photo'&&mode!=='calc')lastTalkMode=mode;if(m==='photo'){photoScreen(photoOriginal&&photoBusy?'result':'capture');renderPhotoLang()}stopAll();mode=m;render();status(m==='push'?'마이크 버튼을 눌러 말하세요.':'');if(m==='photo'&&!(opt&&opt.noLive)&&!photoBusy)setTimeout(openLive,0)}
+let nextUtteranceId=Date.now();
+// Each completed speech segment is queued immediately. Do not block later sentences
+// behind a single slow download/network request. Limit concurrency to two.
+const translationJobs=[];let translatingCount=0;const MAX_TRANSLATING=2;
+function findUtterance(id){return history.find(e=>e.id===id)}
+function updateTranslationView(){saveConversation();renderTranscripts(true)}
+// v5.33: ML Kit can drop parts of long run-on input. Translate sentence by sentence.
+function splitForTranslation(text){
+ const parts=String(text).split('\n').flatMap(l=>splitSentences(l)).map(t=>t.trim()).filter(Boolean); // v6.9: keeps 3.5 / 10.000đ together
+ const out=[];
+ for(const part of parts){
+  if(part.length<=160){out.push(part);continue}
+  // No punctuation from the recogniser: cut long chunks at commas/spaces.
+  let rest=part;
+  while(rest.length>160){
+   let cut=Math.max(rest.lastIndexOf(',',160),rest.lastIndexOf('，',160),rest.lastIndexOf('、',160));
+   if(cut<60)cut=rest.lastIndexOf(' ',140);
+   if(cut<60)cut=140;
+   out.push(rest.slice(0,cut+1).trim());rest=rest.slice(cut+1).trim();
+  }
+  if(rest)out.push(rest);
+ }
+ return out.length?out:[text];
+}
+async function translateLong(text,from,to,onUpdate){
+ const pieces=splitForTranslation(text);
+ if(pieces.length===1)return translateNative(text,from,to,onUpdate);
+ const results=[];
+ for(const piece of pieces){const r=await translateNative(piece,from,to);results.push((r||'').trim())}
+ return results.filter(Boolean).join(' ');
+}
+function releaseMicFor(id){for(const sd of ['me','partner'])if(micBusyEntry[sd]===id){micBusyEntry[sd]=null;if(micState[sd]==='processing'&&!pushStream)setMicState(sd,'idle')}}
+async function runTranslation(id){
+ const entry=findUtterance(id);if(!entry)return;
+ try{return await runTranslationInner(id,entry)}finally{releaseMicFor(id);liveWork(-0)}
+}
+async function runTranslationInner(id,entry){
+ entry.pending=true;entry.error='';updateTranslationView();
+ try{
+  const result=await translateLong(entry.text,entry.from,entry.to,better=>{
+   // v6.1: replace the on-device text with the GPT / Google one when it arrives
+   const e=findUtterance(id);if(!e||!better||!better.trim())return;
+   e.result=better.trim();e.refined=true;const sd=e.to===settings.me?'me':'partner';lastText[sd]=e.result;updateTranslationView();
+  });
+  if(!result||!result.trim())throw new Error('번역 결과가 비어 있습니다');
+  // A reset may have removed the utterance while the native request was running.
+  if(!findUtterance(id))return;
+  entry.result=result.trim();entry.pending=false;entry.error='';
+  const side=entry.to===settings.me?'me':'partner';lastText[side]=entry.result;
+  updateTranslationView();
+  if(autoSpeakFor(mode))speakSide(side);
+ }catch(err){
+  if(!findUtterance(id))return;
+  entry.pending=false;entry.error=err&&err.message?err.message:'번역 오류';
+  updateTranslationView();
+  notice('번역 실패 · 듣기 기록에서 다시 번역할 수 있습니다');
+ }
+}
+function pumpTranslationQueue(){
+ while(translatingCount<MAX_TRANSLATING&&translationJobs.length){
+  const id=translationJobs.shift();translatingCount++;
+  runTranslation(id).catch(e=>console.error('translation failed',e)).finally(()=>{translatingCount--;pumpTranslationQueue()});
+ }
+}
+function queueTranslation(id){translationJobs.push(id);pumpTranslationQueue()}
+function retryTranslation(id){const entry=findUtterance(id);if(!entry||entry.pending)return;queueTranslation(id)}
+function translate(text,from,token){
+ if(!text||!text.trim()||token!==session)return Promise.resolve();
+ if(!/[\p{L}\p{N}]/u.test(text))return Promise.resolve(); // punctuation-only fragment
+ const to=other(from);lastText[from]=text.trim();showInterim(from,'');
+ const entry={id:++nextUtteranceId,at:Date.now(),time:new Date().toLocaleTimeString(),from:settings[from],to:settings[to],text:text.trim(),result:'',pending:true,error:''};
+ history.push(entry);history=history.slice(-300);updateTranslationView();
+ queueTranslation(entry.id);
+ return Promise.resolve();
+}
+// v5.33: while the translation is spoken aloud in live mode, pause the microphone so the
+// recogniser does not pick up the phone's own voice. Resume when TTS reports done.
+function releaseTtsHold(){
+ if(!ttsHold)return;ttsHold=false;clearTimeout(ttsHoldTimer);
+ if(liveActive&&!liveStopping&&!recognizer){const token=session;setTimeout(()=>{if(token===session&&liveActive&&!liveStopping&&!recognizer&&!ttsHold)startRecognizer(mode==='listen'?'partner':liveSide,token,true)},350)}
+}
+function holdForTts(text){
+ if(useStream())return; // native stream engine mutes its own microphone during TTS
+ if(!liveActive||(mode!=='live'&&mode!=='listen'))return;
+ ttsHold=true;clearTimeout(ttsHoldTimer);
+ // Safety: never stay paused if the done event is lost.
+ ttsHoldTimer=setTimeout(releaseTtsHold,Math.min(20000,2500+text.length*160));
+ if(recognizer){
+  if(recognizer.partialText){try{recognizer.stop()}catch(e){stopListening()}}
+  else stopListening();
+ }
+}
+window.friendlyNativeTts=(kind,detail)=>{
+ if(kind==='done'||kind==='error')releaseTtsHold();
+ if(kind==='error'&&detail==='lang')notice('이 언어의 음성 데이터가 없습니다. 기기 TTS 설정에서 설치하세요.');
+};
+function speakSide(side){const text=lastText[side];if(!text){notice('읽을 번역 문장이 없습니다.');return}if(!window.FriendlyNative?.speak)return;holdForTts(text);FriendlyNative.speak(text,lang(side).bcp,settings.speechRate)}
+function onSpeech(from,text,token){if(token!==session)return;translate(text,from,token).catch(e=>notice('번역 처리 오류: '+e.message));if(mode==='live'&&liveActive){liveSide=other(from);render()}}
+function startRecognizer(side,token,asLive){
+ if(!SpeechRec){status('음성 인식 서비스가 없습니다.');notice('마이크 음성 인식을 사용할 수 없습니다.');if(asLive)stopAll();return}
+ stopListening();let r=new SpeechRec();recognizer=r;listenSide=side;
+ r.lang=lang(side).bcp;r.continuous=false;r.interimResults=true;r.maxAlternatives=1;
+ let finalReceived=false;let partial='';let lastFinal='';
+ r.onstart=()=>{if(token!==session)return;setMicState(side,'listening');status(lang(side).name+' 음성 듣는 중…')};
+ r.onresult=e=>{
+  if(token!==session)return;
+  let complete='',interim='';
+  for(let i=e.resultIndex;i<e.results.length;i++){
+   let phrase=e.results[i][0].transcript||'';
+   if(e.results[i].isFinal)complete+=phrase+' ';else interim+=phrase;
+  }
+  if(interim.trim()){partial=interim.trim();r.partialText=partial;showInterim(side,partial)}
+  if(complete.trim()){
+   const result=complete.trim();finalReceived=true;partial='';r.partialText='';showInterim(side,'');
+   if(result!==lastFinal){lastFinal=result;onSpeech(side,result,token)}
+  }
+ };
+ r.onerror=e=>{
+  if(token!==session)return;
+  const reasons={'network':'음성 서버 네트워크 오류','busy':'음성 인식 서비스 사용 중','client':'음성 서비스 오류','server':'음성 인식 서버 오류','language-not-supported':'해당 언어 음성 인식 미지원','language-unavailable':'언어팩 없음','recognizer-unavailable':'음성 서비스 없음','audio-capture':'마이크 입력 불가','not-allowed':'마이크 권한 없음'};
+  const message=reasons[e.error]||e.error;
+  status('음성 인식 오류: '+message);
+  if(e.error!=='no-speech'&&e.error!=='aborted')notice('음성 인식 실패: '+message);
+  if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+   liveActive=false;liveStopping=false;
+  }
+ };
+ r.onend=()=>{
+  if(recognizer!==r||token!==session)return;
+  recognizer=null;listenSide=null;$(side+'Mic').classList.remove('listening');
+  // Android may return only a partial result when Stop is tapped mid-sentence.
+  // Preserve that final fragment instead of discarding it. Translation runs
+  // independently from recognition and is allowed to finish after stopping.
+  if(!finalReceived && partial.trim())onSpeech(side,partial.trim(),token);
+  else if(!finalReceived&&!asLive)status('인식된 음성이 없습니다.');
+  showInterim(side,'');
+  if(liveStopping){liveStopping=false;render();return}
+  if(!asLive){
+   pushStopping=false;
+   // The other side's mic was tapped while this one was finishing: start it now.
+   if(pendingPushSide&&mode==='push'){const next=pendingPushSide;pendingPushSide=null;setTimeout(()=>{if(mode==='push'&&!recognizer){session++;startRecognizer(next,session,false)}},250)}
+   return;
+  }
+  if(!liveActive)return;
+  if(ttsHold)return; // restart happens in releaseTtsHold()
+  if(mode==='listen')liveSide='partner';
+  else if(!finalReceived)liveSide=other(side);
+  render();
+  setTimeout(()=>{if(token===session&&liveActive&&!liveStopping&&!ttsHold&&!recognizer)startRecognizer(mode==='listen'?'partner':liveSide,token,true)},320);
+ };
+ try{r.start()}catch(e){notice('음성 인식 시작 실패: '+e.message);if(asLive)stopAll()}
+}
+function togglePush(side){
+ if(mode!=='push')return;
+ if(useStream())return togglePushStream(side);
+ if(recognizer){
+  // v5.33: stop() (not abort/cancel) so Android returns what was already said.
+  if(side!==listenSide)pendingPushSide=side;
+  if(pushStopping)return;
+  pushStopping=true;status('마지막 말 인식 중…');
+  try{recognizer.stop()}catch(e){pushStopping=false;stopListening();status('마이크 중지')}
+  return;
+ }
+ if(abortController){abortController.abort();abortController=null}
+ try{FriendlyNative.stopSpeaking()}catch(e){} // do not let TTS bleed into the mic
+ session++;startRecognizer(side,session,false)
+}
+function toggleLive(){
+ if(liveStopping)return;
+ if(useStream())return toggleLiveStream();
+ if(liveActive){
+  // Do NOT abort the recognizer: stopListening() delivers the last result.
+  liveActive=false;
+  if(recognizer){liveStopping=true;render();try{recognizer.stop()}catch(e){liveStopping=false;stopListening();render()}}
+  else render();
+  status('듣기 중지 · 지금까지 인식된 문장은 계속 번역됩니다.');
+  return;
+ }
+ stopAll();liveActive=true;liveStopping=false;liveSide=mode==='listen'?'partner':'me';
+ const token=session;render();
+ // Warm up the language model at the start, rather than when the first sentence
+ // arrives. This is best-effort; a missing download still appears as a failure.
+ if(mode==='listen')translateNative('Xin chào',settings.partner,settings.me).catch(e=>{notice('번역 모델 준비 실패: '+e.message)});
+ startRecognizer(liveSide,token,true);
+}
+// ===================== v5.33 AI engines (whisper / GPT / Google / realtime) =====================
+let ai={stt:'whisper',translate:'mlkit',realtime:false};
+function loadAi(){try{if(window.FriendlyNative?.getConfig)ai=JSON.parse(FriendlyNative.getConfig())}catch(e){}return ai}
+function whisperMissing(){return ai.stt==='whisper'&&ai.whisperInstalled===false&&!((ai.hasOpenaiKey||ai.hasGoogleKey)&&netOnline)}
+function useStream(){return !!(window.FriendlyNative&&FriendlyNative.streamStart)&&ai.stt!=='android'&&!whisperMissing()}
+function useRealtime(){return useStream()&&ai.realtime&&ai.hasOpenaiKey}
+function sideOf(code){return code===settings.me?'me':code===settings.partner?'partner':null}
+let activeStream=null,pushStream=null;
+function openStream(opts,h){
+ const id=++window.nativeSpeechSequence;
+ const st={id,opts,h,detached:false,stopping:false,handle(kind,payload){
+  let data=payload;if(['final','pair','partial'].includes(kind)){try{data=JSON.parse(payload)}catch(e){data={}}}
+  const fn=(this.detached&&!['final','pair','end','error'].includes(kind))?null:h[kind];
+  if(fn)fn(data);
+  else if(kind==='notice')notice(payload);
+  else if(kind==='error'&&!this.detached){status('오류: '+payload);notice('음성 처리 오류: '+payload)}
+ }};
+ window.nativeStreamInstances[id]=st;
+ FriendlyNative.streamStart(id,JSON.stringify(opts));
+ return st;
+}
+function detachStreams(){
+ // Mode changes: let already-recorded speech finish and still land in the history.
+ for(const st of [activeStream,pushStream]){if(st&&!st.detached){st.detached=true;try{FriendlyNative.streamStop(st.id)}catch(e){}}}
+ activeStream=null;pushStream=null;for(const sd of ['me','partner'])setMicState(sd,'idle');
+}
+function streamErrorText(e){return e==='not-allowed'?'마이크 권한을 허용해 주세요.':e}
+function togglePushStream(side){
+ if(pushStream){
+  if(pushStream.side!==side)pendingPushSide=side;
+  if(!pushStream.stopping){pushStream.stopping=true;status('인식 마무리 중…');FriendlyNative.streamStop(pushStream.id)}
+  return;
+ }
+ try{FriendlyNative.stopSpeaking()}catch(e){}
+ session++;
+ const st=openStream({mode:'push',langs:[settings[side]]},{
+  start:()=>{setMicState(side,'listening');status(lang(side).name+' 듣는 중… 말을 마치면 자동으로 번역됩니다')},
+  loading:()=>status('위스퍼 모델 준비 중… (처음 한 번 몇 초)'),
+  speech:()=>showInterim(side,'말소리 감지 중…'),
+  processing:()=>{setMicState(side,'processing');showInterim(side,'인식 중…');status('음성 인식 중…')},
+  nospeech:()=>{showInterim(side,'');status('인식된 음성이 없습니다.');notice('인식된 말이 없습니다. 다시 눌러 말해 주세요.')},
+  final:r=>{showInterim(side,'');if(r.text){const before=history.length;translate(r.text,side,session);if(history.length>before){setMicState(side,'processing');micBusyEntry[side]=history[history.length-1].id}}status('번역 중…')},
+  error:e=>{showInterim(side,'');setMicState(side,'idle');status('오류: '+streamErrorText(e));notice('음성 인식 실패: '+streamErrorText(e))},
+  end:()=>{if(st.detached||pushStream!==st)return;if(!micBusyEntry[side])setMicState(side,'idle');pushStream=null;
+   if(pendingPushSide&&mode==='push'){const next=pendingPushSide;pendingPushSide=null;setTimeout(()=>{if(mode==='push'&&!pushStream)togglePushStream(next)},200)}}
+ });
+ st.side=side;pushStream=st;
+}
+function addPairEntry(r){
+ const from=r.from||settings.partner,to=r.to||settings.me;
+ const entry={id:++nextUtteranceId,at:Date.now(),time:new Date().toLocaleTimeString(),from,to,text:r.text||'',result:r.result||'',pending:false,error:''};
+ history.push(entry);history=history.slice(-300);
+ const side=sideOf(to);if(side)lastText[side]=entry.result;
+ updateTranslationView();clearInterims();
+ if(side&&entry.result&&autoSpeakFor(mode)&&!voiceIsGpt())speakSide(side); // v6.7: phone voice reads GPT realtime results
+}
+// v6.9: who spoke, from the letters, only between the two chosen languages (no extra waiting)
+function speakerSideOf(text){
+ const codes=[settings.me,settings.partner];
+ if(/[\uac00-\ud7a3\u1100-\u11ff\u3130-\u318f]/.test(text)&&codes.includes('ko'))return sideOf('ko');
+ if(/[ăâđêôơưĂÂĐÊÔƠƯ\u1EA0-\u1EF9àáảãạèéẻẽẹìíỉĩịòóỏõọùúủũụỳýỷỹỵÀÁẢÃẠÈÉẺẼẸÌÍỈĨỊÒÓỎÕỌÙÚỦŨỤỲÝỶỸỴ]/.test(text)&&codes.includes('vi'))return sideOf('vi');
+ if(/[A-Za-z]/.test(text)&&codes.includes('en')&&!codes.includes('vi'))return sideOf('en');
+ if(/[\u4e00-\u9fff]/.test(text)&&codes.includes('zh')&&!/[A-Za-z\uac00-\ud7a3]/.test(text))return sideOf('zh');
+ return '';
+}
+function splitSentences(t){
+ // cut after . ? ! only when a space or the end follows (keeps 3.5, 10.000đ, v6.9 together); 。！？ always end
+ t=String(t);const out=[];let start=0;
+ for(let i=0;i<t.length;i++){
+  const c=t[i];
+  if('。！？'.includes(c)||('.!?'.includes(c)&&(i+1===t.length||/\s/.test(t[i+1])))){
+   let j=i+1;while(j<t.length&&'.!?"\'”’)'.includes(t[j]))j++;
+   out.push(t.slice(start,j).trim());start=j;i=j-1;
+  }
+ }
+ if(start<t.length)out.push(t.slice(start).trim());
+ return out.filter(Boolean).length?out.filter(Boolean):[t];
+}
+function toggleLiveStream(){
+ if(activeStream){
+  if(!activeStream.stopping){activeStream.stopping=true;liveActive=false;liveStopping=true;render();status('마무리 중 · 남은 문장 처리');FriendlyNative.streamStop(activeStream.id)}
+  return;
+ }
+ stopAll();liveActive=true;liveStopping=false;render();
+ const listen=mode==='listen';
+ const realtime=useRealtime();
+ listenFollow=true;$('listenSegBtn').classList.toggle('hide',realtime);
+ let opts;
+ if(realtime)opts={mode:'realtime',langs:listen?[settings.partner]:[settings.me,settings.partner],outputs:listen?[settings.me]:[settings.me,settings.partner],playAudio:autoSpeakFor(mode)&&voiceIsGpt()};
+ else opts={mode:'continuous',langs:listen?[settings.partner]:[settings.me,settings.partner],listen,maxSec:Number(settings.listenMaxSec)||5};
+ const st=openStream(opts,{
+  start:()=>{status(realtime?'GPT 실시간 통역 연결됨 · 말씀하세요':(listen?'상대방 말 듣는 중… (최대 '+settings.listenMaxSec+'초마다 번역)':'두 사람 대화 듣는 중 · 언어 자동 구분'));if(listen&&!realtime&&autoSpeakFor('listen'))notice('듣기 중에도 마이크는 계속 켜져 있어요 · 번역 소리가 다시 녹음되지 않게 이어폰을 권장합니다')},
+  lag:n=>notice('번역이 밀리고 있어요 ('+n+'개 대기) · 말이 잠깐 멈추면 따라잡습니다. 계속 밀리면 GPT 실시간 통역을 써 보세요'),
+  loading:()=>status('위스퍼 모델 준비 중… (처음 한 번 몇 초)'),
+  speech:()=>{liveActivity('speech');if(listen)$('listenInterim').textContent='말소리 감지 중…'},
+  processing:n=>{liveActivity('processing');if(listen)$('listenInterim').textContent='인식 중…'},
+  nospeech:()=>{liveActivity('idle');if(listen)$('listenInterim').textContent=''},
+  final:r=>{
+   if(!r.text)return;
+   if(listen)$('listenInterim').textContent='';
+   // v6.9: one sentence at a time, each shown as soon as it is translated
+   for(const sentence of splitSentences(r.text)){
+    if(listen){translate(sentence,'partner',session);continue}
+    const s=speakerSideOf(sentence);
+    if(s)translate(sentence,s,session);
+    else if(/[A-Za-z]/.test(sentence)){translate(sentence,'me',session);translate(sentence,'partner',session)} // only English words: both sides
+    else translate(sentence,sideOf(r.lang)||'me',session);
+   }
+   liveActivity('idle');
+  },
+  partial:r=>{if(listen){setListenInterim(r.text||'',r.result||'');return}
+    const dst=sideOf(r.to)||'me',src=other(dst);showInterim(src,r.text||'');showInterim(dst,r.result||'')},
+  pair:r=>{addPairEntry(r)},
+  error:e=>{status('오류: '+streamErrorText(e));notice(streamErrorText(e))},
+  end:()=>{if(st.detached||activeStream!==st)return;activeStream=null;liveActive=false;liveStopping=false;clearInterims();render();status(listen?'듣기 종료':'실시간 대화 종료')}
+ });
+ activeStream=st;
+ if(!realtime&&ai.translate==='mlkit')translateNative('Xin chào',settings.partner,settings.me).catch(()=>{});
+}
+// ---- photo: the activity may come back from the camera before/after page load
+window.friendlyNativePhotoReturn=()=>{if(mode!=='photo')setMode('photo');$('photoStatus').textContent='사진 불러오는 중…'};
+window.friendlyNativeNotice=m=>notice(m);
+// ---- settings UI
+// ===== v6.7: one engine choice sets speech, translation, live talk/listen and camera together =====
+const ENGINES={
+ device:{name:'기기',cfg:{stt:'whisper',translate:'mlkit',realtime:false},live:'mlkit',rows:[['음성 인식','위스퍼 Large-v3 Turbo Q5 (기기 안)'],['번역','Google ML Kit (기기 안)'],['실시간 대화·듣기','위스퍼 + ML Kit'],['카메라·사진','ML Kit 글자 인식 + 기기 번역'],['비용','무료']]},
+ google:{name:'Google',cfg:{stt:'google',translate:'google',realtime:false},live:'google',key:'google',rows:[['음성 인식','Google Cloud Speech-to-Text'],['번역','Google Cloud Translation'],['실시간 대화·듣기','Google 음성 + Google 번역'],['카메라·사진','ML Kit 글자 인식 + Google 번역'],['비용','쓴 만큼 · Google Cloud 요금']]},
+ gpt:{name:'GPT',cfg:{stt:'gpt',translate:'gpt',realtime:true},live:'gpt',key:'openai',rows:[['음성 인식','GPT 음성 인식 (gpt-transcribe)'],['번역','GPT-5.4 mini'],['실시간 대화·듣기','GPT 실시간 통역 (gpt-realtime-translate)'],['카메라·사진','ML Kit 글자 인식 + GPT-5.4 mini'],['비용','쓴 만큼 · OpenAI 크레딧']]}
+};
+function enginePreset(){return ai.translate==='gpt'?'gpt':ai.translate==='google'?'google':'device'}
+function voiceIsGpt(){return settings.voice==='gpt'&&enginePreset()==='gpt'}
+function hasKeyFor(k){const e=ENGINES[k];return !e.key||(e.key==='google'?ai.hasGoogleKey:ai.hasOpenaiKey)}
+function applyEngine(k,quiet){
+ const e=ENGINES[k];if(!e)return;
+ if(liveActive)stopAll();
+ settings.liveEngine=e.live;if(k!=='gpt'&&settings.voice==='gpt')settings.voice='phone';save();
+ pushAi(e.cfg);
+ if(quiet)return;
+ if(!hasKeyFor(k)){
+  notice((k==='gpt'?'OpenAI':'Google')+' 키를 넣어 주세요 · 키가 없으면 기기 엔진으로 처리합니다');
+  const inp=$(e.key+'Key');if(inp){try{inp.scrollIntoView({behavior:'smooth',block:'center'})}catch(x){}setTimeout(()=>{try{inp.focus()}catch(x){}},400)}
+ }else notice(e.name+' 엔진으로 바꿨어요 · 음성 인식·번역·실시간·카메라 모두 적용');
+}
+function renderEngine(){
+ const k=enginePreset(),e=ENGINES[k];
+ document.querySelectorAll('#engPick .eng-card').forEach(b=>{const on=b.dataset.eng===k;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false')});
+ const box=$('engModels');box.textContent='';
+ for(const [a,b] of e.rows){const r=document.createElement('div');const x=document.createElement('span');x.textContent=a;const y=document.createElement('span');y.textContent=b;r.append(x,y);box.append(r)}
+ const vp=$('voicePick');vp.querySelector('option[value="gpt"]').disabled=k!=='gpt';vp.value=voiceIsGpt()?'gpt':'phone';
+}
+function aiSummaryText(){
+ const k=enginePreset();
+ const stt={whisper:'위스퍼(기기 내)',gpt:'GPT 음성 인식',google:'Google 음성',android:'Android 기본'}[ai.stt]||ai.stt;
+ const tr={mlkit:'ML Kit(기기 내)',gpt:'GPT 번역',google:'Google 번역'}[ai.translate]||ai.translate;
+ const warn=[];
+ if((ai.stt==='gpt'||ai.translate==='gpt'||ai.realtime)&&!ai.hasOpenaiKey)warn.push('주의: OpenAI 키 없음 → 무료 엔진으로 대체');
+ if((ai.stt==='google'||ai.translate==='google')&&!ai.hasGoogleKey)warn.push('주의: Google 키 없음 → 무료 엔진으로 대체');
+ if(ai.stt==='whisper'&&!ai.whisperInstalled)warn.push('위스퍼 모델 준비 전 · 앱이 Wi-Fi에서 자동으로 받습니다. 그동안 기기 음성 인식을 씁니다');
+ if(ai.stt==='whisper'&&ai.whisperNative===false)warn.push('주의: 위스퍼 엔진 로드 실패 (APK 빌드에 NDK 필요)');
+ return '현재: '+ENGINES[k].name+' 엔진'+(warn.length?'\n'+warn.join('\n'):'');
+}
+function pushAi(patch){Object.assign(ai,patch);try{FriendlyNative.setConfig(JSON.stringify(patch))}catch(e){}loadAi();renderAi()}
+function renderAi(){try{renderNet()}catch(e){}
+ if(!$('aiSection'))return;
+ $('sttEngine').value=ai.stt||'whisper';$('trEngine').value=ai.translate||'mlkit';
+ $('rtEngine').checked=!!ai.realtime;$('rtAudio').checked=ai.realtimeAudio!==false;
+ $('silenceMs').value=String(ai.silenceMs||800);$('fastWhisper').checked=ai.fastWhisper!==false;
+ $('gptSttModel').value=ai.gptSttModel||'gpt-transcribe';$('gptTrModel').value=ai.gptTranslateModel||'gpt-5.4-mini';
+ $('openaiKey').placeholder=ai.hasOpenaiKey?('저장됨: '+ai.openaiKey+' (바꾸려면 새 키 입력)'):'sk-… 본인 키 입력';
+ $('googleKey').placeholder=ai.hasGoogleKey?('저장됨: '+ai.googleKey+' (바꾸려면 새 키 입력)'):'AIza… 본인 키 입력';
+ $('googleRestrict').textContent=ai.package?('Google 키를 이 앱 전용으로 제한하려면 Google Cloud 콘솔 → 키 제한 → Android 앱에 패키지 '+ai.package+' / SHA-1 '+(ai.sha1||'-')+' 입력'):'';
+ $('aiSummary').textContent=aiSummaryText();$('aiSummary').style.whiteSpace='pre-wrap';
+ renderEngine();
+ renderModels();
+}
+let modelInfo=null;
+function renderModels(){
+ if(!window.FriendlyNative?.modelStatus){$('modelStatus').textContent='Android 앱에서만 사용할 수 있습니다.';return}
+ try{modelInfo=JSON.parse(FriendlyNative.modelStatus())}catch(e){return}
+ // v5.39: Large-v3 Turbo Q5 ships inside the app -> no download menu
+ const bundled=!!modelInfo.bundled;
+ for(const id of ['modelActions','modelProgress'])$(id).classList.toggle('hide',bundled);
+ // v6.6: Large-v3 Turbo Q5 only, downloaded by the app -> no picker, no delete
+ $('modelPickRow').classList.add('hide');$('modelDeleteBtn').classList.add('hide');
+ if(bundled){$('modelStatus').textContent='Large-v3 Turbo Q5 · 앱에 내장되어 있어 받을 필요가 없습니다'+(modelInfo.native?'':' · 주의: 엔진 로드 실패: '+modelInfo.nativeError);return}
+ const sel=$('whisperModel');const cur=ai.whisperModel||modelInfo.selected;
+ sel.replaceChildren();for(const m of modelInfo.models)sel.add(new Option((m.installed?'[설치됨] ':'')+m.label,m.id));sel.value=cur;
+ const m=modelInfo.models.find(x=>x.id===cur)||modelInfo.models[0];
+ const free=(modelInfo.free/1073741824).toFixed(1);
+ if(modelInfo.downloading)$('modelStatus').textContent='받는 중: '+modelInfo.downloading;
+ else $('modelStatus').textContent=(m.installed?'설치됨 · 사용 준비 완료':(m.partial>0?'일부 받음 '+Math.round(m.partial/1048576)+'MB · 받기를 누르면 이어받기':'미설치 · 약 '+m.sizeMb+'MB 필요 (Wi-Fi 권장)'))+' · 남은 공간 '+free+'GB'+(modelInfo.native?'':' · 주의: 엔진 로드 실패: '+modelInfo.nativeError);
+ $('modelDownloadBtn').innerHTML=modelInfo.downloading?ic('pause')+' 멈추기':ic('download')+' 받기';
+}
+// v6.6: the app downloads the Whisper model by itself after installation
+let modelBarTimer=null;
+window.friendlyNativeModelAuto=(state,done,total,msg)=>{
+ const bar=$('modelBar');if(!bar)return;
+ const mb=v=>Math.round(v/1048576),pct=total>0?Math.min(100,done/total*100):0;
+ const btn=$('modelBarBtn'),track=$('modelBarTrack');
+ clearTimeout(modelBarTimer);btn.classList.add('hide');track.classList.add('hide');btn.onclick=null;
+ const show=(t,sub)=>{$('modelBarText').textContent=t;$('modelBarSub').textContent=sub||'';bar.classList.remove('hide')};
+ const fill=()=>{track.classList.remove('hide');$('modelBarFill').style.width=pct.toFixed(1)+'%'};
+ const fallback='끝날 때까지 음성 인식은 기기 음성 인식으로 합니다';
+ if(state==='ready'){bar.classList.add('hide');return}
+ if(state==='progress'){show('음성 인식 모델 받는 중 '+Math.floor(pct)+'% · '+mb(done)+' / '+mb(total)+'MB',fallback);fill();return}
+ if(state==='done'){show('음성 인식 모델 준비 완료','이제 위스퍼로 음성을 인식합니다');loadAi();modelBarTimer=setTimeout(()=>bar.classList.add('hide'),4000);return}
+ if(state==='wifi'){
+  show('Wi-Fi에 연결되면 음성 인식 모델(약 '+mb(total)+'MB)을 자동으로 받아요',(done>0?Math.floor(pct)+'% 받음 · 이어서 받습니다 · ':'')+fallback);
+  if(done>0)fill();
+  btn.textContent='모바일 데이터로 받기';btn.classList.remove('hide');
+  btn.onclick=()=>{if(window.FriendlyNative?.modelAllowMobile)FriendlyNative.modelAllowMobile();show('다운로드 시작…',fallback)};return}
+ if(state==='offline'){show('인터넷에 연결되면 음성 인식 모델을 자동으로 받아요',fallback);if(done>0)fill();return}
+ if(state==='error'){show('연결이 끊겨 잠시 후 이어서 받아요'+(done>0?' ('+Math.floor(pct)+'%)':''),msg||fallback);return}
+ if(state==='cancelled'){
+  show('음성 인식 모델 받기를 멈췄어요','다시 받기를 누르면 이어서 받습니다');
+  btn.textContent='다시 받기';btn.classList.remove('hide');
+  btn.onclick=()=>{if(window.FriendlyNative?.modelDownload)FriendlyNative.modelDownload(modelInfo?.selected||'large-v3-turbo-q5_0');show('다운로드 시작…',fallback)};return}
+};
+window.friendlyNativeAi=(kind,payload)=>{
+ let d={};try{d=JSON.parse(payload)}catch(e){}
+ if(kind==='model'){
+  const bar=$('modelProgress');
+  if(d.state==='progress'){bar.classList.remove('hide');if(d.total>0)bar.value=Math.round(d.done/d.total*1000);$('modelStatus').textContent='받는 중 '+Math.round(d.done/1048576)+(d.total>0?' / '+Math.round(d.total/1048576)+'MB ('+(d.done/d.total*100).toFixed(1)+'%)':'MB');$('modelDownloadBtn').innerHTML=ic('pause')+' 멈추기';return}
+  bar.classList.add('hide');if(d.message)notice(d.message);loadAi();renderAi();return;
+ }
+ if(kind==='test'||kind==='whisperTest'){$('aiTestOut').textContent=d.message||'';if(!d.progress){$('openaiTest').disabled=false;$('googleTest').disabled=false;$('whisperTestBtn').disabled=false}}
+};
+function initAiSettings(){
+ if(!$('aiSection'))return;
+ loadAi();
+ $('sttEngine').onchange=()=>{stopAll();pushAi({stt:$('sttEngine').value})};
+ $('trEngine').onchange=()=>pushAi({translate:$('trEngine').value});
+ $('rtEngine').onchange=()=>{stopAll();if($('rtEngine').checked&&!ai.hasOpenaiKey)notice('OpenAI 키를 먼저 저장하세요. 키가 없으면 위스퍼로 동작합니다.');pushAi({realtime:$('rtEngine').checked})};
+ $('rtAudio').onchange=()=>pushAi({realtimeAudio:$('rtAudio').checked});
+ document.querySelectorAll('#engPick .eng-card').forEach(b=>b.onclick=()=>applyEngine(b.dataset.eng));
+ $('voicePick').onchange=()=>{const v=$('voicePick').value;if(v==='gpt'&&enginePreset()!=='gpt'){notice('GPT 음성은 GPT 엔진에서만 쓸 수 있어요');$('voicePick').value='phone';return}settings.voice=v;save();notice(v==='gpt'?'GPT 음성으로 읽어요 (실시간 대화·듣기)':'휴대폰 음성으로 읽어요')};
+ // v6.7: older settings could mix engines (e.g. Google translation + GPT realtime) -> line them up once
+ try{if(!localStorage.getItem('friendlytalk-v670-engine')&&window.FriendlyNative?.getConfig){loadAi();applyEngine(enginePreset(),true);localStorage.setItem('friendlytalk-v670-engine','1')}}catch(e){}
+ $('silenceMs').onchange=()=>pushAi({silenceMs:Number($('silenceMs').value)});
+ $('fastWhisper').onchange=()=>pushAi({fastWhisper:$('fastWhisper').checked});
+ $('gptSttModel').onchange=()=>pushAi({gptSttModel:$('gptSttModel').value.trim()||'gpt-transcribe'});
+ $('gptTrModel').onchange=()=>pushAi({gptTranslateModel:$('gptTrModel').value.trim()||'gpt-5.4-mini'});
+ $('whisperModel').onchange=()=>pushAi({whisperModel:$('whisperModel').value});
+ $('modelDownloadBtn').onclick=()=>{if(!window.FriendlyNative?.modelDownload)return;if(modelInfo&&modelInfo.downloading){FriendlyNative.modelCancel();return}FriendlyNative.modelDownload($('whisperModel').value);$('modelProgress').classList.remove('hide');$('modelStatus').textContent='다운로드 시작…'};
+ $('modelImportBtn').onclick=()=>{if(window.FriendlyNative?.modelImport)FriendlyNative.modelImport($('whisperModel').value)};
+ $('modelDeleteBtn').onclick=()=>{if(window.FriendlyNative?.modelDelete&&confirmDelete())FriendlyNative.modelDelete($('whisperModel').value)};
+ $('whisperTestBtn').onclick=()=>{if(!window.FriendlyNative?.whisperTest)return;$('whisperTestBtn').disabled=true;$('aiTestOut').textContent='위스퍼 테스트 중…';FriendlyNative.whisperTest()};
+ for(const kind of ['openai','google']){
+  $(kind+'Save').onclick=()=>{const v=$(kind+'Key').value.trim();if(!v){notice('키를 입력하세요.');return}FriendlyNative.saveKey(kind,v);$(kind+'Key').value='';loadAi();renderAi();notice('키 저장됨 · 연결 테스트를 눌러 확인하세요')};
+  $(kind+'Delete').onclick=()=>{FriendlyNative.saveKey(kind,'');loadAi();renderAi();notice('키 삭제됨')};
+  $(kind+'Test').onclick=()=>{const v=$(kind+'Key').value.trim();if(v){FriendlyNative.saveKey(kind,v);$(kind+'Key').value='';loadAi();renderAi()}$(kind+'Test').disabled=true;$('aiTestOut').textContent=(kind==='openai'?'OpenAI':'Google')+' 연결 테스트 중…';FriendlyNative.testCloud(kind)};
+ }
+ $('settingsBtn').addEventListener('click',()=>{loadAi();renderAi()});
+ renderAi();
+}
+let deleteArmed=0;function confirmDelete(){const now=Date.now();if(now-deleteArmed<3000){deleteArmed=0;return true}deleteArmed=now;notice('삭제하려면 3초 안에 한 번 더 누르세요');return false}
+function syncLanguagesToNative(){try{FriendlyNative.setConfig(JSON.stringify({me:settings.me,partner:settings.partner}))}catch(e){}}
+// ===== v5.33: push-to-talk button style =====
+function applyMicStyle(){
+ const v=['a','b','c'].includes(settings.micStyle)?settings.micStyle:'b';document.documentElement.dataset.mic=v;
+ for(const side of ['me','partner']){const btn=$(side+'Mic'),cap=$(side+'MicCaption');if(!btn||!cap)continue;
+  if(v==='b'){if(cap.parentElement!==btn)btn.appendChild(cap)}else if(cap.parentElement===btn)btn.after(cap)}
+ const sel=$('micStyleSelect');if(sel)sel.value=v;
+}
+$('micStyleSelect').onchange=()=>{settings.micStyle=$('micStyleSelect').value;save();applyMicStyle()};
+applyMicStyle();
+// ===== v5.33: offline notice =====
+let netOnline=navigator.onLine!==false;
+function renderNet(){const b=$('netBadge');if(!b)return;
+ if(netOnline){b.classList.add('hide');return}
+ const cloud=(ai.stt==='gpt'||ai.stt==='google'||ai.translate!=='mlkit'||ai.realtime);
+ b.className='net-badge'+(cloud?'':' ok');b.dataset.msg=cloud?'오프라인 · 유료(클라우드) 엔진 대신 위스퍼·ML Kit로 자동 처리 중입니다':'오프라인 · 기기 내 엔진(위스퍼·ML Kit)으로 정상 동작합니다';}
+$('netBadge').onclick=()=>notice($('netBadge').dataset.msg||'오프라인');
+window.friendlyNativeNetwork=on=>{const was=netOnline;netOnline=!!on;renderNet();if(was!==netOnline)notice(netOnline?'인터넷 다시 연결됨':'인터넷 끊김 · 기기 내 엔진으로 처리합니다')};
+window.addEventListener('online',()=>window.friendlyNativeNetwork(true));window.addEventListener('offline',()=>window.friendlyNativeNetwork(false));
+// ===== v5.33: share conversation text =====
+async function shareText(text){if(window.FriendlyNative?.shareText){FriendlyNative.shareText(text);return}try{await navigator.clipboard.writeText(text);notice('복사했습니다 (미리보기에서는 공유 대신 복사)')}catch(e){notice('공유할 수 없습니다.')}}
+function conversationText(entries,title){return (title?title+'\n\n':'')+entries.map(e=>(languages[e.from]?.flag||'')+' '+e.text+'\n'+(languages[e.to]?.flag||'')+' '+(e.result||'')).join('\n\n')+'\n\n— FriendlyTalk'}
+// ===== v5.33: per-mode auto speech =====
+const AUTO_KEYS={push:'autoplayPush',live:'autoplayLive',listen:'autoplayListen',phrase:'autoplayPhrase'};
+function autoSpeakFor(m){const k=AUTO_KEYS[m];return !!(k&&settings[k])}
+let lastKeep=null;function syncKeepScreen(){const want=!!(liveActive||liveStopping||(typeof pushStream!=='undefined'&&pushStream));if(want===lastKeep)return;lastKeep=want;try{window.FriendlyNative?.keepScreenOn?.(want)}catch(e){}}
+let liveAct='idle';function liveActivity(a){liveAct=a;if(liveActive)render()}function liveWork(){}
+function renderAutoSpeak(){const b=$('autoSpeakBtn');if(!b)return;const on=autoSpeakFor(mode);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false')}
+$('autoSpeakBtn').onclick=()=>{const k=AUTO_KEYS[mode];if(!k)return;settings[k]=!settings[k];save();renderAutoSpeak();
+ const name={push:'눌러 말하기',live:'실시간 대화',listen:'듣기'}[mode];
+ notice(name+' · 번역 음성 자동 재생 '+(settings[k]?'켬':'끔')+((liveActive&&useRealtime())?' (GPT 실시간 통역은 다시 시작하면 적용)':''));
+ if(!settings[k]){try{FriendlyNative.stopSpeaking()}catch(e){}}};
+// ===== v5.33: conversation archive =====
+const ARCHIVE_KEY='friendlytalk-archive-v1';
+function loadArchive(){try{const a=JSON.parse(localStorage.getItem(ARCHIVE_KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+function saveArchive(a){for(;;){try{localStorage.setItem(ARCHIVE_KEY,JSON.stringify(a));return true}catch(e){if(a.length<=1){try{localStorage.setItem(ARCHIVE_KEY,'[]')}catch(x){}return false}a.pop()}}}
+function archiveCurrent(){
+ const done=history.filter(e=>!e.pending&&(e.text||'').trim());if(!done.length)return false;
+ const a=loadArchive();const start=done.find(e=>e.at)?.at||Date.now();const end=[...done].reverse().find(e=>e.at)?.at||Date.now();
+ a.unshift({id:Date.now(),start,end,entries:done.map(e=>({from:e.from,to:e.to,text:e.text,result:e.result||'',at:e.at||0}))});
+ while(a.length>200)a.pop();saveArchive(a);return true;
+}
+function fmtDate(t){try{const d=new Date(t);return d.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'})+' '+d.toLocaleTimeString('ko-KR',{hour:'numeric',minute:'2-digit'})}catch(e){return ''}}
+function langPair(es){const set=[...new Set(es.flatMap(e=>[e.from,e.to]))].filter(c=>languages[c]);return set.map(c=>languages[c].flag).join('↔')}
+function histEntryEl(e,showTime){const d=document.createElement('div');d.className='hist-entry';
+ if(showTime&&e.at){const m=document.createElement('div');m.className='h-meta';m.textContent=new Date(e.at).toLocaleTimeString('ko-KR',{hour:'numeric',minute:'2-digit'})+' · '+(languages[e.from]?.flag||'')+' → '+(languages[e.to]?.flag||'');d.appendChild(m)}
+ const a=document.createElement('div');a.className='h-src';a.textContent=e.text;const b=document.createElement('div');b.className='h-dst';b.textContent=e.result||(e.pending?'번역 중…':e.error?'번역 실패':'');d.append(a,b);return d}
+function sessionText(sess){return fmtDate(sess.start)+'\n'+sess.entries.map(e=>e.text+'\n→ '+e.result).join('\n\n')}
+let histTab='now';const openSessions=new Set();let armed=null,armTimer=null;
+function armed2(key,msg){if(armed===key){armed=null;clearTimeout(armTimer);return true}armed=key;clearTimeout(armTimer);armTimer=setTimeout(()=>{armed=null;renderHistory()},3000);notice(msg);renderHistory();return false}
+function renderHistory(){
+ const list=$('historyList'),foot=$('histFoot');list.replaceChildren();foot.replaceChildren();
+ const arc=loadArchive();$('histTabNow').classList.toggle('on',histTab==='now');$('histTabPast').classList.toggle('on',histTab==='past');
+ $('histTabNow').textContent='현재 대화 ('+history.length+')';$('histTabPast').textContent='이전 대화 ('+arc.length+')';
+ const BTN_IC={'공유':'share','보관하고 새 대화 시작':'archive','이전 기록 모두 지우기':'trash'};
+ const btn=(label,fn,cls,icn)=>{const b=document.createElement('button');b.type='button';const n=icn||BTN_IC[label];b.innerHTML=(n?ic(n)+(label?' ':''):'')+label.replace(/[<&]/g,'');if(cls)b.className=cls;b.onclick=fn;return b};
+ if(histTab==='now'){
+  if(!history.length){const e=document.createElement('div');e.className='hist-empty';e.textContent='현재 대화 기록이 없습니다.';list.appendChild(e)}
+  for(const e of history)list.appendChild(histEntryEl(e,true));
+  if(history.length)foot.append(btn('공유',()=>shareText(conversationText(history.filter(e=>!e.pending),'대화 기록 · '+fmtDate(history.find(e=>e.at)?.at||Date.now())))));
+  foot.append(btn(armed==='new'?'한 번 더 누르면 보관 후 새로 시작':'보관하고 새 대화 시작',()=>{if(!history.length)return notice('보관할 대화가 없습니다.');if(armed2('new','한 번 더 누르면 현재 대화를 이전 대화로 보관하고 새로 시작합니다'))resetConversation()},armed==='new'?'danger':''));
+  list.scrollTop=list.scrollHeight;return;
+ }
+ if(!arc.length){const e=document.createElement('div');e.className='hist-empty';e.textContent='이전 대화가 없습니다.\n대화 리셋을 누르거나 1시간 넘게 쉬면 여기에 날짜별로 보관됩니다.';e.style.whiteSpace='pre-line';list.appendChild(e)}
+ for(const sess of arc){
+  const box=document.createElement('div');box.className='hist-session';
+  const head=document.createElement('div');head.className='hist-session-head';
+  const t=document.createElement('div');t.className='hs-title';
+  const d1=document.createElement('div');d1.className='hs-date';d1.textContent=fmtDate(sess.start)+'  '+langPair(sess.entries);
+  const d2=document.createElement('div');d2.className='hs-sub';d2.textContent=sess.entries.length+'문장 · '+(sess.entries[0]?.text||'');
+  t.append(d1,d2);
+  const copy=btn('',ev=>{ev.stopPropagation();shareText(conversationText(sess.entries,'대화 기록 · '+fmtDate(sess.start)))});copy.innerHTML=ic('share');copy.setAttribute('aria-label','공유');
+  const del=btn(armed==='del'+sess.id?'삭제?':'',ev=>{ev.stopPropagation();if(armed2('del'+sess.id,'한 번 더 누르면 이 대화를 삭제합니다')){saveArchive(loadArchive().filter(x=>x.id!==sess.id));notice('삭제했습니다.');renderHistory()}});if(armed!=='del'+sess.id)del.innerHTML=ic('trash');del.setAttribute('aria-label','삭제');
+  if(armed==='del'+sess.id)del.style.cssText='background:#7a2230;color:#fff;border-color:#7a2230;font-size:12px';
+  head.append(t,copy,del);head.onclick=()=>{openSessions.has(sess.id)?openSessions.delete(sess.id):openSessions.add(sess.id);renderHistory()};
+  box.appendChild(head);
+  if(openSessions.has(sess.id)){const body=document.createElement('div');body.className='hist-session-body';for(const e of sess.entries)body.appendChild(histEntryEl(e,true));box.appendChild(body)}
+  list.appendChild(box);
+ }
+ let kb=0;try{kb=Math.round((localStorage.getItem(ARCHIVE_KEY)||'').length*2/1024)}catch(e){}
+ const info=document.createElement('div');info.className='hist-info';info.textContent='보관 '+arc.length+'개 · 약 '+kb+'KB';
+ foot.append(info);
+ if(arc.length)foot.append(btn(armed==='all'?'한 번 더 누르면 전부 삭제':'이전 기록 모두 지우기',()=>{if(armed2('all','한 번 더 누르면 이전 대화 기록을 모두 삭제합니다')){saveArchive([]);openSessions.clear();notice('이전 기록을 모두 지웠습니다.');renderHistory()}},'danger'));
+}
+// Start a fresh conversation automatically after a long pause (e.g. the next travel day).
+try{const last=[...history].reverse().find(e=>e.at)?.at;if(last&&Date.now()-last>3600*1000){if(archiveCurrent()){history=[];saveConversation()}}}catch(e){}
+function resetConversation(){stopAll();translationJobs.length=0;archiveCurrent();history=[];lastText={me:'',partner:''};saveConversation();clearInterims();render();status('새 대화 시작');notice('대화를 보관하고 새로 시작했습니다 · 설정 → 대화 기록에서 볼 수 있어요');closeAll()}
+function openSheet(id){$(id).classList.add('open')}function closeAll(){document.querySelectorAll('.sheet-backdrop').forEach(el=>el.classList.remove('open'))}
+for(const s of ['me','partner']){const sel=$(s+'Lang');for(const [k,v] of Object.entries(languages))sel.add(new Option(v.flag+' '+v.name,k));sel.value=settings[s];sel.onchange=()=>{if(sel.value===settings[other(s)]){notice('내 언어와 상대방 언어는 다르게 선택하세요.');sel.value=settings[s];return}stopAll();settings[s]=sel.value;lastText={me:'',partner:''};save();syncLanguagesToNative();render();status('언어 변경됨')}};
+for(const [key,id] of [['rotatePartner','rotatePartner'],['showCopy','showCopy']]){$(id).checked=!!settings[key];$(id).onchange=()=>{settings[key]=$(id).checked;save();render()}}$('speechRate').value=String(settings.speechRate);$('speechRate').onchange=()=>{settings.speechRate=Number($('speechRate').value);save()};$('fontScale').value=String(settings.fontScale);$('fontScale').oninput=()=>{settings.fontScale=Number($('fontScale').value);save();render()};
+$('styleSelect').value=settings.uiStyle;$('styleSelect').onchange=()=>{settings.uiStyle=$('styleSelect').value;document.documentElement.dataset.style=settings.uiStyle;save()};$('themeSelect').value=settings.theme;$('themeSelect').onchange=()=>{settings.theme=$('themeSelect').value;document.documentElement.dataset.theme=settings.theme;$('currentThemeLabel').textContent=settings.theme==='light'?'화이트':'다크';document.querySelector('meta[name="theme-color"]').content=settings.theme==='light'?'#f8f9fa':'#202124';save();applyAmountStyle()};$('pushBtn').onclick=()=>setMode('push');$('liveBtn').onclick=()=>setMode('live');$('listenBtn').onclick=()=>setMode('listen');$('photoBtn').onclick=()=>setMode('photo');$('calcBtn').onclick=()=>setMode('calc');$('meMic').onclick=()=>togglePush('me');$('partnerMic').onclick=()=>togglePush('partner');$('liveButton').onclick=toggleLive;$('resetBtn').onclick=resetConversation;$('settingsBtn').onclick=()=>openSheet('settingsSheet');$('keyboardBtn').onclick=()=>{if(mode==='push')openSheet('textSheet')};$('swapBtn').onclick=()=>{stopAll();[settings.me,settings.partner]=[settings.partner,settings.me];[lastText.me,lastText.partner]=[lastText.partner,lastText.me];$('meLang').value=settings.me;$('partnerLang').value=settings.partner;save();syncLanguagesToNative();render();status('언어 방향이 교환되었습니다.')} ;$('textTranslateBtn').onclick=()=>{const text=$('textInput').value.trim();if(!text)return;closeAll();session++;translate(text,$('textSource').value,session)};
+window.friendlyNativeDiagnostic=(message)=>{const n=$('diagnosticOutput');if(n)n.textContent=message;};
+$('diagnoseBtn').onclick=()=>{if(window.FriendlyNative?.runDiagnostics)window.FriendlyNative.runDiagnostics();else $('diagnosticOutput').textContent='Android 앱이 아닌 HTML 미리보기입니다.'};
+$('testTranslateBtn').onclick=async()=>{const n=$('diagnosticOutput');n.textContent='번역 모델 확인·다운로드 및 번역 중… 처음에는 인터넷이 필요합니다.';try{const result=await translateNative('안녕하세요','ko','vi');n.textContent='번역 성공: 안녕하세요 → '+result;}catch(e){n.textContent='번역 실패: '+e.message}};
+$('testMicrophoneBtn').onclick=()=>{const n=$('diagnosticOutput');if(!SpeechRec){n.textContent='음성 인식 서비스 연결 없음';return;}n.textContent='한국어로 말씀하세요. 결과를 기다립니다…';let r=new SpeechRec();r.lang='ko-KR';r.onresult=e=>{const v=e.results[0][0].transcript;n.textContent='마이크 인식: '+v};r.onerror=e=>{n.textContent='마이크 오류: '+e.error};r.onend=()=>{if(n.textContent.includes('기다립니다'))n.textContent='말씀을 인식하지 못했습니다. Google 음성 서비스와 마이크 권한을 확인하세요.'};r.start();};
+$('historyBtn').onclick=()=>{histTab='now';armed=null;renderHistory();openSheet('historySheet')};$('histTabNow').onclick=()=>{histTab='now';armed=null;renderHistory()};$('histTabPast').onclick=()=>{histTab='past';armed=null;renderHistory()};$('apiGuideBtn').onclick=()=>openSheet('apiGuideSheet');document.querySelectorAll('[data-close]').forEach(el=>el.onclick=closeAll);document.querySelectorAll('.sheet-backdrop').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)closeAll()}));document.querySelectorAll('.speak').forEach(el=>el.onclick=()=>speakSide(el.dataset.side));document.querySelectorAll('.copybtn').forEach(el=>el.onclick=async()=>{const t=lastText[el.dataset.side];if(!t)return notice('복사할 내용이 없습니다.');try{await navigator.clipboard.writeText(t);notice('복사했습니다.')}catch(e){notice('복사 권한이 없어 복사하지 못했습니다.')}});$('fullscreenBtn').onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){notice('전체 화면이 지원되지 않습니다.')}};
+// v5.14 calculator: one and only one editable offer field. Example conversion is user-configurable, not live.
+const calcSymbols={VND:'₫',KRW:'원',USD:'$',CNY:'¥',JPY:'¥'};
+let amountValue=100000,calcRotated=false;
+try{const v=JSON.parse(localStorage.getItem('friendlytalk-price-v1')||'null');if(v&&typeof v.amount==='number')amountValue=Math.max(0,v.amount);if(v&&v.currency&&calcSymbols[v.currency])settings.calcCurrency=v.currency}catch(e){}
+function savePrice(){try{localStorage.setItem('friendlytalk-price-v1',JSON.stringify({amount:amountValue,currency:settings.calcCurrency}))}catch(e){}}
+function applyAmountStyle(){document.documentElement.style.setProperty('--amount-scale',settings.amountScale/100);const c=settings.amountColor||'#ffffff';document.documentElement.style.setProperty('--amount-color',settings.theme==='light'&&c==='#ffffff'?'#202124':c);$('amountScale').value=settings.amountScale;$('amountScaleLabel').textContent=settings.amountScale+'%';document.querySelectorAll('#amountColors button').forEach(b=>b.classList.toggle('chosen',b.dataset.color===c))}
+function showAmount(){let cur=settings.calcCurrency||'VND';$('calcCurrency').value=cur;$('amountInput').value=amountValue.toLocaleString('ko-KR')+calcSymbols[cur];const live=settings.fxAuto!==false&&settings.fxRates;const when=live&&settings.fxDate?new Date(settings.fxDate):null;const tag=when?(when.getMonth()+1)+'/'+when.getDate()+' 기준 환율':'수동 환율';const rate=cur==='VND'?(live&&settings.fxRates.VND?settings.fxRates.VND:Number(settings.calculatorRate)||0):(live?Number(settings.fxRates[cur])||0:0);if(cur==='KRW'){$('calcKrw').textContent='한화 환산가 '+Math.round(amountValue).toLocaleString('ko-KR')+'원';$('calcRate').textContent='동일 통화'}else if(rate>0){$('calcKrw').textContent='한화 환산가 약 '+Math.round(amountValue*rate).toLocaleString('ko-KR')+'원';$('calcRate').textContent=cur==='VND'?tag+' · 1,000₫ ≈ '+(rate*1000).toFixed(1)+'원':tag+' · 1'+calcSymbols[cur]+' ≈ '+rate.toFixed(cur==='JPY'?2:1)+'원'}else{$('calcKrw').textContent='원화 환산 대기';$('calcRate').textContent='환율 갱신 전입니다 · 인터넷 연결 후 자동으로 받아옵니다'}applyAmountStyle()}
+$('amountInput').oninput=()=>{const cleaned=$('amountInput').value.replace(/[^0-9.]/g,'');const v=Number(cleaned);amountValue=Number.isFinite(v)?Math.min(v,9999999999):0;savePrice();const oldPos=$('amountInput').selectionStart;showAmount();/* Keep a straightforward rightmost caret after formatting. */ $('amountInput').setSelectionRange($('amountInput').value.length-1,$('amountInput').value.length-1)};
+$('amountInput').onfocus=()=>{$('amountInput').value=String(amountValue);$('amountInput').select()};
+$('amountInput').onblur=showAmount;
+$('calcCurrency').onchange=()=>{settings.calcCurrency=$('calcCurrency').value;save();savePrice();showAmount()};
+$('calcClear').onclick=()=>{amountValue=0;savePrice();showAmount();$('amountInput').focus()};
+$('calcRotate').onclick=()=>{calcRotated=!calcRotated;$('amountInput').style.transform=calcRotated?'rotate(180deg)':'none';$('calcHint').textContent=calcRotated?'상대방을 향해 금액이 회전했습니다.':'금액은 여기서 직접 입력하고 그대로 보여줍니다.'};
+$('calcFull').onclick=()=>{const stage=document.querySelector('.calc-stage');if(!document.fullscreenElement&&stage.requestFullscreen)stage.requestFullscreen().catch(()=>notice('전체화면 사용 불가'));else if(document.fullscreenElement)document.exitFullscreen()};
+$('amountScale').oninput=()=>{settings.amountScale=Number($('amountScale').value);save();applyAmountStyle()};
+document.querySelectorAll('#amountColors button').forEach(b=>b.onclick=()=>{settings.amountColor=b.dataset.color;save();applyAmountStyle()});
+// v6.0 exchange rates: refreshed automatically (at most every 12 hours) when online
+function refreshRates(force){if(settings.fxAuto===false||!window.FriendlyNative?.fetchRates)return;if(!force&&settings.fxDate&&Date.now()-settings.fxDate<12*3600e3)return;try{FriendlyNative.fetchRates()}catch(e){}}
+window.friendlyNativeRates=json=>{if(!json)return;try{const r=JSON.parse(json);if(r.VND>0){settings.fxRates=r;settings.fxDate=Date.now();save();showAmount();renderFxHint()}}catch(e){}};
+function renderFxHint(){const d=settings.fxDate?new Date(settings.fxDate):null;$('fxHint').textContent=settings.fxAuto===false?'자동 갱신 꺼짐 · 위에 적은 환율로 계산합니다.':(d?'마지막 갱신 '+(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+' · 인터넷이 될 때 자동 갱신':'인터넷이 될 때 실제 환율로 자동 갱신합니다.')}
+$('fxAuto').checked=settings.fxAuto!==false;$('fxAuto').onchange=()=>{settings.fxAuto=$('fxAuto').checked;save();renderFxHint();showAmount();if(settings.fxAuto)refreshRates(true)};
+renderFxHint();setTimeout(()=>refreshRates(false),1500);
+$('calcRateInput').value=settings.calculatorRate;$('calcRateInput').onchange=()=>{settings.calculatorRate=Math.max(0,Number($('calcRateInput').value)||0);save();showAmount()};
+$('currentThemeLabel').textContent=settings.theme==='light'?'화이트':'다크';showAmount();
+// v5.33 photo translation (Lens style): capture screen -> result screen with Original/Translated.
+let photoUrl=null,photoScale=1,photoDX=0,photoDY=0;const pointers=new Map();let oldDistance=0,oldScale=1;
+let photoOriginal=null,photoTranslated=null,photoLines=[],photoBusy=false,lastTalkMode='push';
+function paintPhoto(){const el=$('photoPreview');el.style.transform=`translate(${photoDX}px,${photoDY}px) scale(${photoScale})`}
+function photoTargetLang(){return settings.photoTarget&&languages[settings.photoTarget]?settings.photoTarget:settings.me}
+function photoSourceLang(){const t=photoTargetLang();return t===settings.me?settings.partner:settings.me}
+function renderPhotoLang(){document.querySelectorAll('#photoPanel [data-role="src"]').forEach(b=>b.textContent=languages[photoSourceLang()].name);document.querySelectorAll('#photoPanel [data-role="dst"]').forEach(b=>b.textContent=languages[photoTargetLang()].name)}
+document.querySelectorAll('#photoPanel [data-role="swap"]').forEach(b=>b.onclick=()=>{settings.photoTarget=photoSourceLang();save();renderPhotoLang();try{FriendlyNative.setPhotoTarget(settings.photoTarget)}catch(e){}notice(languages[photoTargetLang()].name+'로 번역합니다'+(photoOriginal?' · 다음 사진부터 적용':''))});
+function photoScreen(which){$('plCapture').classList.toggle('hide',which!=='capture');$('plResult').classList.toggle('hide',which!=='result');if(which==='capture')renderRecent()}
+function renderRecent(){const r=$('plRecent');if(photoTranslated){r.innerHTML='<img alt="" src="'+photoTranslated+'">';r.classList.add('has')}else{r.innerHTML=ic('image');r.classList.remove('has')}}
+function setSeg(v){$('photoOriginalBtn').classList.toggle('on',v==='original');$('photoTranslatedBtn').classList.toggle('on',v==='translated')}
+function showPhotoVersion(variant){const src=variant==='translated'?photoTranslated:photoOriginal;if(!src){if(variant==='translated'&&photoBusy)notice('아직 번역 중입니다');return;}photoUrl=src;$('photoPreview').src=src;$('photoStage').classList.add('has-photo');photoScale=1;photoDX=photoDY=0;paintPhoto();setSeg(variant)}
+function setPhotoBusy(on,text){photoBusy=on;$('plBusy').classList.toggle('hide',!on);if(text)$('plBusyText').textContent=text}
+function photoFileChanged(file){if(!file)return;const reader=new FileReader();reader.onload=()=>{photoOriginal=reader.result;photoTranslated=null;photoLines=[];photoScreen('result');showPhotoVersion('original');$('photoStatus').textContent='웹 미리보기: 글자 인식·번역은 Android 앱에서만 됩니다.';};reader.readAsDataURL(file);}
+for(const id of ['photoFile','cameraFile'])$(id).onchange=e=>photoFileChanged(e.target.files?.[0]);
+$('nativeCamera').onclick=()=>{if(openLive())return;if(window.FriendlyNative?.takePhoto){window.FriendlyNative.takePhoto();}else $('cameraFile').click();};
+$('nativeGallery').onclick=()=>{if(window.FriendlyNative?.pickPhoto){window.FriendlyNative.pickPhoto();}else $('photoFile').click();};
+$('plRecent').onclick=()=>{if(!photoOriginal)return notice('아직 번역한 사진이 없습니다');photoScreen('result');showPhotoVersion(photoTranslated?'translated':'original')};
+$('plBack').onclick=()=>{if(!openLive())photoScreen('capture')};
+$('plExit').onclick=()=>setMode(lastTalkMode||'push');
+$('photoOriginalBtn').onclick=()=>showPhotoVersion('original');
+$('photoTranslatedBtn').onclick=()=>{if(photoNeedsTranslate&&!photoBusy)return translateShownPhoto();showPhotoVersion('translated')};
+function photoText(){return photoLines.map(l=>l.dst).join('\n')}
+$('plListen').onclick=$('plTextListen').onclick=()=>{if(!photoLines.length)return notice('번역된 글자가 없습니다');speakStudy(photoLines.map(l=>l.dst).join('. '),photoTargetLang(),null)};
+$('plCopy').onclick=$('plTextCopy').onclick=async()=>{if(!photoLines.length)return notice('번역된 글자가 없습니다');try{await navigator.clipboard.writeText(photoText());notice('번역 글자를 복사했습니다')}catch(e){notice('복사할 수 없습니다')}};
+$('plShare').onclick=$('plTextShare').onclick=()=>{if(!photoLines.length)return notice('번역된 글자가 없습니다');shareText(photoLines.map(l=>l.src+'\n→ '+l.dst).join('\n\n')+'\n\n— FriendlyTalk 사진 번역')};
+$('plText').onclick=()=>{renderPhotoText();openSheet('photoTextSheet')};
+// ===== v5.34 study mode: listen to the ORIGINAL language + optional Hangul pronunciation with tones =====
+const VI_TONE={'\u0300':'↘','\u0301':'↗','\u0309':'↘↗','\u0303':'↗~','\u0323':'↓'};
+const H_CHO='ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ',H_JUNG='ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ',H_JONG=['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+const VI_V={a:'ㅏ','ă':'ㅏ','â':'ㅓ',e:'ㅐ','ê':'ㅔ',i:'ㅣ',y:'ㅣ',o:'ㅗ','ô':'ㅗ','ơ':'ㅓ',u:'ㅜ','ư':'ㅡ'};
+const VI_PAIR={'ia':['ㅣ','ㅓ'],'iê':['ㅣ','ㅔ'],'yê':['ㅣ','ㅔ'],'ua':['ㅜ','ㅓ'],'uô':['ㅜ','ㅗ'],'ưa':['ㅡ','ㅓ'],'ươ':['ㅡ','ㅓ']};
+const W_GLIDE={'ㅏ':'ㅘ','ㅐ':'ㅙ','ㅓ':'ㅝ','ㅔ':'ㅞ','ㅣ':'ㅟ'},Y_GLIDE={'ㅏ':'ㅑ','ㅓ':'ㅕ','ㅗ':'ㅛ','ㅜ':'ㅠ','ㅐ':'ㅒ','ㅔ':'ㅖ'};
+const VI_INIT=['ngh','ng','nh','ch','gh','gi','kh','ph','th','tr','qu','b','c','d','đ','g','h','k','l','m','n','p','r','s','t','v','x'];
+function hangulSyl(c,v,f){const ci=H_CHO.indexOf(c),vi=H_JUNG.indexOf(v),fi=H_JONG.indexOf(f||'');if(ci<0||vi<0||fi<0)return null;return String.fromCharCode(0xAC00+(ci*21+vi)*28+fi)}
+/** One Vietnamese syllable -> {h: Hangul, t: tone arrow} (south = Ho Chi Minh, north = Hanoi). */
+const VI_KEEP_MARKS='\u0302\u0306\u031B'; // circumflex, breve, horn (vowel letters, not tones)
+function viSyllable(word,north){
+ let tone='→',base='';
+ // OCR sometimes gives Ð (eth) for Đ, extra or misplaced marks, or invisible characters
+ for(const ch of word.replace(/[Ðð]/g,'đ').normalize('NFD')){
+  if(VI_TONE[ch]){if(tone==='→')tone=VI_TONE[ch];continue}
+  if(/\p{M}/u.test(ch)&&!VI_KEEP_MARKS.includes(ch))continue;
+  if(/[\u200B-\u200D\uFEFF]/.test(ch))continue;
+  base+=ch}
+ base=base.normalize('NFC').toLowerCase();
+ if(!/^[a-zăâđêôơư]+$/.test(base))return null;
+ if(!north&&tone==='↗~')tone='↘↗'; // the south merges ngã into hỏi
+ let ini='',rest=base;
+ for(const c of VI_INIT){if(rest.startsWith(c)&&rest.length>c.length){ini=c;rest=rest.slice(c.length);break}}
+ if(ini==='gi'&&!/^[aăâeêioôơuưy]/.test(rest))rest='i'+rest;
+ const m=rest.match(/^([aăâeêioôơuưy]+)([a-z]*)$/);if(!m)return null;
+ let nuc=m[1];const fin=m[2];let glide=ini==='qu'?'w':'';
+ if(/^(oa|oă|oe|uy|uâ|uê|uơ)/.test(nuc)){glide='w';nuc=nuc.slice(1)}
+ const vs=[];
+ for(let i=0;i<nuc.length;){const two=nuc.slice(i,i+2);if(VI_PAIR[two]){vs.push(...VI_PAIR[two]);i+=2}else{vs.push(VI_V[nuc[i]]);i++}}
+ if(glide){if(W_GLIDE[vs[0]])vs[0]=W_GLIDE[vs[0]];else vs.unshift('ㅜ')}
+ const C={b:'ㅂ',c:'ㄲ',k:'ㄲ',qu:'ㄲ',ch:'ㅉ',tr:'ㅉ',d:north?'ㅈ':'ㅇ',gi:north?'ㅈ':'ㅇ',r:north?'ㅈ':'ㄹ','đ':'ㄷ',g:'ㄱ',gh:'ㄱ',h:'ㅎ',kh:'ㅋ',l:'ㄹ',m:'ㅁ',n:'ㄴ',ng:'ㅇ',ngh:'ㅇ',nh:'ㄴ',p:'ㅃ',ph:'ㅍ',s:'ㅆ',t:'ㄸ',th:'ㅌ',v:'ㅂ',x:'ㅆ','':'ㅇ'};
+ if((ini==='nh'||(!north&&(ini==='d'||ini==='gi')))&&Y_GLIDE[vs[0]])vs[0]=Y_GLIDE[vs[0]];
+ let coda='';const last=vs[vs.length-1];
+ switch(fin){
+  case '':break;case 'c':coda='ㄱ';break;case 'm':coda='ㅁ';break;case 'n':coda='ㄴ';break;case 'ng':coda='ㅇ';break;case 'p':coda='ㅂ';break;case 't':coda='ㅅ';break;
+  case 'nh':if(north){if(last==='ㅏ')vs.push('ㅣ');coda='ㅇ'}else coda='ㄴ';break;
+  case 'ch':if(north){if(last==='ㅏ')vs.push('ㅣ');coda='ㄱ'}else coda='ㅅ';break;
+  default:return null}
+ let out='';
+ for(let i=0;i<vs.length;i++){const s1=hangulSyl(i===0?C[ini]:'ㅇ',vs[i],i===vs.length-1?coda:'');if(!s1)return null;out+=s1}
+ return {h:out,t:tone};
+}
+/** Two syllables glued together by OCR ("CÔNGTY") -> try every split point. */
+function viSplit(w,north){for(let i=2;i<=w.length-2;i++){const a=viSyllable(w.slice(0,i),north),b=a&&viSyllable(w.slice(i),north);if(a&&b)return [a,b]}return null}
+function viPronounce(text,north){const out=[];for(const w of String(text||'').split(/[^\p{L}\p{M}\p{N}]+/u).filter(Boolean)){const one=viSyllable(w,north);if(one){out.push(one);continue}const two=/^\p{L}+$/u.test(w.normalize('NFC'))&&!/^[A-Z]{2,}$/.test(w)?viSplit(w,north):null;if(two)out.push(...two);else out.push({h:w,t:''})}return out}
+function pronNode(text){const d=document.createElement('div');d.className='pl-pr';for(const s1 of viPronounce(text,settings.pronDialect==='north')){const sp=document.createElement('span');sp.textContent=s1.h;if(s1.t){const i=document.createElement('i');i.textContent=s1.t;sp.appendChild(i)}d.appendChild(sp)}return d}
+let playingRow=null;
+function clearPlaying(){if(playingRow){playingRow.classList.remove('play');playingRow=null}}
+function studyRate(){return (Number(settings.speechRate)||1)*(settings.studySlow?0.7:1)}
+function speakStudy(text,code,row){clearPlaying();if(row){row.classList.add('play');playingRow=row}try{FriendlyNative.speak(text,languages[code].bcp,studyRate())}catch(e){clearPlaying();notice('음성 재생은 Android 앱에서 됩니다')}}
+const ttsBeforeStudy=window.friendlyNativeTts;
+window.friendlyNativeTts=(kind,detail)=>{if(kind!=='start')clearPlaying();return ttsBeforeStudy&&ttsBeforeStudy(kind,detail)};
+function renderStudyTools(){$('plPronBtn').classList.toggle('on',!!settings.studyPron);$('plSlowBtn').classList.toggle('on',!!settings.studySlow);
+ const viInvolved=photoSourceLang()==='vi'||photoTargetLang()==='vi';$('plPronBtn').classList.toggle('hide',!viInvolved);$('plLegend').classList.toggle('hide',!(viInvolved&&settings.studyPron));
+ $('plTextListenSrc').innerHTML=ic('volume')+' 원문 전체 <b class="code">'+photoSourceLang().toUpperCase()+'</b>';$('plTextListen').innerHTML=ic('volume')+' 번역 전체 <b class="code">'+photoTargetLang().toUpperCase()+'</b>'}
+function renderPhotoText(){
+ const list=$('plTextList');list.replaceChildren();clearPlaying();$('plTextTitle').textContent='인식된 글자 '+photoLines.length+'줄';renderStudyTools();
+ if(!photoLines.length){const e=document.createElement('div');e.className='hist-empty';e.textContent=photoBusy?'번역 중입니다…':'번역된 글자가 없습니다.';list.appendChild(e);return}
+ const sl=photoSourceLang(),tl=photoTargetLang();
+ for(const l of photoLines){const row=document.createElement('div');row.className='pl-li';
+  const txt=document.createElement('div');txt.className='pl-li-txt';
+  const a=document.createElement('div');a.className='pl-li-src';a.textContent=l.src;txt.appendChild(a);
+  if(settings.studyPron&&sl==='vi')txt.appendChild(pronNode(l.src));
+  const b=document.createElement('div');b.className='pl-li-dst';b.textContent=l.dst;txt.appendChild(b);
+  if(settings.studyPron&&tl==='vi')txt.appendChild(pronNode(l.dst));
+  const act=document.createElement('div');act.className='pl-li-act';
+  const so=document.createElement('button');so.type='button';so.className='vi';so.innerHTML=ic('volume')+'<b>'+sl.toUpperCase()+'</b>';so.setAttribute('aria-label','원문 듣기');so.onclick=()=>speakStudy(l.src,sl,row);
+  const sp=document.createElement('button');sp.type='button';sp.innerHTML=ic('volume')+'<b>'+tl.toUpperCase()+'</b>';sp.setAttribute('aria-label','번역 듣기');sp.onclick=()=>speakStudy(l.dst,tl,row);
+  const cp=document.createElement('button');cp.type='button';cp.innerHTML=ic('copy');cp.setAttribute('aria-label','복사');cp.onclick=async()=>{try{await navigator.clipboard.writeText(l.src+'\n'+l.dst);notice('복사했습니다')}catch(e){}};
+  act.append(so,sp,cp);row.append(txt,act);list.appendChild(row)}
+}
+$('plTextListenSrc').onclick=()=>{if(!photoLines.length)return notice('인식된 글자가 없습니다');speakStudy(photoLines.map(l=>l.src).join('. '),photoSourceLang(),null)};
+$('plPronBtn').onclick=()=>{settings.studyPron=!settings.studyPron;save();try{$('studyPron').checked=settings.studyPron}catch(e){}renderPhotoText()};
+$('plSlowBtn').onclick=()=>{settings.studySlow=!settings.studySlow;save();renderStudyTools();notice(settings.studySlow?'천천히 읽기 (0.7배)':'보통 속도로 읽기')};
+// v5.34 listen: max segment length (3-20 s)
+const LISTEN_SEGS=[3,5,7,10,15,20];
+function renderListenSeg(){$('listenSegBtn').textContent='최대 '+settings.listenMaxSec+'초';try{$('listenMaxSec').value=String(settings.listenMaxSec)}catch(e){}}
+$('listenSegBtn').onclick=()=>{const i=LISTEN_SEGS.indexOf(Number(settings.listenMaxSec));settings.listenMaxSec=LISTEN_SEGS[(i+1)%LISTEN_SEGS.length];save();renderListenSeg();notice('듣기 최대 구간 '+settings.listenMaxSec+'초'+(liveActive&&mode==='listen'?' · 다음 시작부터 적용':''))};
+$('listenMaxSec').onchange=()=>{settings.listenMaxSec=Number($('listenMaxSec').value)||5;save();renderListenSeg()};
+$('studyPron').checked=!!settings.studyPron;$('studyPron').onchange=()=>{settings.studyPron=$('studyPron').checked;save()};
+$('pronDialect').value=settings.pronDialect==='north'?'north':'south';$('pronDialect').onchange=()=>{settings.pronDialect=$('pronDialect').value;save()};
+function renderLiveOn(){$('liveOn').checked=!!settings.liveOn;$('liveEngine').disabled=!settings.liveOn;$('liveEngineRow').classList.toggle('off',!settings.liveOn)}
+$('liveOn').onchange=()=>{settings.liveOn=$('liveOn').checked;save();renderLiveOn();notice(settings.liveOn?'실시간 카메라 번역을 켰어요 (개발 중)':'실시간 카메라 번역을 껐어요')};renderLiveOn();
+$('liveEngine').value=['auto','google','gpt','mlkit'].includes(settings.liveEngine)?settings.liveEngine:'auto';$('liveEngine').onchange=()=>{settings.liveEngine=$('liveEngine').value;save()};
+$('reportBtn').onclick=()=>{if(!window.FriendlyNative?.copyReport)return notice('Android 앱에서만 사용할 수 있습니다');try{const r=FriendlyNative.copyReport();$('diagnosticOutput').textContent=r;notice('문제 보고 내용을 복사했어요 · 채팅에 붙여 넣어 보내 주세요')}catch(e){}};
+$('shutterHaptic').checked=settings.shutterHaptic!==false;$('shutterHaptic').onchange=()=>{settings.shutterHaptic=$('shutterHaptic').checked;save()};
+if(!LISTEN_SEGS.includes(Number(settings.listenMaxSec)))settings.listenMaxSec=5;
+renderListenSeg();
+let photoAwaitTimer=null,lastPhotoResultAt=0,liveDenied=false,liveFromGallery=false;
+window.friendlyNativePhotoReturn=()=>{liveFromGallery=false;if(mode!=='photo')setMode('photo',{noLive:true});photoScreen('result');
+ // v5.34: never leave "사진 불러오는 중…" hanging (late event or no photo).
+ if(Date.now()-lastPhotoResultAt<1500)return;
+ setPhotoBusy(true,'사진 불러오는 중…');clearTimeout(photoAwaitTimer);
+ photoAwaitTimer=setTimeout(()=>{if(photoBusy&&$('plBusyText').textContent==='사진 불러오는 중…'){setPhotoBusy(false);if(!photoOriginal)photoScreen('capture')}},20000)};
+window.friendlyNativePhotoCancel=()=>{clearTimeout(photoAwaitTimer);if(photoBusy&&$('plBusyText').textContent==='사진 불러오는 중…')setPhotoBusy(false);if(mode!=='photo')return;if(liveFromGallery){liveFromGallery=false;if(openLive())return}photoScreen(photoOriginal?'result':'capture')};
+// v5.34 live camera translation (native screen). Falls back to the old capture screen.
+function liveOk(){if(!window.FriendlyNative?.openLiveCamera||liveDenied)return false;try{return FriendlyNative.liveCameraSupported()!==false}catch(e){return true}}
+function openLive(){if(mode!=='photo'||!liveOk())return false;const a=photoSourceLang(),b=photoTargetLang();try{FriendlyNative.openLiveCamera(JSON.stringify({src:a,dst:b,srcName:languages[a].name,dstName:languages[b].name,haptic:settings.shutterHaptic!==false,liveOn:!!settings.liveOn,liveEngine:settings.liveEngine||'auto'}));return true}catch(e){return false}}
+window.friendlyNativeLive=(action,src,dst)=>{
+ if(dst&&languages[dst]&&dst!==photoTargetLang()){settings.photoTarget=dst;save();renderPhotoLang()}
+ if(action==='exit'){if(mode==='photo')setMode(lastTalkMode||'push');return}
+ if(action==='gallery'){liveFromGallery=true;photoScreen('capture');return}
+ if(action==='denied'){liveDenied=true;photoScreen('capture');notice('카메라 권한이 없어 실시간 번역을 쓸 수 없습니다 · 원형 버튼은 기본 카메라로 찍습니다');return}
+ if(action==='error'){liveDenied=true;photoScreen('capture');notice('실시간 카메라를 열 수 없어 기본 카메라를 사용합니다');return}
+};
+let photoNeedsTranslate=false,photoSaveAsked=false;
+function setTranslateButton(on){$('plTranslate').classList.toggle('hide',!on);$('plChips').classList.toggle('hide',on);$('photoTranslatedBtn').classList.toggle('dim',on);if(on){$('plSave').classList.add('hide');$('plSaveSpacer').classList.remove('hide')}}
+function translateShownPhoto(){if(!window.FriendlyNative?.translatePhoto)return notice('사진 번역은 Android 앱에서 됩니다');setTranslateButton(false);$('plChips').classList.add('hide');setPhotoBusy(true,'글자 찾는 중…');try{FriendlyNative.translatePhoto()}catch(e){setPhotoBusy(false);setTranslateButton(true)}}
+$('plTranslate').onclick=translateShownPhoto;
+$('plSave').onclick=()=>{if(!window.FriendlyNative?.savePhoto)return;photoSaveAsked=true;try{FriendlyNative.savePhoto()}catch(e){}};
+window.friendlyNativePhoto=(kind,message,encoded)=>{
+ if(mode!=='photo')setMode('photo',{noLive:true});
+ if(kind==='original'||kind==='result'||kind==='error')clearTimeout(photoAwaitTimer);
+ if(kind==='result'||kind==='error')lastPhotoResultAt=Date.now();
+ if(kind==='status'){$('photoStatus').textContent=message;if(photoBusy)setPhotoBusy(true,message);return}
+ if(kind==='error'){setPhotoBusy(false);$('photoStatus').textContent=message;notice(message);return}
+ if(kind==='original'&&encoded){photoOriginal='data:image/jpeg;base64,'+encoded;photoTranslated=null;photoLines=[];photoNeedsTranslate=false;setTranslateButton(false);photoScreen('result');showPhotoVersion('original');if(message)setPhotoBusy(true,message);return}
+ // v5.38 gallery photo: shown as is; translated only when 번역하기 is pressed, saved only with 저장
+ if(kind==='loaded'){photoNeedsTranslate=true;setPhotoBusy(false);setTranslateButton(true);$('photoStatus').textContent=message||'';return}
+ if(kind==='saveState'){const st=message;$('plSave').classList.toggle('hide',st==='none');$('plSaveSpacer').classList.toggle('hide',st!=='none');$('plSave').disabled=st==='saved';$('plSave').innerHTML=ic(st==='saved'?'check':'download');$('plSave').setAttribute('aria-label',st==='saved'?'저장됨':'번역 사진 저장');if(st==='saved'&&photoSaveAsked)notice('번역 사진을 저장했습니다');if(st==='failed')notice('저장하지 못했습니다');photoSaveAsked=false;return}
+ if(kind==='lines'){try{photoLines=JSON.parse(message)||[]}catch(e){photoLines=[]}return}
+ if(kind==='result'&&encoded){photoTranslated='data:image/jpeg;base64,'+encoded;photoNeedsTranslate=false;setTranslateButton(false);setPhotoBusy(false);photoScreen('result');showPhotoVersion('translated');$('photoStatus').textContent=message;renderRecent()}
+};
+renderPhotoLang();
+const ph=$('photoStage');ph.addEventListener('pointerdown',e=>{if(!photoUrl)return;ph.setPointerCapture(e.pointerId);pointers.set(e.pointerId,[e.clientX,e.clientY]);if(pointers.size===2){const a=[...pointers.values()];oldDistance=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);oldScale=photoScale}});
+ph.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;const prev=pointers.get(e.pointerId);pointers.set(e.pointerId,[e.clientX,e.clientY]);if(pointers.size===1){photoDX+=e.clientX-prev[0];photoDY+=e.clientY-prev[1]}else if(pointers.size===2){const a=[...pointers.values()];const distance=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);photoScale=Math.max(1,Math.min(5,oldScale*distance/Math.max(1,oldDistance)))}paintPhoto()});
+for(const kind of ['pointerup','pointercancel'])ph.addEventListener(kind,e=>{pointers.delete(e.pointerId);if(pointers.size<2)oldScale=photoScale});
+ph.addEventListener('dblclick',()=>{photoScale=photoScale===1?2:1;photoDX=photoDY=0;paintPhoto()});
+initAiSettings();syncLanguagesToNative();
+render();
+status('마이크 버튼을 눌러 말하세요.');
+try{window.FriendlyNative?.pageReady?.()}catch(e){}
+
+</script>
+<script>
+/* v5.18 built-in Korean travel phrases; list works offline. Actual translations use Native ML Kit in Android APK. */
+(function(){'use strict';
+const categories=[{"emoji":"🚨","name":"긴급·분실","subs":[{"name":"긴급 도움","phrases":["도와주세요!","구급차를 불러 주세요.","경찰을 불러 주세요.","병원에 가야 합니다.","저는 위험한 상황에 있습니다.","지금 도움이 필요합니다.","한국어 통역이 필요합니다.","이곳은 안전한가요?"]},{"name":"사고·도난","phrases":["교통사고가 났습니다.","여권을 잃어버렸습니다.","휴대폰을 잃어버렸습니다.","가방을 도난당했습니다.","돈을 도난당했습니다.","경찰서가 어디인가요?","한국 대사관에 연락하고 싶습니다.","제 가족에게 연락해 주세요."]}]},{"emoji":"🍜","name":"음식점·카페","subs":[{"name":"메뉴·주문","phrases":["메뉴판을 보여 주세요.","이 집에서 가장 인기 있는 음식은 무엇인가요?","이 사진에 있는 음식으로 주세요.","이것 하나 주세요.","이것 두 개 주세요.","이 음식은 무엇인가요?","어떤 음식인지 설명해 주세요.","음식에 무엇이 들어가나요?","고수는 빼 주세요.","맵지 않게 해 주세요.","조금만 맵게 해 주세요.","돼지고기는 빼 주세요.","채식 메뉴가 있나요?","음식 알레르기가 있습니다."]},{"name":"음료·추가 요청","phrases":["생수 한 병 주세요.","얼음은 빼 주세요.","설탕을 조금만 넣어 주세요.","뜨거운 물을 주세요.","찬물을 주세요.","숟가락을 하나 더 주세요.","휴지를 주세요.","음식이 아직 나오지 않았습니다.","포장해 주세요."]},{"name":"계산","phrases":["계산해 주세요.","카드로 계산할 수 있나요?","현금으로 계산하겠습니다.","따로 계산할 수 있나요?","영수증을 주세요."]}]},{"emoji":"🛍️","name":"쇼핑·가격 흥정","subs":[{"name":"가격·흥정","phrases":["이거 얼마인가요?","조금 깎아 주세요.","너무 비쌉니다.","조금 더 저렴하게 해 주세요.","두 개 사면 할인되나요?","이 가격이면 구매하겠습니다.","최종 가격이 얼마인가요?","가격을 계산기에 적어 주세요.","구경만 하겠습니다.","조금만 더 깎아 주실 수 있나요?","이 가격은 제 예산보다 비쌉니다.","제가 원하는 가격은 이 금액입니다.","이 금액에 가능할까요?","이 가격으로 해 주시면 바로 사겠습니다.","조금 더 싸게 해 주시면 두 개 사겠습니다.","세 개를 사면 얼마인가요?","여러 개 사면 더 할인해 주시나요?","현금으로 내면 할인되나요?","카드와 현금의 가격이 다른가요?","할인된 가격을 계산기에 적어 주세요.","이 가격이 한 개 가격인가요?","한 세트 가격인가요?","가격에 세금이 포함되어 있나요?","예산이 부족해서 이 가격에는 못 사겠습니다.","다른 가게도 둘러보고 다시 오겠습니다.","생각해 보고 다시 오겠습니다.","더 이상 할인은 안 되나요?","이것과 저것을 함께 사면 얼마인가요?","이 금액만 가지고 있습니다."]},{"name":"상품·결제","phrases":["다른 색상이 있나요?","다른 사이즈가 있나요?","더 큰 사이즈가 있나요?","더 작은 사이즈가 있나요?","입어 봐도 되나요?","새 제품으로 주세요.","불량이 있는지 확인해 주세요.","카드 결제가 가능한가요?","현금만 받나요?","봉투에 넣어 주세요.","교환할 수 있나요?","이 제품의 다른 모델이 있나요?","이것을 직접 확인해 봐도 되나요?","작동하는지 보여 주세요.","정품인가요?","사용한 제품인가요, 새 제품인가요?","흠집이 없는 것으로 주세요.","다른 제품으로 교환해 주세요.","환불이 가능한가요?","환불이나 교환은 며칠 이내에 가능한가요?","보증 기간이 있나요?","계산한 금액이 맞는지 다시 확인해 주세요.","거스름돈을 확인해 주세요.","현금 영수증이나 구매 영수증을 주세요.","배송이 가능한가요?","언제 받을 수 있나요?"]}]},{"emoji":"🚕","name":"택시·이동","subs":[{"name":"출발·목적지","phrases":["이 주소로 가 주세요.","지도에 표시된 곳으로 가 주세요.","미터기를 켜 주세요.","얼마나 걸리나요?","예상 요금이 얼마인가요?","고속도로를 이용해 주세요.","고속도로를 이용하지 말아 주세요.","천천히 운전해 주세요."]},{"name":"이동 중·도착","phrases":["여기에서 내려 주세요.","여기서 잠깐 세워 주세요.","이곳에서 기다려 주세요.","조금만 더 가 주세요.","왼쪽으로 가 주세요.","오른쪽으로 가 주세요.","지금 요금을 결제하겠습니다.","거스름돈을 주세요.","영수증을 주세요."]}]},{"emoji":"🏨","name":"호텔·숙소","subs":[{"name":"체크인·예약","phrases":["예약했습니다. 체크인하고 싶습니다.","예약자 이름은 ○○○입니다.","예약 확인서를 보여 드리겠습니다.","얼리 체크인이 가능한가요?","체크인은 몇 시부터인가요?","여권을 보여 드리겠습니다.","보증금이 필요한가요?"]},{"name":"객실·시설","phrases":["와이파이 비밀번호가 무엇인가요?","수건을 더 주세요.","생수 한 병 더 주세요.","에어컨이 작동하지 않습니다.","뜨거운 물이 나오지 않습니다.","방을 바꿀 수 있나요?","방 청소를 부탁드립니다.","세탁 서비스를 이용할 수 있나요?"]},{"name":"체크아웃","phrases":["체크아웃은 몇 시인가요?","체크아웃을 늦게 할 수 있나요?","짐을 잠시 맡겨 주세요.","보증금을 돌려받고 싶습니다.","영수증을 받을 수 있나요?"]}]},{"emoji":"🚻","name":"화장실·편의시설","subs":[{"name":"화장실","phrases":["화장실이 어디에 있나요?","여기 화장실을 사용해도 되나요?","가장 가까운 화장실이 어디인가요?","화장지가 있나요?","손 씻을 곳이 어디인가요?"]},{"name":"편의시설","phrases":["휴대폰을 충전할 수 있나요?","와이파이가 있나요?","비밀번호가 무엇인가요?","여기서 잠깐 쉬어도 되나요?","현금인출기가 어디에 있나요?"]}]},{"emoji":"💬","name":"인사·기본 대화","subs":[{"name":"인사","phrases":["안녕하세요.","감사합니다.","정말 감사합니다.","죄송합니다.","괜찮습니다.","안녕히 계세요.","좋은 하루 보내세요."]},{"name":"의사소통","phrases":["저는 한국 사람입니다.","외국어를 잘하지 못합니다.","번역기를 사용해도 될까요?","천천히 말씀해 주세요.","다시 한번 말씀해 주세요.","이해하지 못했습니다.","글자로 적어 주세요.","잠시만 기다려 주세요.","제 휴대폰에 말씀해 주세요."]}]},{"emoji":"🛵","name":"배달·택배","subs":[{"name":"주문·배달","phrases":["이 주소로 배달해 주세요.","배달비가 얼마인가요?","언제 도착하나요?","호텔 로비로 와 주세요.","건물 입구로 와 주세요.","이 위치를 확인해 주세요."]},{"name":"수령·연락","phrases":["도착하면 연락해 주세요.","제가 밖으로 나가겠습니다.","문 앞에 놓아 주세요.","조금만 기다려 주세요.","아직 배달이 도착하지 않았습니다.","다른 물건이 왔습니다."]}]},{"emoji":"📍","name":"길 찾기","subs":[{"name":"방향·거리","phrases":["여기가 어디인가요?","이 주소로 어떻게 가나요?","걸어서 갈 수 있나요?","걸어서 얼마나 걸리나요?","어느 방향으로 가야 하나요?","지도에 표시해 주세요."]},{"name":"주변 장소","phrases":["가장 가까운 편의점이 어디인가요?","버스 정류장이 어디인가요?","지하철역은 어디인가요?","가장 가까운 은행이 어디인가요?","제가 길을 잃었습니다."]}]},{"emoji":"🏥","name":"병원·약국","subs":[{"name":"증상","phrases":["몸이 아픕니다.","머리가 아픕니다.","배가 아픕니다.","열이 납니다.","기침이 심합니다.","설사를 하고 있습니다.","알레르기가 있습니다.","숨쉬기가 어렵습니다."]},{"name":"진료·약","phrases":["가장 가까운 병원이 어디인가요?","가장 가까운 약국이 어디인가요?","의사에게 진료받고 싶습니다.","한국어 통역이 필요합니다.","이 약은 어떻게 복용하나요?","하루에 몇 번 복용하나요?","진료 기록을 받을 수 있나요?"]}]},{"emoji":"💱","name":"환전·은행","subs":[{"name":"환전","phrases":["원화를 현지 통화로 바꾸고 싶습니다.","환율이 얼마인가요?","환전 수수료가 있나요?","작은 지폐로 바꿔 주세요.","금액을 다시 확인해 주세요."]},{"name":"은행·결제","phrases":["ATM이 어디에 있나요?","카드 결제가 실패했습니다.","돈이 인출되지 않았습니다.","현금으로만 결제할 수 있나요?","영수증을 주세요."]}]},{"emoji":"📱","name":"휴대폰·인터넷","subs":[{"name":"유심·요금","phrases":["여행용 유심을 사고 싶습니다.","eSIM을 사용할 수 있나요?","한 달 요금이 얼마인가요?","데이터가 무제한인가요?","데이터를 충전하고 싶습니다.","이 요금제는 테더링이 가능한가요?"]},{"name":"연결 문제","phrases":["인터넷이 연결되지 않습니다.","와이파이 비밀번호를 알려 주세요.","전화번호를 확인하고 싶습니다.","데이터 사용량을 확인하고 싶습니다."]}]},{"emoji":"✈️","name":"공항·비행기","subs":[{"name":"출국","phrases":["체크인 카운터는 어디인가요?","탑승구는 어디인가요?","출발 시간이 변경되었나요?","위탁 수하물은 어디에서 보내나요?","이 물건을 기내에 가져갈 수 있나요?"]},{"name":"도착·환승","phrases":["수하물 찾는 곳은 어디인가요?","제 짐이 나오지 않습니다.","입국 심사대는 어디인가요?","환승하려면 어디로 가나요?","공항에서 시내로 어떻게 가나요?"]}]},{"emoji":"🚌","name":"버스·기차","subs":[{"name":"표 구매","phrases":["이곳으로 가는 표를 사고 싶습니다.","편도 표 한 장 주세요.","왕복 표 한 장 주세요.","다음 출발은 언제인가요?","어디에서 탑승하나요?"]},{"name":"이동 중","phrases":["이 버스가 이곳으로 가나요?","이 정류장에서 내리면 되나요?","도착하면 알려 주세요.","제 좌석은 어디인가요?"]}]},{"emoji":"📅","name":"예약·방문","subs":[{"name":"예약","phrases":["예약하고 싶습니다.","오늘 예약할 수 있나요?","내일 오전에 가능할까요?","두 명 예약하고 싶습니다.","예약을 변경하고 싶습니다.","예약을 취소하고 싶습니다."]},{"name":"방문","phrases":["몇 시까지 영업하나요?","오늘 문을 여나요?","예약 없이 방문해도 되나요?","대기 시간이 얼마나 되나요?"]}]},{"emoji":"📸","name":"관광·생활","subs":[{"name":"관광·사진","phrases":["사진을 찍어 주시겠어요?","여기서 사진을 찍어도 되나요?","입장료가 얼마인가요?","몇 시에 문을 닫나요?","추천할 만한 장소가 있나요?"]},{"name":"일상생활","phrases":["세탁을 맡기고 싶습니다.","언제 찾을 수 있나요?","근처에 편의점이 있나요?","생수는 어디에서 살 수 있나요?","쓰레기는 어디에 버리나요?"]}]}];
+const key='friendlytalk-phrases-v1';let state={favorites:[],custom:[],used:{}};try{const v=JSON.parse(localStorage.getItem(key)||'{}');state={...state,...v}}catch(e){}
+const el=id=>document.getElementById(id);let selection='',lastResult='',lastSource='',display='all',quickInputMode=false,rotated=false;
+function persist(){try{localStorage.setItem(key,JSON.stringify(state))}catch(e){}}
+function makeButton(label,cls,fn){const b=document.createElement('button');b.type='button';b.className=cls;b.textContent=label;b.addEventListener('click',fn);return b}
+function openSheet(id){el(id).classList.add('open')}function closeSheet(id){el(id).classList.remove('open')}
+// v5.33: pick from a popup, then translate into a large card the other person can read.
+function choose(p){
+ selection=p;state.used[p]=(state.used[p]||0)+1;persist();closeSheet('phrasePickSheet');
+ if(quickInputMode){quickInputMode=false;closeSheet('phraseSheet');el('textSource').value='me';el('textInput').value=p;el('textSheet').classList.add('open');el('textInput').focus();return}
+ el('phraseEdit').value=p;el('phraseCompose').classList.add('ready');
+ translateAndShow();
+}
+function phraseList(container,phrases){for(const p of phrases){const b=makeButton(p,'phrase-item'+(selection===p?' selected':''),()=>choose(p));if(state.favorites.includes(p))b.classList.add('fav');container.appendChild(b)}}
+function openCategory(c){
+ try{window.FriendlyNative?.setSituation?.(c.name)}catch(e){}
+ el('phrasePickTitle').textContent=c.emoji+' '+c.name;const list=el('phrasePickList');list.replaceChildren();
+ for(const sub of c.subs){const h=document.createElement('div');h.className='phrase-sub';h.textContent=sub.name;list.appendChild(h);phraseList(list,sub.phrases)}
+ list.scrollTop=0;openSheet('phrasePickSheet');
+}
+function draw(){
+ const grid=el('phraseTree');grid.replaceChildren();const q=el('phraseSearch').value.trim().toLocaleLowerCase();
+ grid.classList.toggle('as-list',!!q||display!=='all');
+ if(display==='favorites'||display==='custom'){
+  const values=display==='favorites'?state.favorites:state.custom;const shown=values.filter(p=>!q||p.toLowerCase().includes(q));
+  phraseList(grid,shown);
+  if(!shown.length){const info=document.createElement('p');info.className='hint';info.textContent=display==='favorites'?'즐겨찾기한 문장이 없습니다. 문장을 고른 뒤 별 버튼을 누르세요.':'저장한 내 문장이 없습니다. 아래 입력칸에 쓰고 별 버튼을 누르세요.';grid.appendChild(info)}
+  return;
+ }
+ if(q){let n=0;for(const c of categories)for(const sub of c.subs){const hit=sub.phrases.filter(p=>p.toLowerCase().includes(q)||c.name.includes(q)||sub.name.includes(q));if(hit.length){n+=hit.length;phraseList(grid,hit)}}
+  if(!n){const info=document.createElement('p');info.className='hint';info.textContent='검색 결과가 없습니다. 아래에 직접 입력해도 됩니다.';grid.appendChild(info)}return}
+ // v6.0: favourites pinned above the situations
+ if(state.favorites.length){const box=document.createElement('div');box.className='fav-pins';const h=document.createElement('div');h.className='phrase-sub';h.innerHTML=ic('star')+' 즐겨찾기';box.appendChild(h);phraseList(box,state.favorites.slice(0,6));grid.appendChild(box)}
+ for(const c of categories){
+  const count=c.subs.reduce((n,x)=>n+x.phrases.length,0);
+  const b=document.createElement('button');b.type='button';b.className='phrase-tile';
+  const e=document.createElement('span');e.className='tile-emoji';e.textContent=c.emoji;
+  const n=document.createElement('span');n.className='tile-name';n.textContent=c.name;
+  const k=document.createElement('span');k.className='tile-count';k.textContent=count+'문장';
+  b.append(e,n,k);b.addEventListener('click',()=>openCategory(c));grid.appendChild(b);
+ }
+}
+function fitText(text){const n=[...text].length;return n<=12?'clamp(46px,14vw,76px)':n<=28?'clamp(40px,11.5vw,64px)':n<=55?'clamp(34px,9.6vw,54px)':n<=100?'clamp(27px,7.4vw,42px)':'clamp(21px,5.6vw,31px)'}
+function showCard(){
+ const target=settings.partner;
+ el('phraseShowLang').textContent=languages[target].flag+' '+languages[target].name;
+ el('phraseShowText').textContent=lastResult;el('phraseShowText').style.fontSize=fitText(lastResult);
+ el('phraseShowSrc').textContent=languages[settings.me].flag+' '+lastSource;
+ rotated=false;el('phraseShowCard').classList.remove('rotated');
+ openSheet('phraseShowSheet');
+}
+async function translateAndShow(){
+ const p=el('phraseEdit').value.trim();if(!p)return notice('번역할 문장을 고르거나 입력하세요.');
+ const target=settings.partner;if(target===settings.me){notice('상대방 언어를 내 언어와 다르게 설정하세요.');return}
+ const b=el('phraseTranslate');b.disabled=true;b.classList.add('busy');b.innerHTML='<span class="spin"></span> 번역 중…';
+ try{
+  if(!window.FriendlyNative)throw new Error('Android 앱에서만 번역할 수 있습니다.');
+  lastResult=(await translateLong(p,settings.me,target,better=>{if(lastSource!==p||!better)return;lastResult=better.trim();const t=el('phraseShowText');if(t&&el('phraseShowSheet').classList.contains('open')){t.textContent=lastResult;t.style.fontSize=fitText(lastResult)}})).trim();lastSource=p;
+  showCard();
+  if(settings.autoplayPhrase)speakResult();
+ }catch(e){notice('번역 불가: '+e.message)}finally{b.disabled=false;b.classList.remove('busy');b.innerHTML='번역해서 보여주기 '+ic('chev')}
+}
+function speakResult(){if(!lastResult)return;if(!window.FriendlyNative)return notice('음성 재생은 Android 앱에서 지원됩니다.');FriendlyNative.speak(lastResult,languages[settings.partner].bcp,settings.speechRate)}
+function open(){quickInputMode=false;display='all';el('phraseSearch').value='';el('phraseGuide').textContent='상황을 고르면 문장 목록이 열립니다 · 아래에 직접 입력도 가능';el('phraseCompose').classList.remove('hidden');openSheet('phraseSheet');draw()}
+el('phraseBtn').addEventListener('click',open);
+el('quickInputBtn').addEventListener('click',()=>{if(mode!=='push')return;quickInputMode=true;display='all';el('phraseSearch').value='';el('phraseGuide').textContent='문장을 고르면 눌러 말하기 입력창으로 이동합니다';el('phraseCompose').classList.add('hidden');openSheet('phraseSheet');draw()});
+el('phraseSheet').querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>{quickInputMode=false}));
+el('phraseSearch').addEventListener('input',()=>{display='all';el('phraseFavorites').classList.remove('on');el('phraseCustom').classList.remove('on');draw()});
+el('phraseFavorites').addEventListener('click',()=>{display=display==='favorites'?'all':'favorites';el('phraseFavorites').classList.toggle('on',display==='favorites');el('phraseCustom').classList.remove('on');draw()});
+el('phraseCustom').addEventListener('click',()=>{display=display==='custom'?'all':'custom';el('phraseCustom').classList.toggle('on',display==='custom');el('phraseFavorites').classList.remove('on');draw()});
+el('phraseSave').addEventListener('click',()=>{const p=el('phraseEdit').value.trim();if(!p)return notice('문장을 입력하세요.');
+ if(state.favorites.includes(p)){state.favorites=state.favorites.filter(x=>x!==p);notice('즐겨찾기 해제')}
+ else{state.favorites.unshift(p);const known=categories.some(c=>c.subs.some(s=>s.phrases.includes(p)));if(!known&&!state.custom.includes(p))state.custom.unshift(p);notice(known?'즐겨찾기에 저장':'내 문장 + 즐겨찾기에 저장')}
+ persist();draw()});
+el('phraseTranslate').addEventListener('click',translateAndShow);
+function drawAuto(){const on=!!settings.autoplayPhrase;el('phraseAuto').classList.toggle('on',on)}
+el('phraseAuto').addEventListener('click',()=>{settings.autoplayPhrase=!settings.autoplayPhrase;try{localStorage.setItem('friendlytalk-beta-settings-v5',JSON.stringify(settings))}catch(e){}drawAuto();notice('상황별 대화 · 번역 음성 자동 재생 '+(settings.autoplayPhrase?'켬':'끔'))});drawAuto();
+el('phraseShowSpeak').addEventListener('click',speakResult);
+el('phraseShowRotate').addEventListener('click',()=>{rotated=!rotated;el('phraseShowCard').classList.toggle('rotated',rotated)});
+el('phraseShowCopy').addEventListener('click',async()=>{if(!lastResult)return;try{await navigator.clipboard.writeText(lastResult);notice('복사했습니다.')}catch(e){notice('복사할 수 없습니다.')}});
+el('phraseShowBack').addEventListener('click',()=>{closeSheet('phraseShowSheet');openSheet('phraseSheet')});
+el('phraseShowClose').addEventListener('click',()=>{closeSheet('phraseShowSheet')});
+})();
+</script>
+<script src="ftolk-g.js"></script>
+</body></html>
