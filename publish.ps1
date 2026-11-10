@@ -7,7 +7,9 @@
 #   3. GitHub Release "v버전" 을 만들고 APK 첨부
 # 이미 같은 버전 릴리스가 있으면 새로 만들지 않고 멈춰요.
 
-$ErrorActionPreference = 'Stop'
+# 'Continue': git/gh 는 정상일 때도 stderr 에 글을 써서, 'Stop' 이면 PowerShell 5.1 에서 멈춰요.
+# 대신 각 단계에서 $LASTEXITCODE 로 실패를 확인해요.
+$ErrorActionPreference = 'Continue'
 Set-Location $PSScriptRoot
 if (-not $env:JAVA_HOME) { $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot' }
 
