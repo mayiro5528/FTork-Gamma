@@ -58,7 +58,7 @@ class SpeechListener(private val context: Context) {
      * (매번 없애고 새로 만들면 Google 음성 인식이 "사용 중" 오류를 내며 못 듣는 경우가 많아요 — 실시간 대화 문제의 원인)
      * @param alsoLanguage 실시간 대화용: 이 언어로 말해도 알아듣게 함께 지정 (Android 14+ 에서만 동작)
      */
-    fun start(languageTag: String, callbacks: Callbacks, alsoLanguage: String? = null) {
+    fun start(languageTag: String, callbacks: Callbacks, alsoLanguage: String? = null, fastEndpoint: Boolean = false) {
         val r = recognizer ?: create().also { recognizer = it }
         val my = ++session
         runCatching { r.cancel() }
@@ -85,6 +85,11 @@ class SpeechListener(private val context: Context) {
             .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
             .putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.packageName)
+        if (fastEndpoint) {
+            // 실시간 대화·듣기: 말이 0.8초만 멈춰도 문장을 끊어 바로 번역 (지원하는 인식기에서만 적용돼요)
+            intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 800L)
+                .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 600L)
+        }
         if (alsoLanguage != null && Build.VERSION.SDK_INT >= 34) {
             // 두 언어 중 들리는 언어를 스스로 알아내고, 그 언어로 바꿔서 받아써요 (지원하는 기기만, 아니면 무시돼요).
             intent.putExtra(RecognizerIntent.EXTRA_ENABLE_LANGUAGE_DETECTION, true)

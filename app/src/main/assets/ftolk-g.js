@@ -250,7 +250,8 @@
         if (seq === live.seq && dst && (mode === 'listen' || mode === 'live')) { live.lastDst = dst; showLiveTranslation(side, live.pendingText || text, dst); }
       }).catch(function () {}).then(function () {
         live.busy = false;
-        if (seq === live.seq && live.pendingText && live.pendingText !== live.lastSent && !live.timer) live.timer = setTimeout(sendPartial, 150);
+        // 번역하는 사이 말이 더 늘었으면 곧바로 이어서 번역
+        if (seq === live.seq && live.pendingText && live.pendingText !== live.lastSent && !live.timer) live.timer = setTimeout(sendPartial, 0);
       });
     }
     showInterim = function (side, text) {
@@ -267,7 +268,7 @@
       // 원문은 바로, 번역은 직전 번역을 유지한 채 새 번역이 오면 바꿔요(깜빡임 없음).
       if (mode === 'listen') setListenInterim(t, live.lastDst);
       live.pendingText = t; live.side = side;
-      if (!live.timer) live.timer = setTimeout(sendPartial, 400);
+      if (!live.timer) live.timer = setTimeout(sendPartial, 120); // 0.12초: 거의 말하는 즉시 번역
     };
   } catch (e) { console.error(e); }
 
@@ -295,6 +296,7 @@
     var originalStartRecognizer = startRecognizer;
     startRecognizer = function (side, token, asLive) {
       try { N.setAutoDetect(!!asLive && mode === 'live'); } catch (e) {}
+      try { N.setFastEndpoint(!!asLive); } catch (e) {} // 실시간 대화·듣기: 짧은 쉼에서도 문장을 끊어 빨리 번역
       detected = null;
       if (switchTimer) { clearTimeout(switchTimer); switchTimer = null; }
       originalStartRecognizer(side, token, asLive);

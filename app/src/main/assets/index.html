@@ -885,7 +885,7 @@ function translate(text,from,token){
 // recogniser does not pick up the phone's own voice. Resume when TTS reports done.
 function releaseTtsHold(){
  if(!ttsHold)return;ttsHold=false;clearTimeout(ttsHoldTimer);
- if(liveActive&&!liveStopping&&!recognizer){const token=session;setTimeout(()=>{if(token===session&&liveActive&&!liveStopping&&!recognizer&&!ttsHold)startRecognizer(mode==='listen'?'partner':liveSide,token,true)},350)}
+ if(liveActive&&!liveStopping&&!recognizer){const token=session;setTimeout(()=>{if(token===session&&liveActive&&!liveStopping&&!recognizer&&!ttsHold)startRecognizer(mode==='listen'?'partner':liveSide,token,true)},120)}
 }
 function holdForTts(text){
  if(useStream())return; // native stream engine mutes its own microphone during TTS
@@ -954,7 +954,7 @@ function startRecognizer(side,token,asLive){
   if(mode==='listen')liveSide='partner';
   else if(!finalReceived)liveSide=other(side);
   render();
-  setTimeout(()=>{if(token===session&&liveActive&&!liveStopping&&!ttsHold&&!recognizer)startRecognizer(mode==='listen'?'partner':liveSide,token,true)},320);
+  setTimeout(()=>{if(token===session&&liveActive&&!liveStopping&&!ttsHold&&!recognizer)startRecognizer(mode==='listen'?'partner':liveSide,token,true)},60);
  };
  try{r.start()}catch(e){notice('음성 인식 시작 실패: '+e.message);if(asLive)stopAll()}
 }

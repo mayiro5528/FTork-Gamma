@@ -28,6 +28,7 @@ import com.ftork.gamma.photo.PhotoTranslator
 import com.ftork.gamma.speech.Speaker
 import com.ftork.gamma.speech.SpeechListener
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -211,7 +212,7 @@ class FriendlyBridge(private val activity: MainActivity) {
                             end(id)
                         }
                     },
-                ), also)
+                ), also, fastEndpoint)
             }
             // 방금 인식기를 새로 만들었으면 잠깐 쉬었다가 시작해야 "사용 중" 오류가 안 나요.
             if (busyStreak > 0) main.postDelayed({ if (speechId == id) begin() }, 300L * busyStreak) else begin()
@@ -222,6 +223,10 @@ class FriendlyBridge(private val activity: MainActivity) {
     @Volatile private var autoDetect = false
     private var busyStreak = 0
     @JavascriptInterface fun setAutoDetect(on: Boolean) { autoDetect = on }
+
+    /** 실시간 대화·듣기일 때 true: 짧은 쉼에서도 문장을 끊어서 빨리 번역 (화면이 알려 줘요) */
+    @Volatile private var fastEndpoint = false
+    @JavascriptInterface fun setFastEndpoint(on: Boolean) { fastEndpoint = on }
 
     private fun bcp(code: String) = when (code) { "ko" -> "ko-KR"; "vi" -> "vi-VN"; "en" -> "en-US"; "zh" -> "zh-CN"; else -> code }
     private fun otherTag(lang: String): String? {
@@ -267,9 +272,29 @@ class FriendlyBridge(private val activity: MainActivity) {
 
     // ================= 번역 =================
 
+    /**
+     * 확정 번역. Google 키가 있으면 기기 번역(0.1초)과 Google 번역을 동시에 시작해서,
+     * 기기 번역을 먼저 보여 주고 Google 번역이 오면 그 자리에서 바꿔요 (대화가 끊기지 않게).
+     */
     @JavascriptInterface
     fun translate(id: Int, text: String, from: String, to: String) = ui {
         activity.lifecycleScope.launch {
+            if (engine.usingGoogle) {
+                val quick = async { engine.offline.translate(text, from, to) }
+                val best = async { engine.translate(text, from, to) } // 실패하면 안에서 기기 번역으로
+                val q = quick.await()
+                if (!best.isCompleted && q is TranslationResult.Success) {
+                    activity.callJs("friendlyNativeTranslation", id, true, q.text)
+                    val b = best.await()
+                    if (b is TranslationResult.Success && b.text != q.text) activity.callJs("friendlyNativeTranslationUpdate", id, b.text)
+                    return@launch
+                }
+                when (val b = best.await()) {
+                    is TranslationResult.Success -> activity.callJs("friendlyNativeTranslation", id, true, b.text)
+                    is TranslationResult.Failure -> activity.callJs("friendlyNativeTranslation", id, false, b.message)
+                }
+                return@launch
+            }
             when (val r = engine.translate(text, from, to)) {
                 is TranslationResult.Success -> activity.callJs("friendlyNativeTranslation", id, true, r.text)
                 is TranslationResult.Failure -> {
