@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FTork-Gamma</string>
+    <string name="process_text_label">FTork-Gamma 번역</string>
+</resources>

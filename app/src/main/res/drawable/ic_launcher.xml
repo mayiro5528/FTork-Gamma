@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FTork-Gamma 아이콘: 말풍선 두 개 + 감마(γ) 표시. 직접 그린 벡터예요. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:fillColor="#5B3FD6" android:pathData="M0,0h108v108h-108z" />
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M24,28h38a6,6 0,0 1,6 6v22a6,6 0,0 1,-6 6h-20l-10,9v-9h-8a6,6 0,0 1,-6 -6v-22a6,6 0,0 1,6 -6z" />
+    <path android:fillColor="#FFC94D"
+        android:pathData="M50,50h32a6,6 0,0 1,6 6v18a6,6 0,0 1,-6 6h-4v8l-9,-8h-19a6,6 0,0 1,-6 -6v-18a6,6 0,0 1,6 -6z" />
+    <path android:strokeColor="#5B3FD6" android:strokeWidth="4" android:strokeLineCap="round"
+        android:pathData="M58,57l8,12l8,-12M66,69v6" />
+</vector>
