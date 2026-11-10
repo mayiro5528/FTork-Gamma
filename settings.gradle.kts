@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "FTolk-G"
+rootProject.name = "FTalk"
 include(":app")

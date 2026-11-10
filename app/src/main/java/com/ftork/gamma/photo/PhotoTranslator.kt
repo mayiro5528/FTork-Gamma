@@ -35,7 +35,7 @@ import kotlin.math.min
 data class PhotoLine(val box: Rect, val src: String, val dst: String)
 
 /**
- * 사진 번역 (FTolk-G 카메라 번역 방식).
+ * 사진 번역 (FTalk 카메라 번역 방식).
  * ML Kit 글자 인식(기기 안) → 덩어리마다 ML Kit 번역 → 원래 글자 자리에 번역을 덮어 그리기.
  */
 class PhotoTranslator(private val engine: MlKitTranslationEngine) {

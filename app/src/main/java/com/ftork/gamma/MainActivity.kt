@@ -31,7 +31,7 @@ import java.io.File
 /**
  * 앱의 유일한 Activity.
  * 화면은 FTalk Beta 의 index.html 을 그대로 띄우고(WebView),
- * 음성 인식·번역·읽기·사진 번역은 [FriendlyBridge] 가 FTolk-G 엔진으로 처리해요.
+ * 음성 인식·번역·읽기·사진 번역은 [FriendlyBridge] 가 FTalk 엔진으로 처리해요.
  *
  * 다른 앱에서 들어오는 글도 받아요.
  *  - 공유 메뉴      : ACTION_SEND

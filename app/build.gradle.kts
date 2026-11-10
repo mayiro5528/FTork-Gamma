@@ -14,7 +14,7 @@ plugins {
 //   0.3 → 0.4 → ... → 0.9 → 1.0 → 1.1
 // 아무것도 수정하지 않고 다시 빌드하면 버전은 그대로예요.
 // Android Studio 의 Gradle Sync 만 할 때도 올라가지 않아요.
-val appName = "FTolk-G"
+val appName = "FTalk"
 val versionFile = rootProject.file("version.properties")
 val versionProps = Properties().apply {
     if (versionFile.exists()) versionFile.inputStream().use { load(it) }
@@ -47,7 +47,7 @@ if (isPackagingBuild) {
         versionProps.setProperty("VERSION_CODE", buildNumber.toString())
         versionProps.setProperty("SOURCE_HASH", fingerprint)
         versionFile.outputStream().use {
-            versionProps.store(it, "FTolk-G version. VERSION_CODE 3 = v0.3. Goes up by 1 (= +0.1) when sources change.")
+            versionProps.store(it, "FTalk version. VERSION_CODE 3 = v0.3. Goes up by 1 (= +0.1) when sources change.")
         }
     }
 }
@@ -83,7 +83,7 @@ android {
         }
     }
 
-    // 출력 파일 이름: FTolk-G-v0.6-release.apk
+    // 출력 파일 이름: FTalk-v1.2-release.apk
     applicationVariants.all {
         val variant = this
         outputs.all {

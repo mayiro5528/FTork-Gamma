@@ -1,4 +1,4 @@
-// FTolk-G: FTalk Beta 화면을 FTolk-G 엔진(휴대폰 음성 인식 · ML Kit 번역 · 휴대폰 음성 · ML Kit 글자 인식)으로 쓰기 위한 덧붙임.
+// FTalk: FTalk Beta 화면을 FTalk 엔진(휴대폰 음성 인식 · ML Kit 번역 · 휴대폰 음성 · ML Kit 글자 인식)으로 쓰기 위한 덧붙임.
 // index.html(FTalk Beta 화면)은 그대로 두고, 이 파일에서만 바꿔요.
 (function () {
   'use strict';
@@ -12,7 +12,7 @@
     });
   } catch (e) {}
 
-  // 2) 유료 엔진(위스퍼 모델·GPT·Google Cloud 키) 설정은 숨겨요. FTolk-G 는 무료 기기 엔진 하나만 써요.
+  // 2) 유료 엔진(위스퍼 모델·GPT·Google Cloud 키) 설정은 숨겨요. FTalk 는 무료 기기 엔진 하나만 써요.
   function hide(el) { if (el) el.style.display = 'none'; }
   var ai = document.getElementById('aiSection');
   if (ai) {
@@ -38,7 +38,7 @@
   // 앱 정보 · 안내 문구
   try {
     var info = Array.prototype.find.call(document.querySelectorAll('#settingsSheet strong'), function (s) { return /FriendlyTalk/.test(s.textContent); });
-    if (info) info.textContent = 'FTolk-G v' + N.appVersion() + ' (FTalk Beta 화면)';
+    if (info) info.textContent = 'FriendlyTalk (FTalk) v' + N.appVersion();
     // 새 버전 받기: GitHub 최신 릴리스 확인 + 다운로드 페이지 열기
     var row = info && info.closest('.setting');
     if (row) {
@@ -69,7 +69,7 @@
     }
   } catch (e) {}
 
-  // 3) 듣기 모드에서 번역을 읽을 때는 통화 스피커(귀)로 보내요. (FTolk-G "듣기" 방식)
+  // 3) 듣기 모드에서 번역을 읽을 때는 통화 스피커(귀)로 보내요. (FTalk "듣기" 방식)
   try {
     var originalSpeakSide = speakSide;
     speakSide = function (side) {

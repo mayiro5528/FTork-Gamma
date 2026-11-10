@@ -41,7 +41,7 @@ import java.util.Locale
 
 /**
  * FTalk Beta 화면(index.html)이 부르는 `FriendlyNative.*` 함수들.
- * 일은 모두 FTolk-G 엔진으로 해요.
+ * 일은 모두 FTalk 엔진으로 해요.
  *  - 음성 인식 : 휴대폰 음성 인식(SpeechRecognizer, 보통 Google) — 언어를 하나씩 정확히 지정
  *  - 번역      : ML Kit (기기 안, 무료)
  *  - 읽기      : 휴대폰 TextToSpeech
@@ -129,7 +129,7 @@ class FriendlyBridge(private val activity: MainActivity) {
     @JavascriptInterface
     fun copyText(text: String) = ui {
         val cm = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        cm.setPrimaryClip(ClipData.newPlainText("FTolk-G", text))
+        cm.setPrimaryClip(ClipData.newPlainText("FTalk", text))
     }
 
     @JavascriptInterface
@@ -353,14 +353,14 @@ class FriendlyBridge(private val activity: MainActivity) {
             if (autoSave) {
                 val ok = saveBoth(translated)
                 activity.callJs("friendlyNativePhoto", "saveState", if (ok) "saved" else "failed", null)
-                if (ok) activity.callJs("friendlyNativeNotice", "원본과 번역본을 사진 앱(FTolk-G 앨범)에 저장했어요")
+                if (ok) activity.callJs("friendlyNativeNotice", "원본과 번역본을 사진 앱(FTalk 앨범)에 저장했어요")
             } else {
                 activity.callJs("friendlyNativePhoto", "saveState", "ready", null)
             }
         }
     }
 
-    /** 원본과 번역본을 사진 앱(Pictures/FTolk-G)에 저장해요. */
+    /** 원본과 번역본을 사진 앱(Pictures/FTalk)에 저장해요. */
     @JavascriptInterface
     fun savePhoto() = ui {
         val translated = currentTranslated ?: return@ui
@@ -374,8 +374,8 @@ class FriendlyBridge(private val activity: MainActivity) {
         val ok = withContext(Dispatchers.IO) {
             runCatching {
                 val stamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-                if (!savedOnce) currentPhoto?.let { saveImage(it, "FTolkG_${stamp}_원본") }
-                saveImage(translated, "FTolkG_${stamp}_번역")
+                if (!savedOnce) currentPhoto?.let { saveImage(it, "FTalk_${stamp}_원본") }
+                saveImage(translated, "FTalk_${stamp}_번역")
                 true
             }.getOrDefault(false)
         }
@@ -389,7 +389,7 @@ class FriendlyBridge(private val activity: MainActivity) {
             put(MediaStore.Images.Media.DISPLAY_NAME, "$name.jpg")
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/FTolk-G")
+                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/FTalk")
             }
         }
         val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: error("저장 위치 없음")
@@ -436,7 +436,7 @@ class FriendlyBridge(private val activity: MainActivity) {
             val mic = ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) ==
                 PackageManager.PERMISSION_GRANTED
             val msg = buildString {
-                appendLine("앱: FTolk-G v${BuildConfig.VERSION_NAME}")
+                appendLine("앱: FTalk v${BuildConfig.VERSION_NAME}")
                 appendLine("기기: ${Build.MANUFACTURER} ${Build.MODEL} · Android ${Build.VERSION.RELEASE}")
                 appendLine("음성 인식 서비스: " + if (SpeechRecognizer.isRecognitionAvailable(activity)) "있음" else "없음 (Google 앱 필요)")
                 appendLine("마이크 권한: " + if (mic) "허용됨" else "아직 없음 (마이크 버튼을 누르면 물어봐요)")
@@ -450,7 +450,7 @@ class FriendlyBridge(private val activity: MainActivity) {
     @JavascriptInterface
     fun copyReport(): String {
         val text = buildString {
-            appendLine("FTolk-G v${BuildConfig.VERSION_NAME} · ${Build.MANUFACTURER} ${Build.MODEL} · Android ${Build.VERSION.RELEASE}")
+            appendLine("FTalk v${BuildConfig.VERSION_NAME} · ${Build.MANUFACTURER} ${Build.MODEL} · Android ${Build.VERSION.RELEASE}")
             appendLine("언어: $me ↔ $partner")
             synchronized(log) { log.forEach { appendLine(it) } }
         }

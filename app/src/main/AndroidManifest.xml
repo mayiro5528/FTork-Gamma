@@ -28,7 +28,7 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.FTorkGamma"
@@ -53,7 +53,7 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
 
-            <!-- 글자 선택 메뉴에 "FTolk-G 번역" 표시 -->
+            <!-- 글자 선택 메뉴에 "FTalk 번역" 표시 -->
             <intent-filter android:label="@string/process_text_label">
                 <action android:name="android.intent.action.PROCESS_TEXT" />
                 <category android:name="android.intent.category.DEFAULT" />
