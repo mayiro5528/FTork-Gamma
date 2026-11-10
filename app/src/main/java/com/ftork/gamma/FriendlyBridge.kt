@@ -257,6 +257,20 @@ class FriendlyBridge(private val activity: MainActivity) {
         }
     }
 
+    /**
+     * 말하는 도중의 중간 번역 (듣기 · 실시간 대화). 항상 기기 번역(ML Kit)이라 무료이고 빨라요.
+     * 문장이 끝나면 위의 translate() 가 Google(키가 있으면)로 확정 번역해요.
+     */
+    @JavascriptInterface
+    fun translateQuick(id: Int, text: String, from: String, to: String) = ui {
+        activity.lifecycleScope.launch {
+            when (val r = engine.offline.translate(text, from, to)) {
+                is TranslationResult.Success -> activity.callJs("friendlyNativeTranslation", id, true, r.text)
+                is TranslationResult.Failure -> activity.callJs("friendlyNativeTranslation", id, false, r.message)
+            }
+        }
+    }
+
     // ================= 읽기 (TTS) =================
 
     /** 듣기 모드에서는 통화 스피커(귀)로, 다른 모드는 일반 스피커로 읽어요. */

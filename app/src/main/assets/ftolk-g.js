@@ -28,13 +28,45 @@
     });
     hide(ai.querySelector('.eng-card[data-eng="gpt"]'));
     if (googleH4) googleH4.textContent = 'Google 번역 API 키 (Google 엔진에 필요)';
-    var keyHelp = document.createElement('div');
-    keyHelp.className = 'hint';
-    keyHelp.innerHTML = '<b>Google 키 만들기</b>: console.cloud.google.com → 새 프로젝트 → 결제 연결 → ' +
-      'API 및 서비스 → 라이브러리에서 <b>Cloud Translation API</b> 사용 → 사용자 인증 정보 → API 키 만들기 → 여기에 붙여넣고 저장 → 연결 테스트.<br>' +
-      '매달 50만 자까지 무료, 그 뒤 100만 자당 약 $20. 키는 이 폰에만 저장돼요. 키가 없거나 인터넷이 끊기면 기기 번역(ML Kit)으로 자동 전환해요.';
+    // ---- 내 Google 키 만들기 안내 (앱을 받은 사람이 각자 자기 키를 만들어 써요) ----
+    hide(document.getElementById('googleRestrict'));
+    var help = document.createElement('div');
+    help.className = 'ftalk-keyhelp';
+    var cfg0 = {}; try { cfg0 = loadAi(); } catch (e) {}
+    var pkg = cfg0.package || 'com.ftork.gamma', sha = cfg0.sha1 || '';
+    help.innerHTML =
+      '<div class="kh-title">내 Google 키 만들기 (약 5분 · 처음 한 번)</div>' +
+      '<ol class="kh-steps">' +
+      '<li>PC에서 <b>console.cloud.google.com</b> 접속 → Google 계정으로 로그인</li>' +
+      '<li>위쪽 프로젝트 선택 → <b>새 프로젝트</b> 만들기</li>' +
+      '<li><b>결제</b> 메뉴에서 결제 계정(카드) 연결 <small>· 매달 50만 자까지 무료, 넘으면 100만 자당 약 $20</small></li>' +
+      '<li><b>API 및 서비스 → 라이브러리</b>에서 <b>Cloud Translation API</b> 검색 → <b>사용</b></li>' +
+      '<li><b>사용자 인증 정보 → 사용자 인증 정보 만들기 → API 키</b> → 키(AIza…) 복사</li>' +
+      '<li>(권장) 만든 키 → <b>애플리케이션 제한사항: Android 앱</b> → 항목 추가에 아래 두 값을 넣고, <b>API 제한사항</b>은 Cloud Translation API만 체크 → 저장</li>' +
+      '<li>이 화면 위 칸에 키 붙여넣기 → <b>저장</b> → 5분 뒤 <b>연결 테스트</b></li>' +
+      '</ol>' +
+      '<div class="kh-val"><span>패키지 이름</span><code>' + pkg + '</code><button type="button" data-copy="' + pkg + '">복사</button></div>' +
+      (sha ? '<div class="kh-val"><span>SHA-1 인증서 지문</span><code>' + sha + '</code><button type="button" data-copy="' + sha + '">복사</button></div>' : '') +
+      '<div class="kh-note">키는 이 폰 안에만 저장되고 Google 외에는 보내지 않아요. 요금은 키 주인에게 청구돼요. 키가 없거나 인터넷이 끊기면 기기 번역(ML Kit)으로 자동 전환해요.</div>';
+    help.querySelectorAll('[data-copy]').forEach(function (b) {
+      b.onclick = function () { try { N.copyText(b.dataset.copy); notice('복사했어요'); } catch (e) {} };
+    });
+    var st = document.createElement('style');
+    st.textContent =
+      '.ftalk-keyhelp{margin:10px 0 4px;padding:12px;border-radius:12px;background:var(--surface,#303134);font-size:13px;line-height:1.55}' +
+      '.ftalk-keyhelp .kh-title{font-weight:800;margin-bottom:6px}' +
+      '.ftalk-keyhelp .kh-steps{margin:0 0 8px;padding-left:20px}' +
+      '.ftalk-keyhelp .kh-steps li{margin:3px 0}' +
+      '.ftalk-keyhelp small{opacity:.75}' +
+      '.ftalk-keyhelp .kh-val{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:8px 0;border-top:1px solid var(--separator,#515763)}' +
+      '.ftalk-keyhelp .kh-val span{grid-column:1/3;font-size:12px;opacity:.75}' +
+      '.ftalk-keyhelp .kh-val code{font-size:12.5px;overflow-wrap:anywhere;word-break:break-all}' +
+      '.ftalk-keyhelp .kh-val button{padding:6px 12px;border-radius:9px;border:1px solid var(--stroke,#606773);background:transparent;color:inherit;font-weight:700}' +
+      '.ftalk-keyhelp .kh-note{font-size:12px;opacity:.75;margin-top:6px}' +
+      '#aiTestOut{overflow-wrap:anywhere}';
+    document.head.appendChild(st);
     var testOut = document.getElementById('aiTestOut');
-    if (testOut) testOut.after(keyHelp);
+    if (testOut) testOut.after(help);
   }
   // 엔진 카드 설명을 FTalk 실제 동작에 맞게
   try {
@@ -184,6 +216,56 @@
     }
     // 통화를 바꾸면 계산식을 새로 시작해요.
     document.getElementById('calcCurrency').addEventListener('change', function () { expr = amountValue ? String(amountValue) : ''; exprEl.textContent = ''; });
+  } catch (e) { console.error(e); }
+
+  // ===== 들으면서 바로 번역 (Google 번역 앱 방식) =====
+  // 듣기 · 실시간 대화에서 상대가 말하는 도중에도 인식된 부분을 계속 번역해서 흐린 글씨로 보여 줘요.
+  // 말이 끝나면 원래대로 확정 번역(키가 있으면 Google)이 기록에 남아요. 중간 번역은 기기 번역이라 무료예요.
+  try {
+    var originalShowInterim = showInterim;
+    var live = { seq: 0, timer: null, lastSent: '', busy: false, pendingText: null, side: null };
+    function quickTranslate(text, from, to) {
+      if (!N || typeof N.translateQuick !== 'function') return translateNative(text, from, to);
+      return new Promise(function (resolve, reject) {
+        var id = ++window.nativeTranslateSequence;
+        window.nativeTranslateTasks[id] = { resolve: resolve, reject: reject };
+        N.translateQuick(id, text, from, to);
+      });
+    }
+    function showLiveTranslation(side, src, dst) {
+      if (mode === 'listen') { setListenInterim(src, dst); return; }
+      if (mode === 'live') originalShowInterim(other(side), dst);
+    }
+    function sendPartial() {
+      live.timer = null;
+      var text = live.pendingText, side = live.side;
+      if (!text || live.busy || text === live.lastSent) return;
+      live.busy = true; live.lastSent = text;
+      var seq = live.seq;
+      quickTranslate(text, settings[side], settings[other(side)]).then(function (dst) {
+        // 그사이 문장이 끝났으면(확정 번역으로 넘어갔으면) 보여 주지 않아요.
+        if (seq === live.seq && dst && (mode === 'listen' || mode === 'live')) { live.lastDst = dst; showLiveTranslation(side, live.pendingText || text, dst); }
+      }).catch(function () {}).then(function () {
+        live.busy = false;
+        if (seq === live.seq && live.pendingText && live.pendingText !== live.lastSent && !live.timer) live.timer = setTimeout(sendPartial, 150);
+      });
+    }
+    showInterim = function (side, text) {
+      originalShowInterim(side, text);
+      if (mode !== 'listen' && mode !== 'live') return;
+      var t = (text || '').trim();
+      // 빈 값 = 문장이 끝나 확정 번역으로 넘어감 → 중간 번역 멈추기
+      if (!t || /^(말소리 감지 중|인식 중)/.test(t)) {
+        live.seq++; live.pendingText = null; live.lastSent = ''; live.lastDst = null;
+        if (live.timer) { clearTimeout(live.timer); live.timer = null; }
+        if (mode === 'live') originalShowInterim(other(side), ''); // 상대 칸의 중간 번역도 지우기
+        return;
+      }
+      // 원문은 바로, 번역은 직전 번역을 유지한 채 새 번역이 오면 바꿔요(깜빡임 없음).
+      if (mode === 'listen') setListenInterim(t, live.lastDst);
+      live.pendingText = t; live.side = side;
+      if (!live.timer) live.timer = setTimeout(sendPartial, 400);
+    };
   } catch (e) { console.error(e); }
 
   // 대화 리셋 안내를 짧게 ("대화를 보관하고 새로 시작했습니다 · 설정 → 대화 기록에서 볼 수 있어요" → "새 대화 시작")

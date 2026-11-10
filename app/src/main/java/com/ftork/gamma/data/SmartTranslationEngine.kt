@@ -105,11 +105,26 @@ class SmartTranslationEngine(private val context: Context, val offline: MlKitTra
     companion object {
         private fun googleCode(c: String) = when (c) { "zh" -> "zh-CN"; else -> c }
 
-        private fun describe(code: Int, msg: String?) = when (code) {
-            400 -> "Google 키가 올바르지 않아요" + (msg?.let { " ($it)" } ?: "")
-            403 -> "Google 키 권한 문제: Cloud Translation API 사용 설정·결제·키 제한을 확인하세요" + (msg?.let { " ($it)" } ?: "")
-            429 -> "Google 사용량 한도를 넘었어요"
-            else -> "Google 번역 오류 $code" + (msg?.let { " ($it)" } ?: "")
+        /** Google 오류를 사용자가 고칠 수 있는 말로 바꿔요. (키를 각자 만들어 쓰니까 원인별로 안내) */
+        private fun describe(code: Int, msg: String?): String {
+            val m = msg ?: ""
+            val why = when {
+                m.contains("Android client application", true) && m.contains("blocked", true) ->
+                    "이 키는 다른 앱 전용으로 제한돼 있어요. Google Cloud 콘솔 → 키 → 애플리케이션 제한사항(Android 앱)에 아래 패키지 이름과 SHA-1 을 추가하세요."
+                m.contains("has not been used", true) || m.contains("is disabled", true) || m.contains("SERVICE_DISABLED", true) ->
+                    "이 프로젝트에서 Cloud Translation API 가 꺼져 있어요. API 및 서비스 → 라이브러리 → Cloud Translation API → 사용 을 누르고 몇 분 뒤 다시 해 보세요."
+                m.contains("billing", true) ->
+                    "결제 계정이 연결되지 않았어요. Google Cloud 콘솔 → 결제 에서 카드를 연결하세요. (매달 50만 자까지 무료)"
+                m.contains("API_KEY_SERVICE_BLOCKED", true) || (m.contains("blocked", true) && m.contains("API", true)) ->
+                    "이 키는 Cloud Translation API 를 쓸 수 없게 제한돼 있어요. 키 → API 제한사항 에서 Cloud Translation API 를 체크하세요."
+                code == 400 && (m.contains("API key not valid", true) || m.contains("API_KEY_INVALID", true)) ->
+                    "키가 올바르지 않아요. 키(AIza…)를 다시 복사해서 붙여넣으세요."
+                code == 429 -> "Google 사용량 한도를 넘었어요. 잠시 뒤 다시 해 보세요."
+                code == 403 -> "Google 키 권한 문제예요. Cloud Translation API 사용·결제 연결·키 제한을 확인하세요."
+                code == 400 -> "Google 키가 올바르지 않아요."
+                else -> "Google 번역 오류 ($code)"
+            }
+            return if (m.isNotEmpty()) "$why\n(Google: $m)" else why
         }
     }
 }
