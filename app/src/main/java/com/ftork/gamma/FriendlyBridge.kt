@@ -186,25 +186,48 @@ class FriendlyBridge(private val activity: MainActivity) {
             speaker.stop() // 번역 읽는 소리가 마이크로 다시 들어가지 않게
             speechId = id
             finishing = false
-            note("인식 시작 $lang")
-            listener.start(lang, SpeechListener.Callbacks(
-                onReady = { if (speechId == id) emitSpeech(id, "start", "") },
-                onPartial = { if (speechId == id) emitSpeech(id, "partial", it) },
-                onFinal = { text ->
-                    if (speechId == id) {
-                        if (text.isNotBlank()) emitSpeech(id, "final", text) else emitSpeech(id, "error", "no-speech")
-                        end(id)
-                    }
-                },
-                onError = { code ->
-                    if (speechId == id) {
-                        note("인식 오류 $code")
-                        emitSpeech(id, "error", webError(code))
-                        end(id)
-                    }
-                },
-            ))
+            // 실시간 대화: 지금 차례 언어 + 상대 언어를 함께 알려 줘서(Android 14+) 누가 말해도 알아듣게
+            val also = if (autoDetect) otherTag(lang) else null
+            note("인식 시작 $lang" + (also?.let { " (+$it)" } ?: ""))
+            val begin = {
+                listener.start(lang, SpeechListener.Callbacks(
+                    onReady = { if (speechId == id) { busyStreak = 0; emitSpeech(id, "start", "") } },
+                    onPartial = { if (speechId == id) emitSpeech(id, "partial", it) },
+                    onLanguage = { tag -> if (speechId == id) activity.callJs("ftolkDetectedLanguage", id, tag.substringBefore('-').lowercase()) },
+                    onFinal = { text ->
+                        if (speechId == id) {
+                            if (text.isNotBlank()) emitSpeech(id, "final", text) else emitSpeech(id, "error", "no-speech")
+                            end(id)
+                        }
+                    },
+                    onError = { code ->
+                        if (speechId == id) {
+                            note("인식 오류 $code")
+                            // "사용 중"·연결 끊김 같은 인식기 오류는 인식기를 새로 만들고 조용히 다시 듣게 해요.
+                            val recoverable = code == SpeechRecognizer.ERROR_RECOGNIZER_BUSY || code == 11 ||
+                                (code == SpeechRecognizer.ERROR_CLIENT && !finishing)
+                            if (recoverable) { busyStreak++; listener.reset() }
+                            emitSpeech(id, "error", if (recoverable && busyStreak < 4) "no-speech" else webError(code))
+                            end(id)
+                        }
+                    },
+                ), also)
+            }
+            // 방금 인식기를 새로 만들었으면 잠깐 쉬었다가 시작해야 "사용 중" 오류가 안 나요.
+            if (busyStreak > 0) main.postDelayed({ if (speechId == id) begin() }, 300L * busyStreak) else begin()
         }
+    }
+
+    /** 실시간 대화일 때 true (화면이 알려 줘요) */
+    @Volatile private var autoDetect = false
+    private var busyStreak = 0
+    @JavascriptInterface fun setAutoDetect(on: Boolean) { autoDetect = on }
+
+    private fun bcp(code: String) = when (code) { "ko" -> "ko-KR"; "vi" -> "vi-VN"; "en" -> "en-US"; "zh" -> "zh-CN"; else -> code }
+    private fun otherTag(lang: String): String? {
+        val code = lang.substringBefore('-').lowercase()
+        val other = if (code == me) partner else if (code == partner) me else null
+        return other?.let { bcp(it) }
     }
 
     /** 말 끝내기: 지금까지 들은 걸로 결과를 받아요. */
@@ -526,7 +549,7 @@ class FriendlyBridge(private val activity: MainActivity) {
     }
 
     fun shutdown() {
-        listener.stop()
+        listener.reset()
         speaker.shutdown()
         photos.close()
         engine.close()

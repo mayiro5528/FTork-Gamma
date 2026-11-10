@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.speech.RecognitionService
+import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -23,9 +24,13 @@ class SpeechListener(private val context: Context) {
         val onPartial: (String) -> Unit = {},
         val onFinal: (String) -> Unit = {},
         val onError: (code: Int) -> Unit = {},
+        /** (Android 14+) 두 언어 중 어떤 언어로 들렸는지 — 예: "vi-VN" */
+        val onLanguage: (String) -> Unit = {},
     )
 
     private var recognizer: SpeechRecognizer? = null
+    /** 지금 듣기 순번. 이전 순번의 늦은 결과는 무시해요. */
+    private var session = 0
 
     val isAvailable: Boolean get() = SpeechRecognizer.isRecognitionAvailable(context)
 
@@ -44,19 +49,31 @@ class SpeechListener(private val context: Context) {
     /** 진단 화면용: 지금 쓰는 음성 인식기 이름 */
     val serviceLabel: String get() = if (googleService != null) "Google 음성 인식 (Google 앱)" else "기기 기본 음성 인식"
 
-    fun start(languageTag: String, callbacks: Callbacks) {
-        stop()
-        val r = googleService
-            ?.let { runCatching { SpeechRecognizer.createSpeechRecognizer(context, it) }.getOrNull() }
-            ?: SpeechRecognizer.createSpeechRecognizer(context)
+    private fun create(): SpeechRecognizer = googleService
+        ?.let { runCatching { SpeechRecognizer.createSpeechRecognizer(context, it) }.getOrNull() }
+        ?: SpeechRecognizer.createSpeechRecognizer(context)
+
+    /**
+     * 듣기 시작. 인식기는 한 번 만들어 계속 다시 써요.
+     * (매번 없애고 새로 만들면 Google 음성 인식이 "사용 중" 오류를 내며 못 듣는 경우가 많아요 — 실시간 대화 문제의 원인)
+     * @param alsoLanguage 실시간 대화용: 이 언어로 말해도 알아듣게 함께 지정 (Android 14+ 에서만 동작)
+     */
+    fun start(languageTag: String, callbacks: Callbacks, alsoLanguage: String? = null) {
+        val r = recognizer ?: create().also { recognizer = it }
+        val my = ++session
+        runCatching { r.cancel() }
         r.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) = callbacks.onReady()
-            override fun onRmsChanged(rmsdB: Float) = callbacks.onLevel(rmsdB)
+            override fun onReadyForSpeech(params: Bundle?) { if (my == session) callbacks.onReady() }
+            override fun onRmsChanged(rmsdB: Float) { if (my == session) callbacks.onLevel(rmsdB) }
             override fun onPartialResults(partialResults: Bundle?) {
-                first(partialResults)?.let(callbacks.onPartial)
+                if (my == session) first(partialResults)?.let(callbacks.onPartial)
             }
-            override fun onResults(results: Bundle?) = callbacks.onFinal(first(results).orEmpty())
-            override fun onError(error: Int) = callbacks.onError(error)
+            override fun onResults(results: Bundle?) { if (my == session) callbacks.onFinal(first(results).orEmpty()) }
+            override fun onError(error: Int) { if (my == session) callbacks.onError(error) }
+            override fun onLanguageDetection(results: Bundle) {
+                if (my != session) return
+                results.getString(SpeechRecognizer.DETECTED_LANGUAGE)?.let(callbacks.onLanguage)
+            }
             override fun onBeginningOfSpeech() {}
             override fun onBufferReceived(buffer: ByteArray?) {}
             override fun onEndOfSpeech() {}
@@ -68,7 +85,13 @@ class SpeechListener(private val context: Context) {
             .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
             .putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.packageName)
-        recognizer = r
+        if (alsoLanguage != null && Build.VERSION.SDK_INT >= 34) {
+            // 두 언어 중 들리는 언어를 스스로 알아내고, 그 언어로 바꿔서 받아써요 (지원하는 기기만, 아니면 무시돼요).
+            intent.putExtra(RecognizerIntent.EXTRA_ENABLE_LANGUAGE_DETECTION, true)
+                .putStringArrayListExtra(RecognizerIntent.EXTRA_LANGUAGE_DETECTION_ALLOWED_LANGUAGES, arrayListOf(languageTag, alsoLanguage))
+                .putExtra(RecognizerIntent.EXTRA_ENABLE_LANGUAGE_SWITCH, RecognizerIntent.LANGUAGE_SWITCH_BALANCED)
+                .putStringArrayListExtra(RecognizerIntent.EXTRA_LANGUAGE_SWITCH_ALLOWED_LANGUAGES, arrayListOf(languageTag, alsoLanguage))
+        }
         r.startListening(intent)
     }
 
@@ -77,8 +100,16 @@ class SpeechListener(private val context: Context) {
         recognizer?.stopListening()
     }
 
+    /** 듣기 취소 (인식기는 남겨 두고 다음에 다시 써요) */
     fun stop() {
-        recognizer?.destroy()
+        session++
+        runCatching { recognizer?.cancel() }
+    }
+
+    /** 인식기를 완전히 없애요. 오류가 이어질 때 새로 만들거나, 앱을 닫을 때. */
+    fun reset() {
+        session++
+        runCatching { recognizer?.destroy() }
         recognizer = null
     }
 

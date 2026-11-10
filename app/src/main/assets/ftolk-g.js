@@ -138,6 +138,9 @@
       '.calc-keys .op{color:var(--blue)}' +
       '.calc-keys .fn{color:var(--muted,#b6c0cd);font-size:18px}' +
       '.calc-keys .eq{background:var(--blue);color:#fff;border-color:var(--blue)}' +
+      // C(모두 지우기)는 빨간 버튼, C 와 ⌫ 표시는 다른 기능 키보다 10% 크게 (18px → 20px)
+      '.calc-keys .fn.clr,.calc-keys .fn.big{font-size:20px}' +
+      '.calc-keys .clr,html[data-style="simple"] .calc-keys .clr{background:#d93025;color:#fff;border-color:#d93025}' +
       'html[data-style="simple"] .calc-keys button{border:0}' +
       'html[data-style="simple"] .calc-keys .eq{background:#4c6a8a}' +
       '.app.calc-mode .calc-actions{grid-template-columns:repeat(2,minmax(0,1fr))}';
@@ -158,7 +161,7 @@
 
     var keys = document.createElement('div');
     keys.className = 'calc-keys'; keys.id = 'calcKeys';
-    [['C', 'fn'], ['⌫', 'fn'], ['.', 'fn'], ['÷', 'op'],
+    [['C', 'fn clr'], ['⌫', 'fn big'], ['.', 'fn'], ['÷', 'op'],
      ['7'], ['8'], ['9'], ['×', 'op'],
      ['4'], ['5'], ['6'], ['−', 'op'],
      ['1'], ['2'], ['3'], ['+', 'op'],
@@ -266,6 +269,88 @@
       live.pendingText = t; live.side = side;
       if (!live.timer) live.timer = setTimeout(sendPartial, 400);
     };
+  } catch (e) { console.error(e); }
+
+  // ===== 실시간 대화 개선 =====
+  // 1) 지금 누구(어느 언어) 차례인지 보여 줘요.
+  // 2) 2.5초 동안 아무 말도 안 들리면 바로 상대 언어로 바꿔 들어요 (예전엔 5초 이상 기다림).
+  // 3) 말하는 사람 칸을 누르면 그 언어로 바로 들어요.
+  // 4) Android 14+ 폰은 두 언어를 함께 듣고, 들린 언어로 알아서 번역 방향을 정해요.
+  try {
+    var detected = null, heardAt = 0, switchTimer = null;
+    window.ftolkDetectedLanguage = function (id, code) { detected = code; };
+    var originalShowInterim2 = showInterim;
+    showInterim = function (side, text) { if (text && text.trim()) heardAt = Date.now(); return originalShowInterim2(side, text); };
+
+    var originalOnSpeech = onSpeech;
+    onSpeech = function (from, text, token) {
+      if (mode === 'live' && detected) {
+        var s = sideOf(detected);
+        if (s && s !== from) from = s; // 들린 언어 쪽 사람이 말한 것으로
+      }
+      detected = null;
+      return originalOnSpeech(from, text, token);
+    };
+
+    var originalStartRecognizer = startRecognizer;
+    startRecognizer = function (side, token, asLive) {
+      try { N.setAutoDetect(!!asLive && mode === 'live'); } catch (e) {}
+      detected = null;
+      if (switchTimer) { clearTimeout(switchTimer); switchTimer = null; }
+      originalStartRecognizer(side, token, asLive);
+      if (asLive && mode === 'live') {
+        var mine = recognizer, startedAt = Date.now();
+        switchTimer = setTimeout(function () {
+          switchTimer = null;
+          if (mode !== 'live' || !liveActive || liveStopping || ttsHold || recognizer !== mine) return;
+          if (heardAt > startedAt) return; // 누군가 말하는 중이면 그대로
+          liveSide = other(side); render();
+          stopListening();
+          startRecognizer(liveSide, token, true);
+        }, 2500);
+      }
+    };
+
+    function pickSide(side) {
+      if (mode !== 'live' || !liveActive || liveStopping) return;
+      if (switchTimer) { clearTimeout(switchTimer); switchTimer = null; }
+      liveSide = side; render();
+      stopListening();
+      startRecognizer(side, session, true);
+      notice(lang(side).flag + ' ' + lang(side).name + ' 듣는 중');
+    }
+    [['meText', 'me'], ['partnerText', 'partner']].forEach(function (p) {
+      var card = document.getElementById(p[0]); card = card && card.closest('.card');
+      if (card) card.addEventListener('click', function (e) { if (e.target.closest('button')) return; pickSide(p[1]); });
+    });
+
+    var originalRender = render;
+    render = function () {
+      originalRender();
+      if (mode !== 'live') return;
+      var info = document.getElementById('liveInfo');
+      if (liveActive && !liveStopping) {
+        if (liveAct === 'idle' || !liveAct) info.textContent = lang(liveSide).flag + ' ' + lang(liveSide).name + ' 듣는 중 · 다른 사람이 말하면 그 사람 칸을 누르세요';
+      } else if (!liveStopping) {
+        info.textContent = '시작하면 두 언어를 번갈아 들어요 · 칸을 누르면 그 언어로';
+      }
+      // 지금 듣는 쪽 칸을 살짝 강조
+      ['me', 'partner'].forEach(function (s) {
+        var card = document.getElementById(s + 'Text'); card = card && card.closest('.card');
+        if (card) card.style.boxShadow = (liveActive && liveSide === s) ? '0 0 0 2px var(--blue) inset' : '';
+      });
+    };
+    var originalSetMode = setMode;
+    setMode = function (m, opt) {
+      originalSetMode(m, opt);
+      if (m !== 'live') ['me', 'partner'].forEach(function (s) {
+        var card = document.getElementById(s + 'Text'); card = card && card.closest('.card');
+        if (card) card.style.boxShadow = '';
+      });
+    };
+    ['pushBtn', 'liveBtn', 'listenBtn', 'photoBtn', 'calcBtn'].forEach(function (id) {
+      var b = document.getElementById(id); if (b) b.onclick = function () { setMode({ pushBtn: 'push', liveBtn: 'live', listenBtn: 'listen', photoBtn: 'photo', calcBtn: 'calc' }[id]); };
+    });
   } catch (e) { console.error(e); }
 
   // 대화 리셋 안내를 짧게 ("대화를 보관하고 새로 시작했습니다 · 설정 → 대화 기록에서 볼 수 있어요" → "새 대화 시작")
