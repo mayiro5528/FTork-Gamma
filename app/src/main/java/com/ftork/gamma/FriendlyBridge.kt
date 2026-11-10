@@ -21,6 +21,7 @@ import android.webkit.JavascriptInterface
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.ftork.gamma.data.MlKitTranslationEngine
+import com.ftork.gamma.data.SmartTranslationEngine
 import com.ftork.gamma.data.TranslationResult
 import com.ftork.gamma.photo.PhotoLine
 import com.ftork.gamma.photo.PhotoTranslator
@@ -55,7 +56,8 @@ import java.util.Locale
 class FriendlyBridge(private val activity: MainActivity) {
 
     private val main = Handler(Looper.getMainLooper())
-    private val engine = MlKitTranslationEngine()
+    /** Google 키가 있으면 Google 서버 번역, 없으면 ML Kit (기기 안) */
+    private val engine = SmartTranslationEngine(activity, MlKitTranslationEngine())
     private val speaker = Speaker(activity)
     private val listener = SpeechListener(activity)
     private val photos = PhotoTranslator(engine)
@@ -90,11 +92,20 @@ class FriendlyBridge(private val activity: MainActivity) {
 
     @JavascriptInterface fun appVersion(): String = BuildConfig.VERSION_NAME
 
+    /** 화면의 엔진 설정. 음성 인식은 항상 Google 음성 인식(android), 번역은 mlkit 또는 google. */
     @JavascriptInterface
-    fun getConfig(): String = JSONObject()
-        .put("stt", "android").put("translate", "mlkit").put("realtime", false)
-        .put("whisperInstalled", true).put("hasOpenaiKey", false).put("hasGoogleKey", false)
-        .toString()
+    fun getConfig(): String {
+        val key = engine.googleKey
+        return JSONObject()
+            .put("stt", "android").put("translate", if (engine.preferred == "google") "google" else "mlkit").put("realtime", false)
+            .put("whisperInstalled", true).put("hasOpenaiKey", false)
+            .put("hasGoogleKey", key.isNotEmpty())
+            .put("googleKey", if (key.length > 10) key.take(6) + "…" + key.takeLast(4) else "")
+            .put("package", activity.packageName)
+            .put("sha1", engine.certSha1 ?: "")
+            .put("speechService", listener.serviceLabel)
+            .toString()
+    }
 
     @JavascriptInterface
     fun setConfig(json: String) {
@@ -102,8 +113,30 @@ class FriendlyBridge(private val activity: MainActivity) {
             val o = JSONObject(json)
             o.optString("me").takeIf { it.isNotEmpty() }?.let { me = it }
             o.optString("partner").takeIf { it.isNotEmpty() }?.let { partner = it }
+            o.optString("translate").takeIf { it == "google" || it == "mlkit" }?.let { engine.preferred = it }
         }
         warmUp()
+    }
+
+    /** 설정 화면의 Google 키 저장 · 삭제 (빈 값이면 삭제). OpenAI 키는 쓰지 않아요. */
+    @JavascriptInterface
+    fun saveKey(kind: String, value: String) {
+        if (kind == "google") engine.googleKey = value
+    }
+
+    /** 설정 화면의 "연결 테스트" */
+    @JavascriptInterface
+    fun testCloud(kind: String) {
+        activity.lifecycleScope.launch {
+            val message = if (kind != "google") "FTalk 은 Google 키만 써요."
+            else if (!engine.hasGoogleKey) "Google 키를 먼저 저장하세요."
+            else try {
+                "연결 성공 · Google 번역: 안녕하세요 → " + engine.testGoogle()
+            } catch (e: Exception) {
+                "연결 실패 · " + (e.message ?: "알 수 없는 오류") + "\n(키가 없거나 실패하면 기기 번역 ML Kit 로 번역해요)"
+            }
+            activity.callJs("friendlyNativeAi", "test", JSONObject().put("message", message).toString())
+        }
     }
 
     private var warmed = ""
@@ -280,7 +313,16 @@ class FriendlyBridge(private val activity: MainActivity) {
 
     // ---- 실시간 카메라 (화면의 openLive() 가 불러요) ----
     @JavascriptInterface fun liveCameraSupported(): Boolean = true
-    @JavascriptInterface fun openLiveCamera(json: String) = ui { activity.launchLive(json) }
+    @JavascriptInterface fun openLiveCamera(json: String) = ui {
+        val o = runCatching { JSONObject(json) }.getOrDefault(JSONObject())
+        o.put("theme", theme).put("style", style)
+        activity.launchLive(o.toString())
+    }
+
+    // FTalk 화면 설정(다크/라이트 · 컬러/심플): 카메라 화면도 같은 색으로 그려요.
+    @Volatile private var theme = "dark"
+    @Volatile private var style = "simple"
+    @JavascriptInterface fun setTheme(theme: String, style: String) { this.theme = theme; this.style = style }
 
     /** 실시간 카메라에서 셔터를 눌렀을 때: 번역하고 원본·번역본을 자동 저장해요. */
     fun onLiveShot(src: String, dst: String) {
@@ -441,7 +483,13 @@ class FriendlyBridge(private val activity: MainActivity) {
                 appendLine("음성 인식 서비스: " + if (SpeechRecognizer.isRecognitionAvailable(activity)) "있음" else "없음 (Google 앱 필요)")
                 appendLine("마이크 권한: " + if (mic) "허용됨" else "아직 없음 (마이크 버튼을 누르면 물어봐요)")
                 appendLine("인터넷: " + if (online) "연결됨" else "끊김")
-                append("받은 번역 모델: " + if (langs.isEmpty()) "없음" else langs.sorted().joinToString(", "))
+                appendLine("음성 인식기: " + listener.serviceLabel)
+                appendLine("번역 엔진: " + when {
+                    engine.usingGoogle -> "Google 서버 번역 (Cloud Translation)" + if (engine.lastEngine == "mlkit" && engine.lastError != null) " · 최근 실패 → 기기 번역 사용: ${engine.lastError}" else ""
+                    engine.preferred == "google" -> "Google 선택됨 · 키 없음 → 기기 번역(ML Kit)"
+                    else -> "기기 번역 (ML Kit)"
+                })
+                append("받은 기기 번역 모델: " + if (langs.isEmpty()) "없음" else langs.sorted().joinToString(", "))
             }
             activity.callJs("friendlyNativeDiagnostic", msg)
         }

@@ -1,7 +1,9 @@
 package com.ftork.gamma.speech
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.speech.RecognitionService
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -27,9 +29,26 @@ class SpeechListener(private val context: Context) {
 
     val isAvailable: Boolean get() = SpeechRecognizer.isRecognitionAvailable(context)
 
+    /**
+     * Google 번역 앱과 같은 음성 인식기(Google 앱의 GoogleRecognitionService).
+     * 삼성폰처럼 기본 음성 인식이 다른 회사 것이어도 Google 것을 직접 지정해요. 없으면 null → 기기 기본값.
+     */
+    val googleService: ComponentName? by lazy {
+        runCatching {
+            context.packageManager.queryIntentServices(Intent(RecognitionService.SERVICE_INTERFACE), 0)
+                .map { ComponentName(it.serviceInfo.packageName, it.serviceInfo.name) }
+                .firstOrNull { it.packageName == GOOGLE_APP }
+        }.getOrNull()
+    }
+
+    /** 진단 화면용: 지금 쓰는 음성 인식기 이름 */
+    val serviceLabel: String get() = if (googleService != null) "Google 음성 인식 (Google 앱)" else "기기 기본 음성 인식"
+
     fun start(languageTag: String, callbacks: Callbacks) {
         stop()
-        val r = SpeechRecognizer.createSpeechRecognizer(context)
+        val r = googleService
+            ?.let { runCatching { SpeechRecognizer.createSpeechRecognizer(context, it) }.getOrNull() }
+            ?: SpeechRecognizer.createSpeechRecognizer(context)
         r.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) = callbacks.onReady()
             override fun onRmsChanged(rmsdB: Float) = callbacks.onLevel(rmsdB)
@@ -67,6 +86,8 @@ class SpeechListener(private val context: Context) {
         b?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()?.takeIf { it.isNotBlank() }
 
     companion object {
+        const val GOOGLE_APP = "com.google.android.googlequicksearchbox"
+
         /** 조용했거나 못 알아들은 경우 — 다시 듣기만 하면 되는 오류 */
         fun isSilence(code: Int) =
             code == SpeechRecognizer.ERROR_NO_MATCH || code == SpeechRecognizer.ERROR_SPEECH_TIMEOUT

@@ -13,6 +13,10 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.content.res.ColorStateList
+import android.widget.ImageView
+import androidx.core.view.WindowCompat
+import com.ftork.gamma.R
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.TypedValue
@@ -101,9 +105,17 @@ class LiveCameraActivity : ComponentActivity() {
             src = o.optString("src", src); dst = o.optString("dst", dst)
             haptic = o.optBoolean("haptic", true)
         }
+        pal = runCatching {
+            val o = JSONObject(intent.getStringExtra("options") ?: "{}")
+            Palette(o.optString("theme", "dark") != "light", o.optString("style", "simple") == "simple")
+        }.getOrDefault(Palette(true, true))
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        window.statusBarColor = Color.BLACK
-        window.navigationBarColor = Color.BLACK
+        window.statusBarColor = pal.bg
+        window.navigationBarColor = pal.bg
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = pal.bg != 0xFF202124.toInt()
+            isAppearanceLightNavigationBars = pal.bg != 0xFF202124.toInt()
+        }
         setContentView(buildLayout())
         analysisExecutor = Executors.newSingleThreadExecutor()
 
@@ -126,16 +138,33 @@ class LiveCameraActivity : ComponentActivity() {
 
     private fun dp(v: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, resources.displayMetrics).toInt()
 
-    private fun roundButton(label: String, size: Int, onClick: () -> Unit) = TextView(this).apply {
-        text = label; gravity = Gravity.CENTER; setTextColor(Color.WHITE)
-        setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-        background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(0x66000000) }
-        layoutParams = LinearLayout.LayoutParams(dp(size.toFloat()), dp(size.toFloat()))
+    /** FTalk 화면 설정(다크/라이트 · 컬러/심플)과 같은 색 */
+    private inner class Palette(dark: Boolean, val simple: Boolean) {
+        val bg = if (dark) 0xFF202124.toInt() else 0xFFF8F9FA.toInt()
+        val surface = if (dark) 0xFF303134.toInt() else 0xFFFFFFFF.toInt()
+        val text = if (dark) 0xFFF4F6F8.toInt() else 0xFF202124.toInt()
+        val muted = if (dark) 0xFFB6C0CD.toInt() else 0xFF5F6368.toInt()
+        val stroke = if (dark) 0xFF606773.toInt() else 0xFFCED3DA.toInt()
+        val accent = if (simple) 0xFF7B8B9D.toInt() else 0xFF36ABE0.toInt()
+    }
+    private lateinit var pal: Palette
+
+    /** 둥근 아이콘 버튼 (FTalk 의 roundbtn 모양) */
+    private fun iconButton(icon: Int, label: String, sizeDp: Float, onClick: () -> Unit) = ImageView(this).apply {
+        setImageResource(icon)
+        imageTintList = ColorStateList.valueOf(pal.text)
+        scaleType = ImageView.ScaleType.CENTER
+        contentDescription = label
+        background = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL; setColor(pal.surface)
+            if (!pal.simple) setStroke(dp(1f), pal.stroke)
+        }
+        layoutParams = FrameLayout.LayoutParams(dp(sizeDp), dp(sizeDp))
         setOnClickListener { onClick() }
     }
 
     private fun buildLayout(): View {
-        val root = FrameLayout(this).apply { setBackgroundColor(Color.BLACK) }
+        val root = FrameLayout(this).apply { setBackgroundColor(pal.bg) }
         preview = PreviewView(this).apply {
             scaleType = PreviewView.ScaleType.FILL_CENTER
             implementationMode = PreviewView.ImplementationMode.COMPATIBLE
@@ -144,54 +173,60 @@ class LiveCameraActivity : ComponentActivity() {
         root.addView(preview, FrameLayout.LayoutParams(-1, -1))
         root.addView(overlay, FrameLayout.LayoutParams(-1, -1))
 
-        // 위: 뒤로 · 언어 · 바꾸기
-        val top = LinearLayout(this).apply {
+        // 위: 뒤로 · [원문 언어 ⇄ 번역 언어] 알약 버튼
+        val top = FrameLayout(this).apply { setBackgroundColor(pal.bg) }
+        val back = iconButton(R.drawable.ic_live_back, "뒤로", 44f) { done("exit") }
+        top.addView(back, FrameLayout.LayoutParams(dp(44f), dp(44f), Gravity.START or Gravity.CENTER_VERTICAL))
+        val chip = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(12f), dp(10f), dp(12f), dp(10f))
-            setBackgroundColor(0x88000000.toInt())
+            setPadding(dp(16f), dp(8f), dp(12f), dp(8f))
+            background = GradientDrawable().apply {
+                cornerRadius = dp(22f).toFloat(); setColor(pal.surface)
+                if (!pal.simple) setStroke(dp(1f), pal.accent)
+            }
+            setOnClickListener { swap() }
+            contentDescription = "번역 방향 바꾸기"
         }
         title = TextView(this).apply {
-            setTextColor(Color.WHITE); setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f); typeface = Typeface.DEFAULT_BOLD
-            gravity = Gravity.CENTER
+            setTextColor(pal.text); setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f); typeface = Typeface.DEFAULT_BOLD
         }
-        top.addView(roundButton("←", 44) { done("exit") })
-        top.addView(title, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-        top.addView(roundButton("⇄", 44) { swap() })
+        val swapIcon = ImageView(this).apply {
+            setImageResource(R.drawable.ic_live_swap); imageTintList = ColorStateList.valueOf(pal.accent)
+        }
+        chip.addView(title)
+        chip.addView(swapIcon, LinearLayout.LayoutParams(dp(22f), dp(22f)).apply { marginStart = dp(10f) })
+        top.addView(chip, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER))
         root.addView(top, FrameLayout.LayoutParams(-1, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP))
 
-        // 아래: 안내 · 갤러리 · 셔터
+        // 아래: 안내 문구, 그 아래 [갤러리(왼쪽) · 셔터(정가운데)]
         val bottom = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(16f), dp(8f), dp(16f), dp(20f))
-            setBackgroundColor(0x88000000.toInt())
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(pal.bg)
         }
         status = TextView(this).apply {
-            setTextColor(Color.WHITE); setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); gravity = Gravity.CENTER
-            setPadding(0, 0, 0, dp(10f))
+            setTextColor(pal.muted); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); gravity = Gravity.CENTER
         }
-        val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-        val gallery = roundButton("🖼", 52) { done("gallery") }
-        shutter = View(this).apply {
-            background = GradientDrawable().apply {
-                shape = GradientDrawable.OVAL; setColor(Color.WHITE); setStroke(dp(5f), 0xFF8AB4F8.toInt())
-            }
-            contentDescription = "사진 찍고 번역 저장"
+        val row = FrameLayout(this)
+        val gallery = iconButton(R.drawable.ic_live_gallery, "갤러리에서 고르기", 52f) { done("gallery") }
+        row.addView(gallery, FrameLayout.LayoutParams(dp(52f), dp(52f), Gravity.START or Gravity.CENTER_VERTICAL).apply { marginStart = dp(28f) })
+        // 셔터: 얇은 테두리 + 안쪽 원 (심플)
+        shutter = FrameLayout(this).apply {
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.TRANSPARENT); setStroke(dp(3f), pal.text) }
+            contentDescription = "사진 찍고 번역본 저장"
             setOnClickListener { shoot() }
+            addView(View(context).apply {
+                background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(if (pal.simple) pal.text else pal.accent) }
+            }, FrameLayout.LayoutParams(dp(58f), dp(58f), Gravity.CENTER))
         }
-        val spacer = View(this)
-        row.addView(gallery)
-        row.addView(View(this), LinearLayout.LayoutParams(dp(36f), 1))
-        row.addView(shutter, LinearLayout.LayoutParams(dp(76f), dp(76f)))
-        row.addView(View(this), LinearLayout.LayoutParams(dp(36f), 1))
-        row.addView(spacer, LinearLayout.LayoutParams(dp(52f), dp(52f)))
-        bottom.addView(status)
-        bottom.addView(row)
+        row.addView(shutter, FrameLayout.LayoutParams(dp(72f), dp(72f), Gravity.CENTER))
+        bottom.addView(status, LinearLayout.LayoutParams(-1, ViewGroup.LayoutParams.WRAP_CONTENT))
+        bottom.addView(row, LinearLayout.LayoutParams(-1, dp(96f)))
         root.addView(bottom, FrameLayout.LayoutParams(-1, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM))
 
         ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             top.setPadding(dp(12f), dp(10f) + bars.top, dp(12f), dp(10f))
-            bottom.setPadding(dp(16f), dp(8f), dp(16f), dp(20f) + bars.bottom)
+            bottom.setPadding(dp(16f), dp(10f), dp(16f), dp(8f) + bars.bottom)
             insets
         }
         renderTitle()
@@ -200,13 +235,21 @@ class LiveCameraActivity : ComponentActivity() {
     }
 
     private fun renderTitle() { title.text = "${nameOf(src)}  →  ${nameOf(dst)}" }
+
+    override fun onResume() {
+        super.onResume()
+        shooting = false
+        if (::shutter.isInitialized) shutter.alpha = 1f
+    }
     private fun setStatus(t: String) { status.text = t }
 
     private fun swap() {
         val t = src; src = dst; dst = t
         synchronized(cache) { cache.clear() }
         generation++
+        tracks.clear(); translating = false
         overlay.show(emptyList(), 1, 1)
+        lastScanAt = 0L; scanLuma = null
         renderTitle()
     }
 
@@ -243,46 +286,165 @@ class LiveCameraActivity : ComponentActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    /** 미리보기 한 장면: 0.5초에 한 번만, 앞 장면 처리가 끝났을 때만 읽어요. */
+    // ================= Google 번역 앱처럼 차분한 실시간 번역 =================
+    // 1) 카메라가 움직이는 동안: 번역을 살짝 숨겨요(흐리게). 글자를 새로 읽지 않아요.
+    // 2) 0.4초 동안 멈추면: 그 장면을 한 번 읽어요.
+    // 3) 같은 장면이면 1.5초에 한 번만 다시 확인하고, 같은 글자·같은 자리면 번역을 그대로 둬요(다시 그리지 않음).
+    // 4) 글자를 한 번 놓쳐도 바로 지우지 않고 한 번 더 기다려요.
+    // 5) 새로 나타난 번역은 부드럽게 나타나요(페이드).
+
+    private var prevLuma: IntArray? = null
+    @Volatile private var scanLuma: IntArray? = null
+    @Volatile private var lastMoveAt = 0L
+    @Volatile private var lastScanAt = 0L
+    @Volatile private var hiddenForMotion = false
+    private val tracks = ArrayList<Track>()   // 메인 스레드에서만 써요
+    private var nextTrackId = 1
+    private var translating = false
+    private var lastStatus = ""
+
+    /** 장면을 40×30 칸으로 줄인 밝기 (움직임 비교용, 아주 가벼움) */
+    private fun lumaGrid(image: ImageProxy): IntArray {
+        val plane = image.planes[0]; val buf = plane.buffer
+        val rs = plane.rowStride; val ps = plane.pixelStride
+        val w = image.width; val h = image.height
+        val out = IntArray(GW * GH)
+        for (gy in 0 until GH) {
+            val y = (gy * 2 + 1) * h / (GH * 2)
+            for (gx in 0 until GW) {
+                val x = (gx * 2 + 1) * w / (GW * 2)
+                val i = y * rs + x * ps
+                val r = buf.get(i).toInt() and 0xFF; val g = buf.get(i + 1).toInt() and 0xFF; val b = buf.get(i + 2).toInt() and 0xFF
+                out[gy * GW + gx] = (r * 3 + g * 6 + b) / 10
+            }
+        }
+        return out
+    }
+
+    private fun diff(a: IntArray?, b: IntArray): Int {
+        if (a == null) return 255
+        var s = 0
+        for (i in b.indices) s += kotlin.math.abs(a[i] - b[i])
+        return s / b.size
+    }
+
     private fun analyze(image: ImageProxy) {
+        if (shooting) { image.close(); return }
         val now = System.currentTimeMillis()
-        if (shooting || now - lastRun < 500 || !busy.compareAndSet(false, true)) { image.close(); return }
-        lastRun = now
+        val grid = try { lumaGrid(image) } catch (e: Exception) { image.close(); return }
+        val motion = diff(prevLuma, grid)
+        prevLuma = grid
+        val sceneDiff = diff(scanLuma, grid)
+
+        if (motion > MOVE_THRESHOLD) {
+            lastMoveAt = now
+            if (!hiddenForMotion) { hiddenForMotion = true; runOnUiThread { overlay.fadeTo(0.15f) } }
+        }
+        val steady = now - lastMoveAt > STEADY_MS
+        // 움직였다가 같은 장면으로 돌아오면 다시 보여 줘요.
+        if (hiddenForMotion && steady && sceneDiff <= SCENE_THRESHOLD && lastScanAt > 0) {
+            hiddenForMotion = false; runOnUiThread { overlay.fadeTo(1f) }
+        }
+        val sceneChanged = sceneDiff > SCENE_THRESHOLD
+        val due = lastScanAt == 0L || sceneChanged || now - lastScanAt > RECHECK_MS
+        if (!steady || !due || !busy.compareAndSet(false, true)) { image.close(); return }
+
+        lastScanAt = now
+        scanLuma = grid
         val frame = try { upright(image.toBitmap(), image.imageInfo.rotationDegrees) } catch (e: Exception) {
             busy.set(false); return
         } finally { image.close() }
         val gen = generation
-        val s = src; val d = dst
+        val s = src
         lifecycleScope.launch {
             try {
-                val blocks = withContext(Dispatchers.Default) { scanner.scan(frame, s) }
-                val boxes = ArrayList<LiveBox>()
-                var missing = false
-                for ((box, text) in blocks) {
-                    val cached = synchronized(cache) { cache[text] }
-                    val translated = cached ?: when (val r = engine.translate(text, s, d)) {
-                        is TranslationResult.Success -> r.text.also { synchronized(cache) { cache[text] = it } }
-                        is TranslationResult.Failure -> { missing = true; null }
-                    }
-                    if (translated != null) {
+                val found = withContext(Dispatchers.Default) {
+                    scanner.scan(frame, s).map { (box, text) ->
                         val bg = PhotoTranslator.edgeColor(frame, Rect(box).apply { inset(-3, -3); intersect(0, 0, frame.width, frame.height) })
-                        boxes += LiveBox(box, translated, bg)
+                        Found(RectF(box), normalize(text), bg)
                     }
                 }
-                if (gen == generation && !shooting) {
-                    overlay.show(boxes, frame.width, frame.height)
-                    setStatus(when {
-                        missing -> "번역 모델을 받는 중이에요 (처음 한 번, 인터넷 필요)"
-                        blocks.isEmpty() -> "글자를 화면 가운데에 비춰 주세요"
-                        else -> "셔터를 누르면 번역본을 사진 앱에 저장해요"
-                    })
-                }
+                if (gen != generation || shooting) return@launch
+                reconcile(found, sceneChanged)
+                overlay.show(tracks.toList(), frame.width, frame.height)
+                hiddenForMotion = false
+                overlay.fadeTo(1f)
+                translatePending()
+                status(if (found.isEmpty()) "글자를 화면 가운데에 비추고 잠시 멈춰 주세요" else "셔터를 누르면 번역본을 사진 앱에 저장해요")
             } catch (e: Exception) {
                 // 한 장면 실패는 무시하고 다음 장면을 읽어요.
             } finally {
                 busy.set(false)
             }
         }
+    }
+
+    private fun status(t: String) { if (t != lastStatus) { lastStatus = t; setStatus(t) } }
+
+    /** 새로 읽은 글자 덩어리를 이전 것과 짝지어서, 같은 글자면 번역을 그대로 유지해요. */
+    private fun reconcile(found: List<Found>, sceneChanged: Boolean) {
+        val used = BooleanArray(tracks.size)
+        val next = ArrayList<Track>()
+        for (f in found) {
+            var best = -1; var bestScore = 0f
+            for (i in tracks.indices) {
+                if (used[i]) continue
+                val t = tracks[i]
+                val overlap = iou(t.box, f.box)
+                val sim = similarity(t.src, f.text)
+                val ok = overlap > 0.3f || (sim > 0.8f && centerDistance(t.box, f.box) < max(f.box.height(), 40f) * 2)
+                val score = overlap * 0.6f + sim * 0.4f
+                if (ok && score > bestScore) { best = i; bestScore = score }
+            }
+            if (best >= 0) {
+                used[best] = true
+                val t = tracks[best]
+                // 자리는 부드럽게 따라가고(떨림 줄이기), 장면이 바뀌었으면 바로 옮겨요.
+                t.box = lerp(t.box, f.box, if (sceneChanged) 1f else 0.35f)
+                t.bg = f.bg; t.missed = 0
+                // 글자가 조금 다르게 읽힌 정도(인식 흔들림)면 번역을 바꾸지 않아요.
+                if (similarity(t.src, f.text) < 0.85f) { t.src = f.text; t.pending = true }
+                next += t
+            } else {
+                next += Track(nextTrackId++, RectF(f.box), f.text, null, f.bg)
+            }
+        }
+        // 이번에 못 찾은 것: 같은 장면이면 한 번은 그대로 둬요(깜빡임 방지).
+        for (i in tracks.indices) {
+            val t = tracks[i]
+            if (!used[i] && !sceneChanged && t.missed < 1 && t.dst != null) { t.missed++; next += t }
+        }
+        tracks.clear(); tracks.addAll(next)
+    }
+
+    /** 번역이 필요한 칸만, 하나씩 차례로 번역해요. 번역 중에는 이전 번역을 계속 보여 줘요. */
+    private fun translatePending() {
+        if (translating) return
+        val t = tracks.firstOrNull { it.pending } ?: return
+        val cached = synchronized(cache) { cache[t.src] }
+        if (cached != null) { apply(t, t.src, cached); translatePending(); return }
+        translating = true
+        val text = t.src; val s = src; val d = dst; val gen = generation
+        lifecycleScope.launch {
+            val r = engine.translate(text, s, d)
+            translating = false
+            if (gen != generation) return@launch
+            when (r) {
+                is TranslationResult.Success -> { synchronized(cache) { cache[text] = r.text }; apply(t, text, r.text) }
+                is TranslationResult.Failure -> { t.pending = false; status("번역 모델을 받는 중이에요 (처음 한 번, 인터넷 필요)") }
+            }
+            translatePending()
+        }
+    }
+
+    private fun apply(t: Track, text: String, translated: String) {
+        if (t.src != text) return // 그사이 글자가 바뀌었으면 다음 차례에 다시
+        t.pending = false
+        if (t.dst != translated) {
+            if (t.dst == null) t.shownAt = android.os.SystemClock.uptimeMillis()
+            t.dst = translated
+        }
+        overlay.invalidate()
     }
 
     @SuppressLint("UnsafeOptInUsageError")
@@ -314,6 +476,52 @@ class LiveCameraActivity : ComponentActivity() {
     }
 
     companion object {
+        private const val GW = 40
+        private const val GH = 30
+        /** 프레임끼리 밝기 차이가 이보다 크면 "움직이는 중" */
+        private const val MOVE_THRESHOLD = 7
+        /** 마지막으로 읽은 장면과 차이가 이보다 크면 "다른 장면" */
+        private const val SCENE_THRESHOLD = 14
+        /** 이만큼 멈춰 있으면 읽기 시작 */
+        private const val STEADY_MS = 400L
+        /** 같은 장면은 이 간격으로만 다시 확인 */
+        private const val RECHECK_MS = 1500L
+
+        /** 인식 흔들림 줄이기: 앞뒤 공백, 여러 칸 공백 정리 */
+        fun normalize(s: String) = s.trim().replace(Regex("\\s+"), " ")
+
+        /** 두 글자가 얼마나 같은지 0~1 (편집 거리 기준) */
+        fun similarity(a: String, b: String): Float {
+            if (a == b) return 1f
+            if (a.isEmpty() || b.isEmpty()) return 0f
+            val x = a.lowercase().take(200); val y = b.lowercase().take(200)
+            var prev = IntArray(y.length + 1) { it }
+            for (i in 1..x.length) {
+                val cur = IntArray(y.length + 1); cur[0] = i
+                for (j in 1..y.length) {
+                    cur[j] = minOf(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + if (x[i - 1] == y[j - 1]) 0 else 1)
+                }
+                prev = cur
+            }
+            return 1f - prev[y.length].toFloat() / max(x.length, y.length)
+        }
+
+        fun iou(a: RectF, b: RectF): Float {
+            val l = max(a.left, b.left); val t = max(a.top, b.top)
+            val r = kotlin.math.min(a.right, b.right); val bt = kotlin.math.min(a.bottom, b.bottom)
+            val inter = max(0f, r - l) * max(0f, bt - t)
+            val union = a.width() * a.height() + b.width() * b.height() - inter
+            return if (union <= 0f) 0f else inter / union
+        }
+
+        fun centerDistance(a: RectF, b: RectF): Float =
+            kotlin.math.hypot(a.centerX() - b.centerX(), a.centerY() - b.centerY())
+
+        fun lerp(a: RectF, b: RectF, k: Float) = RectF(
+            a.left + (b.left - a.left) * k, a.top + (b.top - a.top) * k,
+            a.right + (b.right - a.right) * k, a.bottom + (b.bottom - a.bottom) * k,
+        )
+
         fun intent(context: Context, optionsJson: String): Intent =
             Intent(context, LiveCameraActivity::class.java).putExtra("options", optionsJson)
 
@@ -336,32 +544,52 @@ class LiveCameraActivity : ComponentActivity() {
     }
 }
 
-/** 미리보기 위에 덮을 번역 한 칸 (좌표는 분석한 장면 기준) */
-data class LiveBox(val box: Rect, val text: String, val bg: Int)
+/** 한 번 읽은 글자 덩어리 */
+data class Found(val box: RectF, val text: String, val bg: Int)
 
-/** 분석 장면 좌표를 화면 좌표로 바꿔서(FILL_CENTER) 번역 칸을 그려요. */
+/** 화면에 계속 붙어 있는 번역 칸 하나 (좌표는 분석한 장면 기준) */
+class Track(val id: Int, var box: RectF, var src: String, var dst: String?, var bg: Int) {
+    var pending = true
+    var missed = 0
+    var shownAt = 0L
+}
+
+/** 분석 장면 좌표를 화면 좌표로 바꿔서(FILL_CENTER) 번역 칸을 그려요. 새 칸은 0.25초 동안 서서히 나타나요. */
 class OverlayView(context: Context) : View(context) {
-    private var boxes: List<LiveBox> = emptyList()
+    private var tracks: List<Track> = emptyList()
     private var imgW = 1
     private var imgH = 1
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
 
-    fun show(list: List<LiveBox>, w: Int, h: Int) {
-        boxes = list; imgW = max(1, w); imgH = max(1, h); invalidate()
+    fun show(list: List<Track>, w: Int, h: Int) {
+        tracks = list; imgW = max(1, w); imgH = max(1, h); invalidate()
+    }
+
+    /** 전체를 흐리게/선명하게 (움직일 때 숨기기) */
+    fun fadeTo(target: Float) {
+        if (kotlin.math.abs(alpha - target) < 0.01f) return
+        animate().alpha(target).setDuration(if (target < alpha) 120L else 220L).start()
     }
 
     override fun onDraw(canvas: Canvas) {
-        if (boxes.isEmpty()) return
+        if (tracks.isEmpty()) return
         val scale = max(width.toFloat() / imgW, height.toFloat() / imgH)
         val dx = (width - imgW * scale) / 2f
         val dy = (height - imgH * scale) / 2f
-        for (b in boxes) {
-            val r = RectF(b.box.left * scale + dx, b.box.top * scale + dy, b.box.right * scale + dx, b.box.bottom * scale + dy)
+        val now = android.os.SystemClock.uptimeMillis()
+        var animating = false
+        for (t in tracks) {
+            val text = t.dst ?: continue
+            val a = ((now - t.shownAt) / 250f).coerceIn(0f, 1f)
+            if (a < 1f) animating = true
+            val r = RectF(t.box.left * scale + dx, t.box.top * scale + dy, t.box.right * scale + dx, t.box.bottom * scale + dy)
             r.inset(-4f, -4f)
-            fill.color = (b.bg and 0x00FFFFFF) or 0xF0000000.toInt()
+            fill.color = (t.bg and 0x00FFFFFF) or ((0xF0 * a).toInt() shl 24)
             canvas.drawRoundRect(r, 8f, 8f, fill)
             val rect = Rect(r.left.toInt(), r.top.toInt(), r.right.toInt(), r.bottom.toInt())
-            PhotoTranslator.drawFitted(canvas, b.text, rect, PhotoTranslator.textColorOn(b.bg))
+            val c = PhotoTranslator.textColorOn(t.bg)
+            PhotoTranslator.drawFitted(canvas, text, rect, (c and 0x00FFFFFF) or ((0xFF * a).toInt() shl 24))
         }
+        if (animating) postInvalidateOnAnimation()
     }
 }
