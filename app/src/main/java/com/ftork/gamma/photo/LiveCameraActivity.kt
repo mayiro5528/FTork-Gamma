@@ -46,6 +46,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.ftork.gamma.data.MlKitTranslationEngine
+import com.ftork.gamma.data.SmartTranslationEngine
 import com.ftork.gamma.data.TranslationResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -82,8 +83,14 @@ class LiveCameraActivity : ComponentActivity() {
     private lateinit var status: TextView
     private lateinit var shutter: View
 
-    private val engine = MlKitTranslationEngine()
-    private val scanner = PhotoTranslator(engine)
+    /** 메인 화면과 같은 번역 설정: Google 키가 있으면 Google 서버 번역, 없으면 ML Kit */
+    private val engine by lazy { SmartTranslationEngine(this, MlKitTranslationEngine()) }
+    private val scanner by lazy { PhotoTranslator(engine) }
+    private var camera: androidx.camera.core.Camera? = null
+    private var torchOn = false
+    private lateinit var srcPill: TextView
+    private lateinit var dstPill: TextView
+    private lateinit var flashBtn: ImageView
     private val cache = object : LinkedHashMap<String, String>(256, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, String>?) = size > 300
     }
@@ -173,29 +180,18 @@ class LiveCameraActivity : ComponentActivity() {
         root.addView(preview, FrameLayout.LayoutParams(-1, -1))
         root.addView(overlay, FrameLayout.LayoutParams(-1, -1))
 
-        // 위: 뒤로 · [원문 언어 ⇄ 번역 언어] 알약 버튼
+        // 위: 뒤로 · 제목 · 플래시 (Google 렌즈 배치)
         val top = FrameLayout(this).apply { setBackgroundColor(pal.bg) }
         val back = iconButton(R.drawable.ic_live_back, "뒤로", 44f) { done("exit") }
         top.addView(back, FrameLayout.LayoutParams(dp(44f), dp(44f), Gravity.START or Gravity.CENTER_VERTICAL))
-        val chip = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(16f), dp(8f), dp(12f), dp(8f))
-            background = GradientDrawable().apply {
-                cornerRadius = dp(22f).toFloat(); setColor(pal.surface)
-                if (!pal.simple) setStroke(dp(1f), pal.accent)
-            }
-            setOnClickListener { swap() }
-            contentDescription = "번역 방향 바꾸기"
-        }
+        rotatable += back
         title = TextView(this).apply {
-            setTextColor(pal.text); setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f); typeface = Typeface.DEFAULT_BOLD
+            setTextColor(pal.text); setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f); typeface = Typeface.DEFAULT_BOLD
+            text = "사진 번역"
         }
-        val swapIcon = ImageView(this).apply {
-            setImageResource(R.drawable.ic_live_swap); imageTintList = ColorStateList.valueOf(pal.accent)
-        }
-        chip.addView(title)
-        chip.addView(swapIcon, LinearLayout.LayoutParams(dp(22f), dp(22f)).apply { marginStart = dp(10f) })
-        top.addView(chip, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER))
+        top.addView(title, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER))
+        flashBtn = iconButton(R.drawable.ic_live_flash_off, "플래시 켜기", 44f) { toggleTorch() }
+        top.addView(flashBtn, FrameLayout.LayoutParams(dp(44f), dp(44f), Gravity.END or Gravity.CENTER_VERTICAL))
         root.addView(top, FrameLayout.LayoutParams(-1, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP))
 
         // 아래: 안내 문구, 그 아래 [갤러리(왼쪽) · 셔터(정가운데)]
@@ -209,6 +205,7 @@ class LiveCameraActivity : ComponentActivity() {
         val row = FrameLayout(this)
         val gallery = iconButton(R.drawable.ic_live_gallery, "갤러리에서 고르기", 52f) { done("gallery") }
         row.addView(gallery, FrameLayout.LayoutParams(dp(52f), dp(52f), Gravity.START or Gravity.CENTER_VERTICAL).apply { marginStart = dp(28f) })
+        rotatable += gallery
         // 셔터: 얇은 테두리 + 안쪽 원 (심플)
         shutter = FrameLayout(this).apply {
             background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.TRANSPARENT); setStroke(dp(3f), pal.text) }
@@ -219,8 +216,33 @@ class LiveCameraActivity : ComponentActivity() {
             }, FrameLayout.LayoutParams(dp(58f), dp(58f), Gravity.CENTER))
         }
         row.addView(shutter, FrameLayout.LayoutParams(dp(72f), dp(72f), Gravity.CENTER))
+
+        // 맨 아래: [원문 언어] ⇄ [번역 언어] — 누르면 언어 목록 (Google 렌즈 배치)
+        val langs = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+        fun pill(onClick: () -> Unit) = TextView(this).apply {
+            setTextColor(pal.text); setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f); typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            background = GradientDrawable().apply {
+                cornerRadius = dp(24f).toFloat(); setColor(pal.surface)
+                if (!pal.simple) setStroke(dp(1f), pal.stroke)
+            }
+            setOnClickListener { onClick() }
+        }
+        srcPill = pill { pickLanguage(source = true) }
+        dstPill = pill { pickLanguage(source = false) }
+        val swapIcon = ImageView(this).apply {
+            setImageResource(R.drawable.ic_live_swap); imageTintList = ColorStateList.valueOf(pal.accent)
+            scaleType = ImageView.ScaleType.CENTER
+            contentDescription = "번역 방향 바꾸기"
+            setOnClickListener { swap() }
+        }
+        langs.addView(srcPill, LinearLayout.LayoutParams(0, dp(48f), 1f))
+        langs.addView(swapIcon, LinearLayout.LayoutParams(dp(52f), dp(48f)))
+        langs.addView(dstPill, LinearLayout.LayoutParams(0, dp(48f), 1f))
+
         bottom.addView(status, LinearLayout.LayoutParams(-1, ViewGroup.LayoutParams.WRAP_CONTENT))
-        bottom.addView(row, LinearLayout.LayoutParams(-1, dp(96f)))
+        bottom.addView(row, LinearLayout.LayoutParams(-1, dp(92f)))
+        bottom.addView(langs, LinearLayout.LayoutParams(-1, ViewGroup.LayoutParams.WRAP_CONTENT))
         root.addView(bottom, FrameLayout.LayoutParams(-1, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM))
 
         ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
@@ -234,10 +256,51 @@ class LiveCameraActivity : ComponentActivity() {
         return root
     }
 
-    private fun renderTitle() { title.text = "${nameOf(src)}  →  ${nameOf(dst)}" }
+    private fun renderTitle() {
+        srcPill.text = nameOf(src); dstPill.text = nameOf(dst)
+        srcPill.contentDescription = "원문 언어: ${nameOf(src)} (바꾸기)"
+        dstPill.contentDescription = "번역 언어: ${nameOf(dst)} (바꾸기)"
+    }
+
+    /** 언어 목록에서 고르기. 반대쪽과 같은 언어를 고르면 서로 바꿔요. */
+    private fun pickLanguage(source: Boolean) {
+        val codes = LANGS
+        val names = codes.map { nameOf(it) }.toTypedArray()
+        val current = codes.indexOf(if (source) src else dst)
+        android.app.AlertDialog.Builder(this, if (pal.bg == 0xFF202124.toInt()) android.R.style.Theme_DeviceDefault_Dialog_Alert else android.R.style.Theme_DeviceDefault_Light_Dialog_Alert)
+            .setTitle(if (source) "원문 언어" else "번역할 언어")
+            .setSingleChoiceItems(names, current) { d, which ->
+                val code = codes[which]
+                if (source) { if (code == dst) dst = src; src = code } else { if (code == src) src = dst; dst = code }
+                d.dismiss()
+                resetLanguages()
+            }
+            .setNegativeButton("닫기", null)
+            .show()
+    }
+
+    private fun resetLanguages() {
+        synchronized(cache) { cache.clear() }
+        generation++
+        tracks.clear(); translating = false
+        overlay.show(emptyList(), 1, 1)
+        lastScanAt = 0L; scanLuma = null
+        renderTitle()
+    }
+
+    /** 플래시(손전등) 켜고 끄기: 어두운 곳의 메뉴판·간판용 */
+    private fun toggleTorch() {
+        val cam = camera ?: return
+        if (!cam.cameraInfo.hasFlashUnit()) { setStatus("이 폰은 플래시를 쓸 수 없어요"); return }
+        torchOn = !torchOn
+        cam.cameraControl.enableTorch(torchOn)
+        flashBtn.setImageResource(if (torchOn) R.drawable.ic_live_flash else R.drawable.ic_live_flash_off)
+        flashBtn.contentDescription = if (torchOn) "플래시 끄기" else "플래시 켜기"
+    }
 
     override fun onResume() {
         super.onResume()
+        if (orientationListener.canDetectOrientation()) orientationListener.enable()
         shooting = false
         if (::shutter.isInitialized) shutter.alpha = 1f
     }
@@ -245,12 +308,7 @@ class LiveCameraActivity : ComponentActivity() {
 
     private fun swap() {
         val t = src; src = dst; dst = t
-        synchronized(cache) { cache.clear() }
-        generation++
-        tracks.clear(); translating = false
-        overlay.show(emptyList(), 1, 1)
-        lastScanAt = 0L; scanLuma = null
-        renderTitle()
+        resetLanguages()
     }
 
     private fun done(action: String) {
@@ -279,7 +337,8 @@ class LiveCameraActivity : ComponentActivity() {
                     .build()
                 capture = cap
                 provider.unbindAll()
-                provider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, p, analysis, cap)
+                camera = provider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, p, analysis, cap)
+                if (camera?.cameraInfo?.hasFlashUnit() != true) flashBtn.visibility = View.GONE
             } catch (e: Exception) {
                 done("error")
             }
@@ -292,6 +351,36 @@ class LiveCameraActivity : ComponentActivity() {
     // 3) 같은 장면이면 1.5초에 한 번만 다시 확인하고, 같은 글자·같은 자리면 번역을 그대로 둬요(다시 그리지 않음).
     // 4) 글자를 한 번 놓쳐도 바로 지우지 않고 한 번 더 기다려요.
     // 5) 새로 나타난 번역은 부드럽게 나타나요(페이드).
+
+    // ---- 폰을 든 방향 (0 세로 · 90 왼쪽이 위 · 180 거꾸로 · 270 오른쪽이 위) ----
+    // 화면은 세로로 고정이지만, 가로로 들고 찍으면 글자가 옆으로 누워 있어요.
+    // 그래서 글자를 읽을 때와 찍은 사진을 저장할 때 그 각도만큼 돌려서 바로 세워요.
+    @Volatile private var deviceDeg = 0
+    private var lastScanDeg = 0
+    private val rotatable = ArrayList<View>()
+    private val orientationListener by lazy {
+        object : android.view.OrientationEventListener(this) {
+            override fun onOrientationChanged(o: Int) {
+                if (o == ORIENTATION_UNKNOWN) return
+                val d = when {
+                    o >= 315 || o < 45 -> 0
+                    o < 135 -> 90
+                    o < 225 -> 180
+                    else -> 270
+                }
+                if (d != deviceDeg) {
+                    deviceDeg = d
+                    val r = when (d) { 90 -> -90f; 180 -> 180f; 270 -> 90f; else -> 0f }
+                    rotatable.forEach { it.animate().rotation(r).setDuration(200).start() }
+                }
+            }
+        }
+    }
+
+    override fun onPause() {
+        orientationListener.disable()
+        super.onPause()
+    }
 
     private var prevLuma: IntArray? = null
     @Volatile private var scanLuma: IntArray? = null
@@ -345,7 +434,8 @@ class LiveCameraActivity : ComponentActivity() {
         if (hiddenForMotion && steady && sceneDiff <= SCENE_THRESHOLD && lastScanAt > 0) {
             hiddenForMotion = false; runOnUiThread { overlay.fadeTo(1f) }
         }
-        val sceneChanged = sceneDiff > SCENE_THRESHOLD
+        val deg = deviceDeg
+        val sceneChanged = sceneDiff > SCENE_THRESHOLD || deg != lastScanDeg
         val due = lastScanAt == 0L || sceneChanged || now - lastScanAt > RECHECK_MS
         if (!steady || !due || !busy.compareAndSet(false, true)) { image.close(); return }
 
@@ -359,12 +449,20 @@ class LiveCameraActivity : ComponentActivity() {
         lifecycleScope.launch {
             try {
                 val found = withContext(Dispatchers.Default) {
-                    scanner.scan(frame, s).map { (box, text) ->
-                        val bg = PhotoTranslator.edgeColor(frame, Rect(box).apply { inset(-3, -3); intersect(0, 0, frame.width, frame.height) })
-                        Found(RectF(box), normalize(text), bg)
+                    // 폰을 돌려 든 만큼 장면을 돌려서 글자를 바로 세운 뒤 읽고, 상자는 화면 방향으로 되돌려요.
+                    val ocrFrame = rotate(frame, deg)
+                    scanner.scan(ocrFrame, s).map { sc ->
+                        val p = mapBack(RectF(sc.box), deg, frame.width, frame.height)
+                        val bgRect = Rect(p.left.toInt(), p.top.toInt(), p.right.toInt(), p.bottom.toInt()).apply { inset(-3, -3); intersect(0, 0, frame.width, frame.height) }
+                        val bg = PhotoTranslator.edgeColor(frame, bgRect)
+                        // 글자 모양(가운데·기울기)도 화면 방향으로 되돌려요: 각도는 폰을 돌린 만큼 빼요.
+                        val c = mapBackPoint(sc.geo.cx, sc.geo.cy, deg, frame.width, frame.height)
+                        val geo = sc.geo.copy(cx = c.first, cy = c.second, angle = sc.geo.angle - deg)
+                        Found(p, normalize(sc.text), bg, deg, geo, PhotoTranslator.textColorIn(frame, bgRect, bg))
                     }
                 }
                 if (gen != generation || shooting) return@launch
+                if (deg != lastScanDeg) { tracks.clear(); lastScanDeg = deg }
                 reconcile(found, sceneChanged)
                 overlay.show(tracks.toList(), frame.width, frame.height)
                 hiddenForMotion = false
@@ -401,12 +499,13 @@ class LiveCameraActivity : ComponentActivity() {
                 val t = tracks[best]
                 // 자리는 부드럽게 따라가고(떨림 줄이기), 장면이 바뀌었으면 바로 옮겨요.
                 t.box = lerp(t.box, f.box, if (sceneChanged) 1f else 0.35f)
-                t.bg = f.bg; t.missed = 0
+                t.bg = f.bg; t.fg = f.fg; t.missed = 0; t.deg = f.deg
+                t.geo = if (sceneChanged || t.geo == null) f.geo else lerpGeo(t.geo!!, f.geo!!, 0.35f)
                 // 글자가 조금 다르게 읽힌 정도(인식 흔들림)면 번역을 바꾸지 않아요.
                 if (similarity(t.src, f.text) < 0.85f) { t.src = f.text; t.pending = true }
                 next += t
             } else {
-                next += Track(nextTrackId++, RectF(f.box), f.text, null, f.bg)
+                next += Track(nextTrackId++, RectF(f.box), f.text, null, f.bg).also { it.deg = f.deg; it.geo = f.geo; it.fg = f.fg }
             }
         }
         // 이번에 못 찾은 것: 같은 장면이면 한 번은 그대로 둬요(깜빡임 방지).
@@ -426,7 +525,7 @@ class LiveCameraActivity : ComponentActivity() {
         translating = true
         val text = t.src; val s = src; val d = dst; val gen = generation
         lifecycleScope.launch {
-            val r = engine.translate(text, s, d)
+            val r = engine.translate(PhotoTranslator.prepareForTranslation(text), s, d)
             translating = false
             if (gen != generation) return@launch
             when (r) {
@@ -455,11 +554,12 @@ class LiveCameraActivity : ComponentActivity() {
         if (haptic) shutter.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
         shutter.alpha = 0.4f
         setStatus("찍는 중…")
+        val deg = deviceDeg // 가로로 들고 찍었으면 사진도 가로로 바로 세워 저장해요.
         cap.takePicture(ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
                 lifecycleScope.launch {
                     val bmp = try {
-                        withContext(Dispatchers.Default) { limit(upright(image.toBitmap(), image.imageInfo.rotationDegrees), 2000) }
+                        withContext(Dispatchers.Default) { limit(rotate(upright(image.toBitmap(), image.imageInfo.rotationDegrees), deg), 2000) }
                     } catch (e: Exception) { null } finally { image.close() }
                     if (bmp == null) { failShot(); return@launch }
                     LiveCameraResult.put(bmp)
@@ -476,6 +576,22 @@ class LiveCameraActivity : ComponentActivity() {
     }
 
     companion object {
+        /** 고를 수 있는 언어 (FTalk 화면과 같은 4개) */
+        private val LANGS = listOf("ko", "vi", "en", "zh")
+
+        /** 돌린 사진의 한 점을 돌리기 전 사진(w×h) 좌표로 */
+        fun mapBackPoint(x: Float, y: Float, deg: Int, w: Int, h: Int): Pair<Float, Float> = when (deg) {
+            90 -> y to (h - x)
+            180 -> (w - x) to (h - y)
+            270 -> (w - y) to x
+            else -> x to y
+        }
+
+        fun lerpGeo(a: Geo, b: Geo, k: Float) = b.copy(
+            cx = a.cx + (b.cx - a.cx) * k, cy = a.cy + (b.cy - a.cy) * k,
+            w = a.w + (b.w - a.w) * k, h = a.h + (b.h - a.h) * k,
+        )
+
         private const val GW = 40
         private const val GH = 30
         /** 프레임끼리 밝기 차이가 이보다 크면 "움직이는 중" */
@@ -536,6 +652,21 @@ class LiveCameraActivity : ComponentActivity() {
             return Bitmap.createBitmap(argb, 0, 0, argb.width, argb.height, m, true)
         }
 
+        /** 시계 방향으로 deg 만큼 돌린 사진 */
+        fun rotate(b: Bitmap, deg: Int): Bitmap {
+            if (deg == 0) return b
+            val m = Matrix().apply { postRotate(deg.toFloat()) }
+            return Bitmap.createBitmap(b, 0, 0, b.width, b.height, m, true)
+        }
+
+        /** 돌린 사진(시계 방향 deg)에서 찾은 상자를, 돌리기 전 사진(w×h) 좌표로 되돌려요. */
+        fun mapBack(r: RectF, deg: Int, w: Int, h: Int): RectF = when (deg) {
+            90 -> RectF(r.top, h - r.right, r.bottom, h - r.left)
+            180 -> RectF(w - r.right, h - r.bottom, w - r.left, h - r.top)
+            270 -> RectF(w - r.bottom, r.left, w - r.top, r.right)
+            else -> RectF(r)
+        }
+
         private fun limit(b: Bitmap, maxSide: Int): Bitmap {
             val big = max(b.width, b.height)
             if (big <= maxSide) return b
@@ -544,14 +675,19 @@ class LiveCameraActivity : ComponentActivity() {
     }
 }
 
-/** 한 번 읽은 글자 덩어리 */
-data class Found(val box: RectF, val text: String, val bg: Int)
+/** 한 번 읽은 글자 덩어리 (deg: 그때 폰을 돌려 든 각도) */
+data class Found(val box: RectF, val text: String, val bg: Int, val deg: Int = 0, val geo: Geo? = null, val fg: Int = Color.WHITE)
 
 /** 화면에 계속 붙어 있는 번역 칸 하나 (좌표는 분석한 장면 기준) */
 class Track(val id: Int, var box: RectF, var src: String, var dst: String?, var bg: Int) {
     var pending = true
     var missed = 0
     var shownAt = 0L
+    var deg = 0
+    /** 원래 글자 모양(가운데·기울기·줄 높이) — Google 렌즈처럼 그 모양대로 그려요 */
+    var geo: Geo? = null
+    /** 원래 글자 색 */
+    var fg: Int = Color.WHITE
 }
 
 /** 분석 장면 좌표를 화면 좌표로 바꿔서(FILL_CENTER) 번역 칸을 그려요. 새 칸은 0.25초 동안 서서히 나타나요. */
@@ -582,13 +718,31 @@ class OverlayView(context: Context) : View(context) {
             val text = t.dst ?: continue
             val a = ((now - t.shownAt) / 250f).coerceIn(0f, 1f)
             if (a < 1f) animating = true
+            val g = t.geo
+            if (g != null) {
+                // Google 렌즈 방식: 원래 글자의 기울기·줄 높이·글자 색 그대로
+                PhotoTranslator.drawBlock(canvas, g.scaled(scale, dx, dy), text, t.bg, t.fg, a)
+                continue
+            }
             val r = RectF(t.box.left * scale + dx, t.box.top * scale + dy, t.box.right * scale + dx, t.box.bottom * scale + dy)
             r.inset(-4f, -4f)
             fill.color = (t.bg and 0x00FFFFFF) or ((0xF0 * a).toInt() shl 24)
             canvas.drawRoundRect(r, 8f, 8f, fill)
-            val rect = Rect(r.left.toInt(), r.top.toInt(), r.right.toInt(), r.bottom.toInt())
             val c = PhotoTranslator.textColorOn(t.bg)
-            PhotoTranslator.drawFitted(canvas, text, rect, (c and 0x00FFFFFF) or ((0xFF * a).toInt() shl 24))
+            val color = (c and 0x00FFFFFF) or ((0xFF * a).toInt() shl 24)
+            if (t.deg == 0) {
+                PhotoTranslator.drawFitted(canvas, text, Rect(r.left.toInt(), r.top.toInt(), r.right.toInt(), r.bottom.toInt()), color)
+            } else {
+                // 폰을 돌려 든 사람이 바로 읽게 글자를 같이 돌려 그려요.
+                val sideways = t.deg == 90 || t.deg == 270
+                val tw = if (sideways) r.height() else r.width()
+                val th = if (sideways) r.width() else r.height()
+                canvas.save()
+                canvas.rotate(-t.deg.toFloat(), r.centerX(), r.centerY())
+                val box = Rect((r.centerX() - tw / 2).toInt(), (r.centerY() - th / 2).toInt(), (r.centerX() + tw / 2).toInt(), (r.centerY() + th / 2).toInt())
+                PhotoTranslator.drawFitted(canvas, text, box, color)
+                canvas.restore()
+            }
         }
         if (animating) postInvalidateOnAnimation()
     }
