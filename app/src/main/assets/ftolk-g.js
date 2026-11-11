@@ -143,7 +143,9 @@
       '.calc-keys .clr,html[data-style="simple"] .calc-keys .clr{background:#d93025;color:#fff;border-color:#d93025}' +
       'html[data-style="simple"] .calc-keys button{border:0}' +
       'html[data-style="simple"] .calc-keys .eq{background:#4c6a8a}' +
-      '.app.calc-mode .calc-actions{grid-template-columns:repeat(2,minmax(0,1fr))}';
+      '.app.calc-mode .calc-actions{grid-template-columns:repeat(2,minmax(0,1fr))}' +
+      // 말하는 중(중간 글자·중간 번역)에는 "번역 대기" 안내를 숨겨요. 안 숨기면 안내가 칸을 다 차지해서 글자가 칸 밖으로 밀려 안 보여요.
+      '.trans-text:has(>.trans-interim:not(:empty))>.trans-empty{display:none!important}';
     document.head.appendChild(css);
 
     var label = document.querySelector('#calcPanel .calc-label');
@@ -255,9 +257,15 @@
       });
     }
     showInterim = function (side, text) {
-      originalShowInterim(side, text);
-      if (mode !== 'listen' && mode !== 'live') return;
       var t = (text || '').trim();
+      // 실시간 대화(양방향): 글자를 보고 실제로 말한 사람 칸에 보여 줘요 (한글 → 한국어 쪽, 성조 글자 → 베트남어 쪽)
+      if (mode === 'live' && t && !/^(말소리 감지 중|인식 중)/.test(t)) {
+        try { var actual = speakerSideOf(t); if (actual) side = actual; } catch (e) {}
+      }
+      originalShowInterim(side, text);
+      // 글자가 길어지면 칸 안에서 가장 최근 글자가 보이게
+      try { var box = $(side + 'Text'); if (box) box.scrollTop = box.scrollHeight; } catch (e) {}
+      if (mode !== 'listen' && mode !== 'live') return;
       // 빈 값 = 문장이 끝나 확정 번역으로 넘어감 → 중간 번역 멈추기
       if (!t || /^(말소리 감지 중|인식 중)/.test(t)) {
         live.seq++; live.pendingText = null; live.lastSent = ''; live.lastDst = null;
@@ -280,14 +288,28 @@
   try {
     var detected = null, heardAt = 0, switchTimer = null;
     window.ftolkDetectedLanguage = function (id, code) { detected = code; };
+    // 양방향(Android 14+ 기기 안 인식기) 상태: ready 면 번갈아 듣기 없이 누가 말해도 바로 인식
+    function dualReady() { try { return N.dualState() === 'ready'; } catch (e) { return false; } }
+    window.ftolkDualState = function (state, detail) {
+      if (mode === 'live') {
+        if (state === 'ready') notice('양방향 인식 준비 완료 · 누가 말해도 바로 번역해요');
+        else if (state === 'downloading') notice('양방향 인식 데이터를 받는 중 · 그동안은 번갈아 들어요');
+        else if (state === 'failed') notice('이 폰은 양방향 인식이 안 돼서 번갈아 들어요');
+      }
+      try { render(); } catch (e) {}
+    };
     var originalShowInterim2 = showInterim;
     showInterim = function (side, text) { if (text && text.trim()) heardAt = Date.now(); return originalShowInterim2(side, text); };
 
     var originalOnSpeech = onSpeech;
     onSpeech = function (from, text, token) {
-      if (mode === 'live' && detected) {
-        var s = sideOf(detected);
-        if (s && s !== from) from = s; // 들린 언어 쪽 사람이 말한 것으로
+      if (mode === 'live') {
+        // 누가 말했는지: ① 인식기가 알려 준 언어 ② 없으면 글자로 판단 (한글 → 한국어, 성조 글자 → 베트남어)
+        // 글자로 확실히 구분되면(한글 / 성조 글자) 그게 가장 정확해요. 아니면 인식기가 알려 준 언어.
+        var s = null;
+        try { s = speakerSideOf(text) || null; } catch (e) { s = null; }
+        if (!s && detected) s = sideOf(detected);
+        if (s && s !== from) from = s;
       }
       detected = null;
       return originalOnSpeech(from, text, token);
@@ -300,7 +322,7 @@
       detected = null;
       if (switchTimer) { clearTimeout(switchTimer); switchTimer = null; }
       originalStartRecognizer(side, token, asLive);
-      if (asLive && mode === 'live') {
+      if (asLive && mode === 'live' && !dualReady()) { // 양방향이면 번갈아 바꿀 필요 없음
         var mine = recognizer, startedAt = Date.now();
         switchTimer = setTimeout(function () {
           switchTimer = null;
@@ -331,15 +353,19 @@
       originalRender();
       if (mode !== 'live') return;
       var info = document.getElementById('liveInfo');
+      var dual = dualReady();
+      var state = ''; try { state = N.dualState(); } catch (e) {}
       if (liveActive && !liveStopping) {
-        if (liveAct === 'idle' || !liveAct) info.textContent = lang(liveSide).flag + ' ' + lang(liveSide).name + ' 듣는 중 · 다른 사람이 말하면 그 사람 칸을 누르세요';
+        if (liveAct === 'idle' || !liveAct) info.textContent = dual
+          ? lang('me').flag + ' ⇄ ' + lang('partner').flag + ' 양방향 듣는 중 · 누가 말해도 바로 번역'
+          : lang(liveSide).flag + ' ' + lang(liveSide).name + ' 듣는 중 · 칸을 누르면 그 언어로' + (state === 'downloading' ? ' (양방향 준비 중)' : '');
       } else if (!liveStopping) {
-        info.textContent = '시작하면 두 언어를 번갈아 들어요 · 칸을 누르면 그 언어로';
+        info.textContent = dual ? '시작하면 두 언어를 함께 들어요 · 누가 말해도 바로 번역' : '시작하면 두 언어를 번갈아 들어요 · 칸을 누르면 그 언어로';
       }
-      // 지금 듣는 쪽 칸을 살짝 강조
+      // 지금 듣는 쪽 칸을 살짝 강조 (양방향이면 둘 다)
       ['me', 'partner'].forEach(function (s) {
         var card = document.getElementById(s + 'Text'); card = card && card.closest('.card');
-        if (card) card.style.boxShadow = (liveActive && liveSide === s) ? '0 0 0 2px var(--blue) inset' : '';
+        if (card) card.style.boxShadow = (liveActive && (dual || liveSide === s)) ? '0 0 0 2px var(--blue) inset' : '';
       });
     };
     var originalSetMode = setMode;

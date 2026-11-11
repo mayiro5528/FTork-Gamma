@@ -58,9 +58,52 @@ class SpeechListener(private val context: Context) {
      * (매번 없애고 새로 만들면 Google 음성 인식이 "사용 중" 오류를 내며 못 듣는 경우가 많아요 — 실시간 대화 문제의 원인)
      * @param alsoLanguage 실시간 대화용: 이 언어로 말해도 알아듣게 함께 지정 (Android 14+ 에서만 동작)
      */
-    fun start(languageTag: String, callbacks: Callbacks, alsoLanguage: String? = null, fastEndpoint: Boolean = false) {
-        val r = recognizer ?: create().also { recognizer = it }
+    // ---- 온디바이스(기기 안) 인식기: Android 14+ 에서 두 언어 자동 전환(양방향)을 지원해요 ----
+    private var onDeviceRecognizer: SpeechRecognizer? = null
+    private var active: SpeechRecognizer? = null
+
+    /** 이 폰에 기기 안 음성 인식기가 있는지 (Android 12+) */
+    val onDeviceAvailable: Boolean
+        get() = Build.VERSION.SDK_INT >= 31 && runCatching { SpeechRecognizer.isOnDeviceRecognitionAvailable(context) }.getOrDefault(false)
+
+    private fun onDevice(): SpeechRecognizer =
+        onDeviceRecognizer ?: SpeechRecognizer.createOnDeviceSpeechRecognizer(context).also { onDeviceRecognizer = it }
+
+    /**
+     * (Android 13+) 기기 안 인식기가 이 언어들을 지원·설치했는지 확인해요.
+     * done(설치됨, 지원함-받을 수 있음) — 언어 코드는 "ko", "vi" 처럼 앞부분만.
+     */
+    fun checkOnDevice(tag: String, done: (installed: Set<String>, supported: Set<String>) -> Unit) {
+        if (Build.VERSION.SDK_INT < 33 || !onDeviceAvailable) { done(emptySet(), emptySet()); return }
+        runCatching {
+            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE, tag)
+            onDevice().checkRecognitionSupport(intent, androidx.core.content.ContextCompat.getMainExecutor(context),
+                object : android.speech.RecognitionSupportCallback {
+                    override fun onSupportResult(s: android.speech.RecognitionSupport) {
+                        fun short(l: List<String>) = l.map { it.substringBefore('-').substringBefore('_').lowercase() }.toSet()
+                        done(short(s.installedOnDeviceLanguages), short(s.supportedOnDeviceLanguages) + short(s.pendingOnDeviceLanguages))
+                    }
+                    override fun onError(error: Int) = done(emptySet(), emptySet())
+                })
+        }.onFailure { done(emptySet(), emptySet()) }
+    }
+
+    /** (Android 13+) 기기 안 인식기의 언어 데이터 받기 요청 */
+    fun downloadOnDevice(tag: String) {
+        if (Build.VERSION.SDK_INT < 33 || !onDeviceAvailable) return
+        runCatching { onDevice().triggerModelDownload(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE, tag)) }
+    }
+
+    /**
+     * @param useOnDevice 실시간 대화 양방향: 기기 안 인식기로 두 언어를 함께 듣기
+     */
+    fun start(languageTag: String, callbacks: Callbacks, alsoLanguage: String? = null, fastEndpoint: Boolean = false, useOnDevice: Boolean = false) {
+        val onDev = useOnDevice && onDeviceAvailable
+        val r = if (onDev) onDevice() else (recognizer ?: create().also { recognizer = it })
         val my = ++session
+        // 다른 쪽 인식기가 듣고 있었으면 멈춰요 (마이크는 하나라서)
+        if (active != null && active !== r) runCatching { active?.cancel() }
+        active = r
         runCatching { r.cancel() }
         r.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) { if (my == session) callbacks.onReady() }
@@ -90,6 +133,7 @@ class SpeechListener(private val context: Context) {
             intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 800L)
                 .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 600L)
         }
+        if (onDev) intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
         if (alsoLanguage != null && Build.VERSION.SDK_INT >= 34) {
             // 두 언어 중 들리는 언어를 스스로 알아내고, 그 언어로 바꿔서 받아써요 (지원하는 기기만, 아니면 무시돼요).
             intent.putExtra(RecognizerIntent.EXTRA_ENABLE_LANGUAGE_DETECTION, true)
@@ -97,25 +141,38 @@ class SpeechListener(private val context: Context) {
                 .putExtra(RecognizerIntent.EXTRA_ENABLE_LANGUAGE_SWITCH, RecognizerIntent.LANGUAGE_SWITCH_BALANCED)
                 .putStringArrayListExtra(RecognizerIntent.EXTRA_LANGUAGE_SWITCH_ALLOWED_LANGUAGES, arrayListOf(languageTag, alsoLanguage))
         }
+        virtualMic?.let { mic ->
+            // 시험용: 마이크 대신 음성 파일 소리를 넣어요 (디버그 빌드)
+            if (Build.VERSION.SDK_INT >= 33) {
+                intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE, mic.open())
+                    .putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_ENCODING, android.media.AudioFormat.ENCODING_PCM_16BIT)
+                    .putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_CHANNEL_COUNT, 1)
+                    .putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_SAMPLING_RATE, 16000)
+            }
+        }
         r.startListening(intent)
     }
 
+    /** 시험용 가상 마이크 (디버그 빌드에서만 씀) */
+    var virtualMic: VirtualMic? = null
+
     /** 듣기를 멈추고 지금까지 말한 내용으로 결과를 받아요. */
     fun finish() {
-        recognizer?.stopListening()
+        active?.stopListening()
     }
 
     /** 듣기 취소 (인식기는 남겨 두고 다음에 다시 써요) */
     fun stop() {
         session++
-        runCatching { recognizer?.cancel() }
+        runCatching { active?.cancel() }
     }
 
     /** 인식기를 완전히 없애요. 오류가 이어질 때 새로 만들거나, 앱을 닫을 때. */
     fun reset() {
         session++
         runCatching { recognizer?.destroy() }
-        recognizer = null
+        runCatching { onDeviceRecognizer?.destroy() }
+        recognizer = null; onDeviceRecognizer = null; active = null
     }
 
     private fun first(b: Bundle?): String? =

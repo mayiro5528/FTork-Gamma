@@ -137,13 +137,22 @@ class MainActivity : ComponentActivity() {
             }
         })
 
-        if (savedInstanceState == null) handleIntent(intent)
+        if (savedInstanceState == null) { handleIntent(intent); testAudio(intent) }
         web.loadUrl("https://appassets.androidplatform.net/assets/index.html")
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
+        testAudio(intent)
+    }
+
+    /** 시험용 (디버그 빌드): am start --es test_audio "a.mp3,b.wav" --el test_delay 3000 */
+    private fun testAudio(i: Intent?) {
+        if (!BuildConfig.DEBUG) return
+        WebView.setWebContentsDebuggingEnabled(true)
+        val names = i?.getStringExtra("test_audio") ?: return
+        bridge.startVirtualMic(names.split(',').map { it.trim() }, i.getLongExtra("test_delay", 0))
     }
 
     override fun onDestroy() {

@@ -85,6 +85,18 @@ class FriendlyBridge(private val activity: MainActivity) {
             log.addLast(SimpleDateFormat("HH:mm:ss", Locale.KOREA).format(Date()) + " " + line)
             while (log.size > 80) log.removeFirst()
         }
+        if (BuildConfig.DEBUG) android.util.Log.i("FTalkTest", line)
+    }
+
+    /** 시험용 (디버그 빌드): 앱 폴더의 음성 파일들을 가상 마이크로 틀어요. */
+    fun startVirtualMic(names: List<String>, delayMs: Long) {
+        if (!BuildConfig.DEBUG) return
+        activity.lifecycleScope.launch(kotlinx.coroutines.Dispatchers.Default) {
+            val mic = runCatching { com.ftork.gamma.speech.VirtualMic.load(names.map { java.io.File(activity.filesDir, it) }) }
+                .onFailure { note("가상 마이크 실패: $it") }.getOrNull() ?: return@launch
+            mic.play(delayMs)
+            main.post { listener.virtualMic = mic; note("가상 마이크 재생 ${mic.durationMs}ms: $names") }
+        }
     }
 
     // ================= 화면 · 설정 =================
@@ -140,6 +152,43 @@ class FriendlyBridge(private val activity: MainActivity) {
         }
     }
 
+    // ================= 실시간 대화 양방향 (Android 14+ 기기 안 인식기의 두 언어 자동 전환) =================
+    /** checking · ready(양방향) · downloading(언어 받는 중) · unsupported(이 폰은 안 됨) · failed(써 보니 오류) */
+    @Volatile private var dualState = "checking"
+    @Volatile private var dualDetail = ""
+    private var dualChecks = 0
+
+    @JavascriptInterface fun dualState(): String = dualState
+    @JavascriptInterface fun dualDetail(): String = dualDetail
+
+    private fun checkDual(): Boolean = ui {
+        if (Build.VERSION.SDK_INT < 34) { setDual("unsupported", "Android 14 이상에서만 돼요 (지금 Android ${Build.VERSION.RELEASE})"); return@ui }
+        if (!listener.onDeviceAvailable) { setDual("unsupported", "이 폰에 기기 안 음성 인식기가 없어요"); return@ui }
+        val a = me; val b = partner
+        listener.checkOnDevice(bcp(a)) { installed, supported ->
+            val missing = listOf(a, b).filter { it !in installed }
+            when {
+                missing.isEmpty() -> setDual("ready", "${langName(a)} · ${langName(b)} 양방향 인식 준비됨")
+                missing.all { it in supported } -> {
+                    missing.forEach { listener.downloadOnDevice(bcp(it)) }
+                    setDual("downloading", missing.joinToString(", ") { langName(it) } + " 음성 인식 데이터를 받는 중 (Wi-Fi 권장)")
+                    // 받는 중이면 잠시 뒤 다시 확인
+                    if (dualChecks++ < 20) main.postDelayed({ checkDual() }, 15_000)
+                }
+                else -> setDual("unsupported", "이 폰의 기기 안 음성 인식이 " + missing.filter { it !in supported }.joinToString(", ") { langName(it) } + "를 지원하지 않아요")
+            }
+        }
+    }
+
+    private fun setDual(state: String, detail: String) {
+        val changed = state != dualState
+        dualState = state; dualDetail = detail
+        note("양방향: $state · $detail")
+        if (changed) activity.callJs("ftolkDualState", state, detail)
+    }
+
+    private fun langName(c: String) = when (c) { "ko" -> "한국어"; "vi" -> "베트남어"; "en" -> "영어"; "zh" -> "중국어"; else -> c }
+
     private var warmed = ""
 
     /**
@@ -150,6 +199,8 @@ class FriendlyBridge(private val activity: MainActivity) {
         val pair = "$me-$partner"
         if (pair == warmed) return
         warmed = pair
+        dualChecks = 0
+        checkDual()
         activity.lifecycleScope.launch {
             for (lang in listOf(me, partner).filter { it != "en" }) {
                 engine.download(lang).onFailure { note("모델 미리 받기 실패 $lang: ${it.message}") }
@@ -185,25 +236,37 @@ class FriendlyBridge(private val activity: MainActivity) {
                 emitSpeech(id, "error", "recognizer-unavailable"); emitSpeech(id, "end", ""); return@withMicPermission
             }
             speaker.stop() // 번역 읽는 소리가 마이크로 다시 들어가지 않게
+            // 양방향 준비가 끝났으면 기기 안 인식기로 두 언어를 함께 들어요 (번갈아 듣기 없음)
+            val twoWay = autoDetect && dualState == "ready"
+            // 양방향: 인식기는 계속 듣고 있어요. 화면의 다음 듣기에 그대로 이어 붙여요 (다시 시작하면 첫 단어를 놓쳐요).
+            if (twoWay && flow.carry) { adopt(id); return@withMicPermission }
+            stopFlow()
             speechId = id
             finishing = false
             // 실시간 대화: 지금 차례 언어 + 상대 언어를 함께 알려 줘서(Android 14+) 누가 말해도 알아듣게
             val also = if (autoDetect) otherTag(lang) else null
-            note("인식 시작 $lang" + (also?.let { " (+$it)" } ?: ""))
+            note("인식 시작 $lang" + (also?.let { " (+$it)" } ?: "") + if (twoWay) " · 양방향 연속" else "")
+            if (twoWay) { startFlow(id, lang, also); return@withMicPermission }
             val begin = {
                 listener.start(lang, SpeechListener.Callbacks(
                     onReady = { if (speechId == id) { busyStreak = 0; emitSpeech(id, "start", "") } },
-                    onPartial = { if (speechId == id) emitSpeech(id, "partial", it) },
+                    onPartial = { if (speechId == id) { if (BuildConfig.DEBUG) android.util.Log.d("FTalkTest", "부분 $it"); emitSpeech(id, "partial", it) } },
                     onLanguage = { tag -> if (speechId == id) activity.callJs("ftolkDetectedLanguage", id, tag.substringBefore('-').lowercase()) },
                     onFinal = { text ->
                         if (speechId == id) {
+                            note("최종 [$lang] $text")
                             if (text.isNotBlank()) emitSpeech(id, "final", text) else emitSpeech(id, "error", "no-speech")
                             end(id)
                         }
                     },
                     onError = { code ->
                         if (speechId == id) {
-                            note("인식 오류 $code")
+                            note("인식 오류 $code" + if (twoWay) " (양방향)" else "")
+                            if (twoWay && (code == 12 || code == 13 || code == SpeechRecognizer.ERROR_CLIENT)) {
+                                // 기기 안 인식기가 이 언어를 못 하면 양방향을 끄고 번갈아 듣기로 돌아가요.
+                                dualState = "failed"; dualDetail = "기기 안 음성 인식 오류 $code → 번갈아 듣기로 전환"
+                                activity.callJs("ftolkDualState", dualState, dualDetail)
+                            }
                             // "사용 중"·연결 끊김 같은 인식기 오류는 인식기를 새로 만들고 조용히 다시 듣게 해요.
                             val recoverable = code == SpeechRecognizer.ERROR_RECOGNIZER_BUSY || code == 11 ||
                                 (code == SpeechRecognizer.ERROR_CLIENT && !finishing)
@@ -212,7 +275,7 @@ class FriendlyBridge(private val activity: MainActivity) {
                             end(id)
                         }
                     },
-                ), also, fastEndpoint)
+                ), also, fastEndpoint, twoWay)
             }
             // 방금 인식기를 새로 만들었으면 잠깐 쉬었다가 시작해야 "사용 중" 오류가 안 나요.
             if (busyStreak > 0) main.postDelayed({ if (speechId == id) begin() }, 300L * busyStreak) else begin()
@@ -238,19 +301,197 @@ class FriendlyBridge(private val activity: MainActivity) {
     /** 말 끝내기: 지금까지 들은 걸로 결과를 받아요. */
     @JavascriptInterface
     fun finishRecognition(id: Int) = ui {
-        if (speechId == id) { finishing = true; listener.finish() }
+        if (speechId != id) return@ui
+        if (flow.active) {
+            // 양방향 연속: 지금까지 말한 걸 바로 확정하고 멈춰요
+            if (flow.shown.isNotBlank() && !flow.carry) commitSentence(null) else { emitSpeech(id, "error", "no-speech"); emitSpeech(id, "end", ""); speechId = 0 }
+            stopFlow()
+            return@ui
+        }
+        finishing = true; listener.finish()
     }
 
     /** 취소: 결과 없이 멈춰요. (화면은 이미 이 id 를 잊었어요) */
     @JavascriptInterface
     fun stopRecognition(id: Int) = ui {
-        if (speechId == id) { speechId = 0; listener.stop() }
+        if (speechId == id) { speechId = 0; stopFlow(); listener.stop() }
+        else if (flow.carry) {
+            // 끝난 듣기를 정리하는 경우가 많아요. 곧바로 다음 듣기가 오지 않을 때만(진짜 멈춤) 멈춰요.
+            main.postDelayed({ if (flow.carry) stopFlow() }, 200)
+        }
     }
 
     private fun end(id: Int) {
         emitSpeech(id, "end", "")
         if (speechId == id) speechId = 0
         listener.stop()
+    }
+
+    // ================= 양방향 연속 듣기 =================
+    // 기기 안 인식기(두 언어 자동 전환)는 한 사람이 말을 마쳐도 "확정"을 보내지 않고,
+    // 다음 사람 말을 새 글자로 이어서 보내요. 그래서 앱이 직접 문장 경계를 찾아서 확정해요.
+    //  ① 중간 글자가 완전히 새로 시작되면(다른 사람·다른 문장) → 앞 문장 확정
+    //  ② 글자가 1초 동안 그대로면(말이 멈춤) → 확정
+    // 인식기는 멈추지 않고 계속 들어요. 확정 뒤 화면이 다음 듣기를 시작하면 그 듣기에 이어 붙여요.
+    private class Flow {
+        var active = false     // 연속 인식기가 돌고 있음
+        var carry = false      // 화면 쪽 듣기는 끝났고, 다음 듣기를 기다리는 중
+        var shown = ""         // 지금 문장으로 보여 준 글자
+        var committed = ""     // 같은 인식 구간에서 이미 확정한 앞부분 (인식기가 이어 붙이는 경우)
+        var raw = ""           // 인식기가 마지막으로 보낸 글자 전체
+        var lang: String? = null      // 인식기가 마지막으로 알려 준 언어
+        var segLang: String? = null   // 지금 문장의 언어
+        var sentLang: String? = null  // 화면에 알려 준 언어
+        var langSeq = 0               // 문장마다 늘어나는 번호 (언어 알림 중복 방지)
+    }
+    private val flow = Flow()
+    private val silenceCommit = Runnable { commitSentence(null) }
+    private val carryTimeout = Runnable { if (flow.carry) { note("양방향: 화면이 다시 듣지 않아 멈춤"); stopFlow() } }
+
+    private fun startFlow(id: Int, lang: String, also: String?) {
+        flow.active = true; flow.carry = false
+        flow.shown = ""; flow.committed = ""; flow.raw = ""; flow.segLang = null; flow.sentLang = null
+        listener.start(lang, SpeechListener.Callbacks(
+            onReady = { busyStreak = 0; if (speechId != 0 && !flow.carry) emitSpeech(speechId, "start", "") },
+            onPartial = { flowPartial(it) },
+            onLanguage = { tag -> flow.lang = tag.substringBefore('-').lowercase() },
+            onFinal = { text ->
+                // 인식기가 스스로 확정해 준 경우 (말을 오래 멈췄을 때 등)
+                main.removeCallbacks(silenceCommit)
+                val t = stripCommitted(text).ifBlank { flow.shown }
+                flow.shown = t
+                note("최종(인식기) $t")
+                val id2 = speechId
+                flow.active = false; flow.carry = false
+                if (id2 != 0) {
+                    if (t.isNotBlank()) { sendLang(id2); emitSpeech(id2, "final", t) } else emitSpeech(id2, "error", "no-speech")
+                    end(id2)
+                } else listener.stop()
+            },
+            onError = { code ->
+                main.removeCallbacks(silenceCommit)
+                note("인식 오류 $code (양방향 연속)")
+                if (code == 12 || code == 13 || code == SpeechRecognizer.ERROR_CLIENT) {
+                    dualState = "failed"; dualDetail = "기기 안 음성 인식 오류 $code → 번갈아 듣기로 전환"
+                    activity.callJs("ftolkDualState", dualState, dualDetail)
+                }
+                val recoverable = code == SpeechRecognizer.ERROR_RECOGNIZER_BUSY || code == 11
+                if (recoverable) { busyStreak++; listener.reset() }
+                val id2 = speechId
+                flow.active = false; flow.carry = false
+                if (id2 != 0) {
+                    // 말하던 게 있으면 그것까지는 확정해 줘요
+                    if (flow.shown.isNotBlank()) { sendLang(id2); emitSpeech(id2, "final", flow.shown) }
+                    else emitSpeech(id2, "error", if (SpeechListener.isSilence(code) || recoverable) "no-speech" else webError(code))
+                    end(id2)
+                } else listener.stop()
+            },
+        ), also, fastEndpoint, useOnDevice = true)
+    }
+
+    /** 같은 인식 구간에서 이미 확정한 앞부분을 떼어 내요. */
+    private fun stripCommitted(p: String): String {
+        val c = flow.committed
+        if (c.isNotEmpty()) {
+            val pw = words(p); val cw = words(c)
+            // 이미 확정한 앞부분 + 새 말 → 새 말만 (인식기가 띄어쓰기·문장부호를 바꿔 다시 보내도 같다고 봐요)
+            if (pw.size >= cw.size && pw.subList(0, cw.size) == cw) return p.trim().split(Regex("\\s+")).drop(cw.size).joinToString(" ")
+            // 이미 확정한 부분만 다시 보낸 것 → 무시
+            if (pw.size < cw.size && cw.subList(0, pw.size) == pw) return ""
+            flow.committed = "" // 인식기가 새 구간을 시작했어요
+        }
+        return p.trim()
+    }
+
+    /** 비교용 단어 목록 (소문자, 문장부호 없이) */
+    private fun words(s: String): List<String> =
+        s.lowercase().replace(Regex("[.,!?;:。、¿¡\"'…]"), " ").trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+
+    /** 두 글자가 같은 문장인지 (앞부분이 같으면 같은 문장. 인식기가 끝 단어를 고치는 건 같은 문장) */
+    private fun sameSentence(a: String, b: String): Boolean {
+        val n = minOf(3, a.length, b.length)
+        return a.regionMatches(0, b, 0, n, ignoreCase = true)
+    }
+
+    private fun flowPartial(p: String) {
+        if (!flow.active) return
+        if (BuildConfig.DEBUG) android.util.Log.d("FTalkTest", "부분 $p")
+        val text = stripCommitted(p)
+        flow.raw = p
+        if (text.isEmpty()) return
+        // 인식기가 한 구간을 마치면 앞에 띄어쓰기를 붙여 같은 글자를 한 번 더 보내요 → 기다리지 않고 바로 확정
+        if (p.startsWith(" ") && flow.shown.isNotEmpty() && words(text) == words(flow.shown)) {
+            commitSentence(null)
+            return
+        }
+        // ① 완전히 새 글자로 시작 → 앞 문장 확정, 새 글자는 다음 문장
+        if (flow.shown.length >= 6 && !sameSentence(flow.shown, text)) {
+            commitSentence(text)
+            return
+        }
+        if (text == flow.shown) return
+        if (flow.shown.isEmpty()) flow.langSeq++
+        flow.shown = text
+        flow.segLang = flow.lang
+        if (speechId != 0 && !flow.carry) emitSpeech(speechId, "partial", text)
+        // ② 1초 동안 글자가 그대로면 확정
+        main.removeCallbacks(silenceCommit)
+        main.postDelayed(silenceCommit, 1000)
+    }
+
+    /** 지금 문장을 확정해요. next = 이미 시작된 다음 문장 글자 (없으면 null) */
+    private fun commitSentence(next: String?) {
+        main.removeCallbacks(silenceCommit)
+        if (flow.carry) {
+            // 화면이 아직 다음 듣기를 시작하지 않았어요 → 이 문장은 다음 듣기에 넘겨서 확정
+            if (next != null) flow.shown = (flow.shown + " " + next).trim()
+            main.postDelayed(silenceCommit, 300)
+            return
+        }
+        val text = flow.shown
+        // 말이 멈춘 경우엔 인식기가 같은 구간에 이어 붙일 수 있어서, 지금까지의 글자를 "확정한 앞부분"으로 기억해요.
+        flow.committed = if (next == null) flow.raw.trim() else ""
+        val id = speechId
+        if (text.isNotBlank() && id != 0 && !flow.carry) {
+            note("확정 [${flow.segLang ?: "?"}] $text")
+            sendLang(id)
+            emitSpeech(id, "final", text)
+            emitSpeech(id, "end", "")
+            speechId = 0
+            flow.carry = true
+            main.removeCallbacks(carryTimeout); main.postDelayed(carryTimeout, 4000)
+        }
+        flow.shown = ""
+        flow.segLang = null
+        if (next != null) {
+            // 새 문장은 이미 들리고 있어요 → 다음 듣기에 넘겨줘요
+            flow.shown = next; flow.segLang = flow.lang; flow.langSeq++
+            if (speechId != 0 && !flow.carry) emitSpeech(speechId, "partial", next)
+            main.postDelayed(silenceCommit, 1000)
+        }
+    }
+
+    private fun sendLang(id: Int) {
+        val l = flow.segLang ?: flow.lang ?: return
+        activity.callJs("ftolkDetectedLanguage", id, l)
+    }
+
+    /** 화면이 다음 듣기를 시작함 → 계속 듣고 있던 인식기에 이어 붙여요. */
+    private fun adopt(id: Int) {
+        main.removeCallbacks(carryTimeout)
+        speechId = id; finishing = false
+        flow.carry = false
+        emitSpeech(id, "start", "")
+        if (flow.shown.isNotBlank()) {
+            emitSpeech(id, "partial", flow.shown)
+            main.removeCallbacks(silenceCommit); main.postDelayed(silenceCommit, 1000)
+        }
+    }
+
+    /** 연속 듣기를 멈춰요 (멈춤 버튼, 모드 바꾸기, 번역 읽기 시작 등) */
+    private fun stopFlow() {
+        main.removeCallbacks(silenceCommit); main.removeCallbacks(carryTimeout)
+        if (flow.active) { flow.active = false; flow.carry = false; listener.stop() }
     }
 
     private fun emitSpeech(id: Int, kind: String, payload: String) =
@@ -278,6 +519,7 @@ class FriendlyBridge(private val activity: MainActivity) {
      */
     @JavascriptInterface
     fun translate(id: Int, text: String, from: String, to: String) = ui {
+        note("번역 요청 $from→$to: $text")
         activity.lifecycleScope.launch {
             if (engine.usingGoogle) {
                 val quick = async { engine.offline.translate(text, from, to) }
@@ -296,7 +538,7 @@ class FriendlyBridge(private val activity: MainActivity) {
                 return@launch
             }
             when (val r = engine.translate(text, from, to)) {
-                is TranslationResult.Success -> activity.callJs("friendlyNativeTranslation", id, true, r.text)
+                is TranslationResult.Success -> { note("번역 결과 $to: ${r.text}"); activity.callJs("friendlyNativeTranslation", id, true, r.text) }
                 is TranslationResult.Failure -> {
                     note("번역 실패 $from→$to: ${r.message}")
                     activity.callJs("friendlyNativeTranslation", id, false, r.message)
@@ -326,6 +568,8 @@ class FriendlyBridge(private val activity: MainActivity) {
 
     @JavascriptInterface
     fun speak(text: String, lang: String, rate: Double) = ui {
+        // 번역을 소리 내 읽는 동안에는 연속 듣기를 멈춰요 (읽는 소리를 다시 받아쓰지 않게)
+        if (flow.carry) stopFlow()
         speaker.rate = rate.toFloat().coerceIn(0.5f, 2f)
         val error = speaker.speak(text, lang, earpiece) {
             activity.callJs("friendlyNativeTts", "done", "")
@@ -546,6 +790,12 @@ class FriendlyBridge(private val activity: MainActivity) {
                 appendLine("마이크 권한: " + if (mic) "허용됨" else "아직 없음 (마이크 버튼을 누르면 물어봐요)")
                 appendLine("인터넷: " + if (online) "연결됨" else "끊김")
                 appendLine("음성 인식기: " + listener.serviceLabel)
+                appendLine("실시간 대화 양방향: " + when (dualState) {
+                    "ready" -> "사용 중 (누가 말해도 바로 인식)"
+                    "downloading" -> "준비 중"
+                    "checking" -> "확인 중"
+                    else -> "사용 안 함 (번갈아 듣기)"
+                } + if (dualDetail.isNotEmpty()) " · $dualDetail" else "")
                 appendLine("번역 엔진: " + when {
                     engine.usingGoogle -> "Google 서버 번역 (Cloud Translation)" + if (engine.lastEngine == "mlkit" && engine.lastError != null) " · 최근 실패 → 기기 번역 사용: ${engine.lastError}" else ""
                     engine.preferred == "google" -> "Google 선택됨 · 키 없음 → 기기 번역(ML Kit)"

@@ -93,6 +93,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // 시험용 앱은 이름을 달리해서 폰에 깔린 정식 앱(설정·키)과 따로 설치돼요.
+            applicationIdSuffix = ".test"
+        }
         release {
             isMinifyEnabled = true
             signingConfig = signingConfigs.findByName("release")
