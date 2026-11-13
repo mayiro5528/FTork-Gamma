@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
  *  - vi_bias: 기기 안 인식기, 베트남어만 + 자주 나올 단어 힌트
  *  - <방식>+cloud: 앱의 Google 음성 인식과 같음 — 확정된 문장 구간마다 Google Cloud 로 다시 받아써요 (예: dual+cloud)
  *  - cloudfull: 인식기 없이 파일 전체를 Google Cloud 로 50초씩 받아써요 (Google 인식의 최대 정확도 참고)
- *  (+cloud, cloudfull 은 앱에 저장된 Google 키를 써요)
+ *  (+cloud: 앱처럼 빠진 구간만 Google, +pairs: 모든 문장 비교 기록. +cloud, cloudfull 은 앱에 저장된 Google 키를 써요)
  * 확정 문장은 앱과 같은 SentenceSegmenter 로 나눠요.
  */
 class RecognitionBench(
@@ -39,7 +39,12 @@ class RecognitionBench(
     private val log: (String) -> Unit,
 ) {
     private val useCloud = "+cloud" in mode && cloud != null
+    /** +pairs: 기기 글자가 있는 문장도 Google 로 받아써서 "벤치 쌍" 으로 비교 기록 (결과는 기기 글자) */
+    private val pairs = "+pairs" in mode
     private val spans = SentenceSpans()
+    private val rescue = MissedRescue()
+
+    init { cloud?.model = when { "+def" in mode -> "default"; "+short" in mode -> "latest_short"; else -> "latest_long" } }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val cloudJobs = mutableListOf<Pair<String, Deferred<String>>>()
     private val mode = mode.substringBefore("+")
@@ -86,7 +91,7 @@ class RecognitionBench(
                 mic.close()
                 if (!useCloud) log("벤치 끝 $mode 세션 $sessions")
                 else scope.launch {
-                    for ((l, job) in cloudJobs) log("벤치 확정 [$l] ${job.await()}")
+                    for ((l, job) in cloudJobs) job.await().takeIf { it.isNotBlank() }?.let { log("벤치 확정 [$l] $it") }
                     log("벤치 끝 $mode 세션 $sessions")
                 }
             }, 2500)
@@ -130,11 +135,37 @@ class RecognitionBench(
         val l = s.lang ?: lang
         if (!useCloud) { log("벤치 확정 [${l ?: "?"}] ${s.text}"); return }
         log("벤치 기기 [${l ?: "?"}] ${s.text}")
+        // 앱과 같음: 기기 글자가 있으면 그대로 (+pairs 면 비교용으로 Google 도 받아 기록만)
+        if (!pairs) { cloudJobs += (l ?: "?") to scope.async { s.text }; return }
         val pcm = mic.clip(from, end)
         cloudJobs += (l ?: "?") to scope.async {
-            if (pcm == null || pcm.size < 6400) s.text
+            val at = SystemClock.elapsedRealtime()
+            val c = if (pcm == null || pcm.size < 6400) ""
             else runCatching { cloud!!.recognize(pcm, tag(l), if (l == null) "ko-KR" else null) }
-                .getOrElse { log("벤치 클라우드 실패 ${it.message}"); "" }.ifBlank { s.text }
+                .getOrElse { log("벤치 클라우드 실패 ${it.message}"); "" }
+            log("벤치 쌍 ${s.text} ||| $c")
+            s.text
+                .also { if (pcm != null && pcm.size >= 6400) log("벤치 클라우드 ${pcm.size / 16}ms 소리 → ${SystemClock.elapsedRealtime() - at}ms") }
+        }
+    }
+
+    /** 앱과 같음: 문장 사이 쉼에서 자르기 */
+    private fun quietCut(now: Long): Long {
+        val r = spans.searchRange(now) ?: return spans.splitPoint(now)
+        val ms = (if (useCloud) mic.clip(r.first, r.second) else null)?.let { Pcm.quietestMs(it) } ?: return spans.splitPoint(now)
+        return r.first + ms
+    }
+
+    /** 앱과 같음: 인식기가 놓친 구간을 Google 로 */
+    private fun rescueGap() {
+        val (from, end) = spans.take(SystemClock.elapsedRealtime())
+        val pcm = mic.clip(from, end)
+        if (pcm == null || !Pcm.loud(pcm)) return
+        val l = lang
+        log("벤치 되살리기 ${from - t0}~${end - t0}")
+        cloudJobs += (l ?: "?") to scope.async {
+            runCatching { cloud!!.recognize(pcm, tag(l), if (l == null) "ko-KR" else null) }
+                .getOrElse { log("벤치 클라우드 실패 ${it.message}"); "" }.also { log("벤치 되살림 $it") }
         }
     }
 
@@ -144,11 +175,13 @@ class RecognitionBench(
     private fun runFull() {
         log("벤치 시작 cloudfull ${mic.durationMs}ms")
         scope.launch {
-            val pcm = mic.pcmCopy(); val step = 50 * 16000
+            val pcm = mic.pcmCopy(); val step = 15 * 16000
             var i = 0
             while (i < pcm.size && cloud != null) {
                 val part = pcm.copyOfRange(i, minOf(pcm.size, i + step))
+                val at = SystemClock.elapsedRealtime()
                 val t = runCatching { cloud.recognize(part, "vi-VN") }.getOrElse { log("벤치 클라우드 실패 ${it.message}"); "" }
+                log("벤치 클라우드 ${part.size / 16}ms 소리 → ${SystemClock.elapsedRealtime() - at}ms")
                 log("벤치 확정 [vi] $t")
                 i += step
             }
@@ -166,7 +199,11 @@ class RecognitionBench(
             // 0.5초마다 소리 크기 요약 (알림 기준 정하기용)
             rmsSum += rmsdB; rmsN++; if (rmsdB > rmsMax) rmsMax = rmsdB
             if (now - rmsAt >= 500) { log("벤치 소리 ${now - t0} 평균 ${"%.1f".format(rmsSum / rmsN)} 최대 ${"%.1f".format(rmsMax)}"); rmsAt = now; rmsSum = 0f; rmsN = 0; rmsMax = -99f }
-            if (missed.level(rmsdB, now)) log("벤치 놓침 ${now - t0}")
+            if (useCloud && rescue.level(rmsdB, now)) rescueGap()
+            if (missed.level(rmsdB, now)) {
+                log("벤치 놓침 ${now - t0}")
+                if (useCloud && seg.shown.isBlank()) rescue.arm(now)
+            }
         }
         override fun onBufferReceived(buffer: ByteArray?) {}
         override fun onEndOfSpeech() {}
@@ -179,10 +216,9 @@ class RecognitionBench(
             val p = b?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull() ?: return
             log("벤치 부분 $p")
             val now = SystemClock.elapsedRealtime()
-            val cut = spans.splitPoint(now)
             val r = seg.onPartial(p, now, lang ?: if (mode == "dual") null else "vi")
-            r.commits.forEach { commit(it, cut) }
-            if (r.changed) spans.partial(now)
+            if (r.commits.isNotEmpty()) { val cut = quietCut(now); r.commits.forEach { commit(it, cut) } }
+            if (r.changed) { spans.partial(now); rescue.cancel() }
             if (r.changed) missed.text(SystemClock.elapsedRealtime())
             if (r.changed) { main.removeCallbacks(silence); if (seg.shown.isNotBlank()) main.postDelayed(silence, seg.silenceDelay()) }
         }

@@ -73,9 +73,9 @@
     ENGINES.device.name = '기기';
     ENGINES.device.rows = [['음성 인식', '휴대폰 기본 음성 인식 (기기 안)'], ['번역', 'ML Kit · 기기 안 (Google 번역 오프라인과 같은 수준)'], ['사진', 'ML Kit 글자 인식 + 기기 번역'], ['비용', '무료 · 인터넷 없이도 번역']];
     ENGINES.google.cfg = { stt: 'android', translate: 'google', realtime: false };
-    ENGINES.google.rows = [['음성 인식', 'Google Cloud 음성 인식 (글자는 바로 보이고, 말이 끝나면 Google 서버가 다시 받아써서 정확하게)'], ['번역', 'Google 서버 번역 (Google 번역 앱 온라인과 같음)'], ['사진', 'ML Kit 글자 인식 + Google 번역 (실시간 카메라 미리보기는 기기 번역)'], ['비용', '번역 매달 50만 자 · 음성 인식 매달 60분 무료 · Google 키 필요']];
+    ENGINES.google.rows = [['음성 인식', '휴대폰 기본 음성 인식 + 휴대폰이 놓친 말만 Google Cloud 가 받아써요'], ['번역', 'Google 서버 번역 (Google 번역 앱 온라인과 같음)'], ['사진', 'ML Kit 글자 인식 + Google 번역 (실시간 카메라 미리보기는 기기 번역)'], ['비용', '번역 매달 50만 자 · 음성 인식 매달 60분 무료 · Google 키 필요']];
     var cardSmall = ai && ai.querySelector('.eng-card[data-eng="device"] small'); if (cardSmall) cardSmall.textContent = '무료 · 인터넷 없이 · 정확도 보통';
-    var gSmall = ai && ai.querySelector('.eng-card[data-eng="google"] small'); if (gSmall) gSmall.textContent = 'Google 서버 음성 인식 + 서버 번역 · 키 필요';
+    var gSmall = ai && ai.querySelector('.eng-card[data-eng="google"] small'); if (gSmall) gSmall.textContent = '서버 번역 + 놓친 말 Google 받아쓰기 · 키 필요';
     Array.prototype.forEach.call(document.querySelectorAll('h3'), function (h) { if (h.textContent.indexOf('실기기 기능 진단 (v6.9)') >= 0) h.textContent = '실기기 기능 진단'; });
   } catch (e) {}
   ['liveOn', 'shutterHaptic'].forEach(function (id) {
@@ -393,7 +393,7 @@
   try {
     aiSummaryText = function () {
       var g = ai2().translate === 'google';
-      var lines = ['음성 인식: ' + (g && ai2().hasGoogleKey ? (ai2().speechService || 'Google Cloud 음성 인식') : '휴대폰 기본 음성 인식'),
+      var lines = ['음성 인식: ' + (g && ai2().hasGoogleKey ? (ai2().speechService || '휴대폰 음성 인식 + Google 보조') : '휴대폰 기본 음성 인식'),
         '번역: ' + (g ? (ai2().hasGoogleKey ? 'Google 서버 번역 (인터넷 끊기면 ML Kit)' : 'Google 선택됨 · 키 없음 → ML Kit 로 번역 중') : 'ML Kit · 기기 안 · 무료'),
         '읽기: 휴대폰 음성'];
       return lines.join('\n');

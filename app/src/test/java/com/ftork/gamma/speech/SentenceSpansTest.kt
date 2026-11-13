@@ -29,3 +29,13 @@ class SentenceSpansTest {
         assertEquals(5000L to 5000L, s.take(4000))
     }
 }
+
+class SentenceSpansRangeTest {
+    @Test fun rangeCoversPauseBeforeNextPartial() {
+        val s = SentenceSpans(leadMs = 0)
+        s.reset(0)
+        assertEquals(null, s.searchRange(500))
+        s.partial(3000)
+        assertEquals(2000L to 3850L, s.searchRange(4000))
+    }
+}

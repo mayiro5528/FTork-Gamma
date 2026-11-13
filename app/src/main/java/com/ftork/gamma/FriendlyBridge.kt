@@ -29,6 +29,8 @@ import com.ftork.gamma.speech.SentenceSegmenter
 import com.ftork.gamma.speech.CloudSpeech
 import com.ftork.gamma.speech.LiveMic
 import com.ftork.gamma.speech.SentenceSpans
+import com.ftork.gamma.speech.MissedRescue
+import com.ftork.gamma.speech.Pcm
 import com.ftork.gamma.speech.Speaker
 import com.ftork.gamma.speech.MissedSpeech
 import com.ftork.gamma.speech.SpeechListener
@@ -50,7 +52,7 @@ import java.util.Locale
  * FTalk Beta 화면(index.html)이 부르는 `FriendlyNative.*` 함수들.
  * 일은 모두 FTalk 엔진으로 해요.
  *  - 음성 인식 : 휴대폰 음성 인식(SpeechRecognizer, 보통 Google) — 언어를 하나씩 정확히 지정
- *               Google 엔진 + 키: 문장이 끝나면 그 소리를 Google Cloud 음성 인식으로 다시 받아써요
+ *               Google 엔진 + 키: 기기 인식기가 놓친 말(글자 없이 지나간 말소리)만 Google Cloud 음성 인식으로 받아써요
  *  - 번역      : ML Kit (기기 안, 무료)
  *  - 읽기      : 휴대폰 TextToSpeech
  *  - 사진      : ML Kit 글자 인식 + ML Kit 번역
@@ -139,7 +141,7 @@ class FriendlyBridge(private val activity: MainActivity) {
             .put("googleKey", if (key.length > 10) key.take(6) + "…" + key.takeLast(4) else "")
             .put("package", activity.packageName)
             .put("sha1", engine.certSha1 ?: "")
-            .put("speechService", if (cloudOn()) "Google Cloud 음성 인식 (글자는 기기 인식으로 바로 보이고, 문장이 끝나면 Google 로 다시 받아써요)" else listener.serviceLabel + (cloudOff?.let { " · Google 음성 인식 꺼짐: $it" } ?: ""))
+            .put("speechService", if (cloudOn()) listener.serviceLabel + " + 놓친 말은 Google Cloud 음성 인식" else listener.serviceLabel + (cloudOff?.let { " · Google 음성 인식 꺼짐: $it" } ?: ""))
             .put("cloudSpeech", cloudOn())
             .toString()
     }
@@ -304,13 +306,17 @@ class FriendlyBridge(private val activity: MainActivity) {
                     onFinal = { text ->
                         if (speechId == id) {
                             note("최종 [$lang] $text")
-                            if (text.isNotBlank()) finalAndEnd(id, text, lang.substringBefore('-').lowercase(), false, readyAt - 300, now())
+                            // 글자가 없어도 Google 음성 인식이면 그 소리를 한 번 더 받아써 봐요 (말소리가 있었을 때만)
+                            if (text.isNotBlank() || cloudOn()) finalAndEnd(id, text, lang.substringBefore('-').lowercase(), false, readyAt - 300, now())
                             else { emitSpeech(id, "error", "no-speech"); end(id) }
                         }
                     },
                     onError = { code ->
                         if (speechId == id) {
                             note("인식 오류 $code" + if (twoWay) " (양방향)" else "")
+                            // "못 알아들음": Google 음성 인식이면 그 소리를 한 번 더 받아써 봐요
+                            if (!twoWay && SpeechListener.isSilence(code) && cloudOn()) finalAndEnd(id, "", lang.substringBefore('-').lowercase(), false, readyAt - 300, now())
+                            else {
                             if (twoWay && (code == 12 || code == 13 || code == SpeechRecognizer.ERROR_CLIENT)) {
                                 // 기기 안 인식기가 이 언어를 못 하면 양방향을 끄고 번갈아 듣기로 돌아가요.
                                 dualState = "failed"; dualDetail = "기기 안 음성 인식 오류 $code → 번갈아 듣기로 전환"
@@ -322,6 +328,7 @@ class FriendlyBridge(private val activity: MainActivity) {
                             if (recoverable) { busyStreak++; listener.reset() }
                             emitSpeech(id, "error", if (recoverable && busyStreak < 4) "no-speech" else webError(code))
                             end(id)
+                            }
                         }
                     },
                 ), also, fastEndpoint, twoWay)
@@ -455,10 +462,10 @@ class FriendlyBridge(private val activity: MainActivity) {
     private fun flowPartial(p: String) {
         if (!flow.active) return
         if (BuildConfig.DEBUG) android.util.Log.d("FTalkTest", "부분 $p")
-        val at = now(); val cut = spans.splitPoint(at)
+        val at = now()
         val r = flow.seg.onPartial(p, at, flow.lang)
-        r.commits.forEach { commitFlow(it, cut) }
-        if (r.changed) spans.partial(at)
+        if (r.commits.isNotEmpty()) { val cut = quietCut(at); r.commits.forEach { commitFlow(it, cut) } }
+        if (r.changed) { spans.partial(at); rescue.cancel() }
         if (!r.changed) return
         missed.text(now())
         val shown = flow.seg.shown
@@ -515,12 +522,14 @@ class FriendlyBridge(private val activity: MainActivity) {
     /** 연속 듣기를 멈춰요 (멈춤 버튼, 모드 바꾸기, 번역 읽기 시작 등) */
     private fun stopFlow() {
         main.removeCallbacks(silenceCommit); main.removeCallbacks(carryTimeout)
-        flow.pending.clear(); refining.clear()
+        flow.pending.clear(); refining.clear(); rescue.cancel()
         if (flow.active) { flow.active = false; flow.carry = false; listener.stop() }
     }
 
-    // ---- Google Cloud 음성 인식: 문장이 끝나면 그 구간 소리를 다시 받아써요 ----
-    // 글자는 기기 인식기가 바로 보여 주고(빠름), 확정할 때만 Google 로 바꿔요(정확). 늦거나 실패하면 기기 글자 그대로.
+    // ---- Google Cloud 음성 인식: 기기 인식기가 놓친 소리만 받아써요 ----
+    // 2026-11 폰 시험(폴드8, 베트남어 v1~v5): 문장마다 Google 로 바꾸면 오히려 나빴어요(8.1% → 12.3%, 쉼에서 잘라도 비슷).
+    // 기기 글자는 소리보다 늦게 와서 문장 구간이 어긋나고, 잘 맞춰 잘라도 Google(latest_long)이 기기보다 낫지 않았어요.
+    // 그래서 기기 글자가 있으면 그대로 쓰고, 글자가 하나도 없는데 말소리가 있었던 구간만 Google 로 받아써요.
     private val spans = SentenceSpans()
     private var readyAt = 0L
     private class Refine(var s: SentenceSegmenter.Sentence, var ready: Boolean = false)
@@ -530,14 +539,38 @@ class FriendlyBridge(private val activity: MainActivity) {
     /** 듣기 시작 전에: Google 음성 인식을 쓰면 앱이 직접 마이크를 받아요 (소리를 남겨 두려고) */
     private fun syncFeed() { listener.feed = if (cloudOn()) liveMic else null }
 
+    /** 문장 사이를 자를 곳: 소리가 있으면 쉼(가장 조용한 곳), 없으면 글자 시각으로 */
+    private fun quietCut(at: Long): Long {
+        val r = spans.searchRange(at) ?: return spans.splitPoint(at)
+        val pcm = if (cloudOn()) listener.audio?.clip(r.first, r.second) else null
+        val ms = pcm?.let { Pcm.quietestMs(it) } ?: return spans.splitPoint(at)
+        return r.first + ms
+    }
+
     /** 양방향: 확정된 문장을 (다시 받아써서) 순서대로 넘겨요 */
     private fun commitFlow(s: SentenceSegmenter.Sentence, to: Long) {
         val (f, t) = spans.take(to)
         val job = Refine(s); refining.addLast(job)
         refine(s.text, s.lang ?: flow.lang, f, t) { text ->
             job.s = s.copy(text = text); job.ready = true
-            while (refining.firstOrNull()?.ready == true) { val j = refining.removeFirst(); if (flow.active) deliver(j.s) }
+            flushRefining()
         }
+    }
+
+    private fun flushRefining() {
+        while (refining.firstOrNull()?.ready == true) {
+            val j = refining.removeFirst()
+            if (!flow.active) continue
+            if (j.s.text.isNotBlank()) deliver(j.s) else missedNotice()
+        }
+    }
+
+    /** 양방향: 인식기가 놓친 구간을 Google 로 받아써서 문장으로 넘겨요 (못 알아들으면 "다시 말해 주세요") */
+    private fun rescueGap() {
+        val (f, t) = spans.take(now())
+        val job = Refine(SentenceSegmenter.Sentence("", flow.lang)); refining.addLast(job)
+        note("빠진 구간 Google 받아쓰기 ${t - f}ms")
+        refine("", flow.lang, f, t) { text -> job.s = job.s.copy(text = text); job.ready = true; flushRefining() }
     }
 
     /** 한 번 듣기의 마지막 문장: (다시 받아써서) 넘기고 듣기를 끝내요 */
@@ -545,14 +578,17 @@ class FriendlyBridge(private val activity: MainActivity) {
         if (speechId == id) speechId = 0
         listener.stop()
         refine(text, code, from, to) { t ->
+            if (t.isBlank()) { emitSpeech(id, "error", "no-speech"); emitSpeech(id, "end", ""); return@refine }
             if (announce && code != null) activity.callJs("ftolkDetectedLanguage", id, code)
             emitSpeech(id, "final", t); emitSpeech(id, "end", "")
         }
     }
 
     private fun refine(text: String, code: String?, from: Long, to: Long, done: (String) -> Unit) {
+        if (text.isNotBlank()) { done(text); return }
         val pcm = if (cloudOn()) listener.audio?.clip(from, to) else null
-        if (pcm == null || pcm.size < 6400 || text.isBlank()) { done(text); return }
+        // 말소리가 실제로 있었을 때만 보내요 (조용한 소리에 요금이 들지 않게)
+        if (pcm == null || pcm.size < 6400 || !Pcm.loud(pcm)) { done(text); return }
         val audio = if (pcm.size > 55 * 16000) pcm.copyOfRange(pcm.size - 55 * 16000, pcm.size) else pcm
         val tag = code?.let { bcp(it) }
         var finished = false
@@ -578,11 +614,17 @@ class FriendlyBridge(private val activity: MainActivity) {
     // ---- 빠진 구간 알림: 말소리는 들리는데 인식기가 글자를 안 낼 때 ----
     private val missed = MissedSpeech()
     private fun now() = android.os.SystemClock.elapsedRealtime()
+    private val rescue = MissedRescue()
     private fun checkMissed(db: Float) {
-        if (!missed.level(db, now())) return
+        val t = now()
+        if (rescue.level(db, t) && flow.active) rescueGap()
+        if (!missed.level(db, t)) return
         note("빠진 구간 알림")
-        activity.callJs("notice", "잘 안 들렸어요. 다시 말해 주세요 · Tôi nghe không rõ, xin nói lại nhé")
+        // Google 음성 인식이면 알림 대신, 소리가 잦아들 때 그 구간을 받아써요
+        if (cloudOn() && flow.active && flow.seg.shown.isBlank()) { rescue.arm(t); return }
+        missedNotice()
     }
+    private fun missedNotice() = activity.callJs("notice", "잘 안 들렸어요. 다시 말해 주세요 · Tôi nghe không rõ, xin nói lại nhé")
 
     private fun emitSpeech(id: Int, kind: String, payload: String) =
         activity.callJs("friendlyNativeSpeechEvent", id, kind, payload)

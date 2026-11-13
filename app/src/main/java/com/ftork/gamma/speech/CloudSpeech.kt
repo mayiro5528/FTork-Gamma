@@ -42,7 +42,7 @@ class CloudSpeech(
         val k = key()
         if (k.isEmpty()) throw Failure(0, "Google 키가 없어요")
         val c = URL("https://speech.googleapis.com/v1p1beta1/speech:recognize?key=$k").openConnection() as HttpURLConnection
-        c.connectTimeout = 5000; c.readTimeout = 10000
+        c.connectTimeout = 5000; c.readTimeout = 20000
         c.requestMethod = "POST"; c.doOutput = true
         c.setRequestProperty("Content-Type", "application/json; charset=utf-8")
         // 키를 "Android 앱" 으로 제한했을 때 필요한 정보 (번역과 같아요)

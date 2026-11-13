@@ -17,6 +17,17 @@ class SentenceSpans(private val tailMs: Long = 300, private val leadMs: Long = 3
     /** 이번 부분 결과로 문장이 나뉘었을 때의 경계 (바뀐 글자를 기록하기 전에 불러요) */
     fun splitPoint(now: Long): Long = if (lastPartial > 0) minOf(now, lastPartial + tailMs) else now
 
+    /**
+     * 문장 사이 쉼을 찾을 소리 범위: 앞 문장 마지막 글자 1초 전 ~ 지금 0.15초 전.
+     * (2026-11 폰 시험: 글자 시각만으로 자르면 글자가 늦게 와서 다음 문장 첫 단어가 잘렸어요 → 그 범위에서 가장 조용한 곳에서 잘라요)
+     */
+    fun searchRange(now: Long): Pair<Long, Long>? {
+        if (lastPartial <= 0) return null
+        val a = maxOf(mark, lastPartial - 1000)
+        val b = now - 150
+        return if (b - a >= 200) a to b else null
+    }
+
     /** 글자가 바뀐 부분 결과가 왔을 때 */
     fun partial(now: Long) { lastPartial = now }
 
