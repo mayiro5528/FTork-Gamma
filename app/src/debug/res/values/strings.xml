@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 시험용(디버그) 앱에서만 쓰여요. 배포판 이름은 main 쪽 FTalk 그대로예요. -->
+<resources>
+    <string name="app_name">FTalk TEST</string>
+</resources>

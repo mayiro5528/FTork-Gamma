@@ -27,19 +27,52 @@ class MlKitTranslationEngine : TranslationEngine {
         return Languages.normalize(tag)
     }
 
+    /** 진단용 기록 (보정이 일어났을 때) */
+    var log: ((String) -> Unit)? = null
+
+    /** 대화용 보정을 할지 (실시간 카메라는 간판·상표 같은 짧은 글이 많아 끔) */
+    var fix = true
+
+    private fun client(source: String, target: String): Translator = translators.getOrPut(source to target) {
+        Translation.getClient(
+            TranslatorOptions.Builder()
+                .setSourceLanguage(source)
+                .setTargetLanguage(target)
+                .build()
+        )
+    }
+
+    private suspend fun raw(text: String, source: String, target: String): String {
+        val t = client(source, target)
+        t.downloadModelIfNeeded(DownloadConditions.Builder().build()).await()
+        return t.translate(text).await()
+    }
+
     override suspend fun translate(text: String, source: String, target: String): TranslationResult {
         if (source == target) return TranslationResult.Success(text)
-        val translator = translators.getOrPut(source to target) {
-            Translation.getClient(
-                TranslatorOptions.Builder()
-                    .setSourceLanguage(source)
-                    .setTargetLanguage(target)
-                    .build()
-            )
-        }
         return try {
-            translator.downloadModelIfNeeded(DownloadConditions.Builder().build()).await()
-            TranslationResult.Success(translator.translate(text).await())
+            var out = raw(text, source, target)
+            if (!fix) return TranslationResult.Success(out)
+            // 짧은 글(상표·이름 등)은 영어 그대로가 맞을 수 있어서 3단어 이상만 봐요
+            if (text.trim().split(Regex("\\s+")).size >= 3 && TranslationFix.wrongScript(out, target)) {
+                // 목표 언어가 아닌 글자(대개 영어)로 나왔어요 → 문장을 조금 바꿔 다시, 그래도 안 되면 영어를 거쳐 번역
+                val first = out
+                var ok = false
+                for (v in TranslationFix.variants(text)) {
+                    val o = raw(v, source, target)
+                    if (!TranslationFix.wrongScript(o, target)) { out = o; ok = true; break }
+                }
+                if (!ok && source != "en" && target != "en") {
+                    val o = raw(raw(text, source, "en"), "en", target)
+                    if (!TranslationFix.wrongScript(o, target)) { out = o; ok = true }
+                }
+                // 끝내 못 고치면 영어라도 보여 주되 영어라는 걸 알려요
+                if (!ok) out = "(영어) $first"
+                log?.invoke("번역 보정(글자) $first → $out")
+            }
+            val q = TranslationFix.keepQuestion(text, out, source, target)
+            if (q != out) { log?.invoke("번역 보정(질문) $out → $q"); out = q }
+            TranslationResult.Success(out)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

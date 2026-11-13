@@ -84,7 +84,7 @@ class LiveCameraActivity : ComponentActivity() {
     private lateinit var shutter: View
 
     /** 메인 화면과 같은 번역 설정: Google 키가 있으면 Google 서버 번역, 없으면 ML Kit */
-    private val engine by lazy { SmartTranslationEngine(this, MlKitTranslationEngine()) }
+    private val engine by lazy { SmartTranslationEngine(this, MlKitTranslationEngine().apply { fix = false }) }
     private val scanner by lazy { PhotoTranslator(engine) }
     private var camera: androidx.camera.core.Camera? = null
     private var torchOn = false

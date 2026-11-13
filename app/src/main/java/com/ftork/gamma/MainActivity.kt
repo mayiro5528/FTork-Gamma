@@ -151,6 +151,7 @@ class MainActivity : ComponentActivity() {
     private fun testAudio(i: Intent?) {
         if (!BuildConfig.DEBUG) return
         WebView.setWebContentsDebuggingEnabled(true)
+        i?.getStringExtra("test_bench")?.let { bridge.startBench(it, i.getStringExtra("bench_mode") ?: "dual"); return }
         val names = i?.getStringExtra("test_audio") ?: return
         bridge.startVirtualMic(names.split(',').map { it.trim() }, i.getLongExtra("test_delay", 0))
     }

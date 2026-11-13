@@ -22,6 +22,8 @@ class VirtualMic(private val pcm: ShortArray) {
 
     val durationMs: Long get() = pcm.size / 16L
 
+    fun pcmCopy(): ShortArray = pcm.copyOf()
+
     fun play(delayMs: Long = 0) { startedAt = SystemClock.elapsedRealtime() + delayMs }
 
     /** 지금 재생 위치 (샘플). 아직 시작 전이면 0 */
@@ -75,6 +77,30 @@ class VirtualMic(private val pcm: ShortArray) {
             var o = 0
             for (p in all) { p.copyInto(out, o); o += p.size }
             return VirtualMic(out)
+        }
+
+        /**
+         * 소리 크기 자동 맞춤 (시험용): 저음 잡음(100Hz 아래)을 덜고, 20ms마다 크기를 재서 작은 말은 키우고 큰 소리는 줄여요.
+         * 이득은 천천히 바뀌고(올릴 때 0.5초, 내릴 때 0.05초) 최대 8배까지. 조용한 곳(잡음)은 키우지 않아요.
+         */
+        fun agc(pcm: ShortArray): ShortArray {
+            val out = ShortArray(pcm.size)
+            val rc = 1.0 / (2 * Math.PI * 100)
+            val a = rc / (rc + 1.0 / 16000)
+            var px = 0.0; var py = 0.0
+            val hp = DoubleArray(pcm.size) { i -> val x = pcm[i].toDouble(); py = a * (py + x - px); px = x; py }
+            val win = 320; val target = 3000.0; var gain = 1.0
+            var i = 0
+            while (i < hp.size) {
+                val end = minOf(i + win, hp.size)
+                var s = 0.0; for (k in i until end) s += hp[k] * hp[k]
+                val rms = Math.sqrt(s / (end - i))
+                val want = if (rms < 150) gain.coerceAtMost(1.5) else (target / rms).coerceIn(0.25, 8.0)
+                gain += (want - gain) * (if (want < gain) 0.4 else 0.04)
+                for (k in i until end) out[k] = (hp[k] * gain).coerceIn(-32767.0, 32767.0).toInt().toShort()
+                i = end
+            }
+            return out
         }
 
         private fun decode(file: File): ShortArray {

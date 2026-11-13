@@ -63,7 +63,7 @@
       '.ftalk-keyhelp .kh-val code{font-size:12.5px;overflow-wrap:anywhere;word-break:break-all}' +
       '.ftalk-keyhelp .kh-val button{padding:6px 12px;border-radius:9px;border:1px solid var(--stroke,#606773);background:transparent;color:inherit;font-weight:700}' +
       '.ftalk-keyhelp .kh-note{font-size:12px;opacity:.75;margin-top:6px}' +
-      '#aiTestOut{overflow-wrap:anywhere}';
+      '#aiTestOut{overflow-wrap:anywhere;white-space:pre-wrap}';
     document.head.appendChild(st);
     var testOut = document.getElementById('aiTestOut');
     if (testOut) testOut.after(help);

@@ -21,10 +21,13 @@ val versionProps = Properties().apply {
 }
 var buildNumber = versionProps.getProperty("VERSION_CODE", "1").toInt()
 
-/** app/src 아래 모든 파일과 빌드 설정 파일의 지문(SHA-256). 하나라도 바뀌면 값이 달라져요. */
+/**
+ * app/src 아래 모든 파일과 빌드 설정 파일의 지문(SHA-256). 하나라도 바뀌면 값이 달라져요.
+ * src/debug(시험용 앱 전용 아이콘·이름)와 src/test(단위 테스트)는 배포판에 들어가지 않으니 빼요.
+ */
 fun sourceFingerprint(): String {
     val digest = MessageDigest.getInstance("SHA-256")
-    val files = fileTree("src").files + listOf(
+    val files = fileTree("src") { exclude("debug/**", "test/**") }.files + listOf(
         file("build.gradle.kts"), file("proguard-rules.pro"),
         rootProject.file("build.gradle.kts"), rootProject.file("settings.gradle.kts"),
         rootProject.file("gradle.properties"),
@@ -140,4 +143,7 @@ dependencies {
     implementation("androidx.camera:camera-camera2:$cameraX")
     implementation("androidx.camera:camera-lifecycle:$cameraX")
     implementation("androidx.camera:camera-view:$cameraX")
+
+    // 단위 테스트 (PC 에서 실행: gradlew testDebugUnitTest)
+    testImplementation("junit:junit:4.13.2")
 }

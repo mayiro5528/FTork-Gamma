@@ -1,0 +1,288 @@
+<title>FTalk 실시간 대화 시험 결과</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 시험 보고서 한 단, 숫자는 고정폭, 판정은 색 칩 */
+:root {
+  --bg: #f6f7f8; --surface: #ffffff; --fg: #1d2329; --muted: #5d6873; --line: #dde2e7;
+  --accent: #0f6e78; --accent-soft: #dcefF1;
+  --good: #1f7a3d; --good-bg: #e2f3e7; --mid: #8a5a00; --mid-bg: #fbefd6; --bad: #b3261e; --bad-bg: #fbe3e1;
+  --bar-old: #b8c2cc; --bar-new: #0f6e78;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12171b; --surface: #1a2026; --fg: #e4e9ee; --muted: #9aa6b1; --line: #2c353d;
+  --accent: #5cc3cc; --accent-soft: #1d3436;
+  --good: #7fd49a; --good-bg: #1d3325; --mid: #f0c26a; --mid-bg: #3a2f17; --bad: #ff8a80; --bad-bg: #3d1f1d;
+  --bar-old: #4a5560; --bar-new: #5cc3cc; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12171b; --surface: #1a2026; --fg: #e4e9ee; --muted: #9aa6b1; --line: #2c353d;
+  --accent: #5cc3cc; --accent-soft: #1d3436;
+  --good: #7fd49a; --good-bg: #1d3325; --mid: #f0c26a; --mid-bg: #3a2f17; --bad: #ff8a80; --bad-bg: #3d1f1d;
+  --bar-old: #4a5560; --bar-new: #5cc3cc; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.65; }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 40px; }
+header { display: grid; gap: 8px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; color: var(--accent); text-transform: uppercase; }
+h1 { font-size: 30px; line-height: 1.25; margin: 0; text-wrap: balance; }
+h2 { font-size: 21px; margin: 0; text-wrap: balance; }
+h3 { font-size: 16px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.muted { color: var(--muted); }
+section { display: grid; gap: 14px; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+.kpi .label { font-size: 13px; color: var(--muted); }
+.kpi .val { font-family: var(--mono); font-size: 22px; font-weight: 600; }
+.kpi .val small { font-size: 13px; color: var(--muted); font-weight: 400; }
+.kpi .delta { font-size: 13px; }
+.scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12.5px; color: var(--muted); font-weight: 500; white-space: nowrap; background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
+.s2 { background: var(--good-bg); color: var(--good); }
+.s1 { background: var(--mid-bg); color: var(--mid); }
+.s0 { background: var(--bad-bg); color: var(--bad); }
+.ok { color: var(--good); font-weight: 500; }
+.warn { color: var(--mid); font-weight: 500; }
+.no { color: var(--bad); font-weight: 500; }
+.bars { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 14px; }
+.bar-row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: center; }
+.bar-row .name { font-size: 13.5px; }
+.track { position: relative; height: 22px; background: var(--bg); border-radius: 4px; }
+.fill { position: absolute; inset: 0 auto 0 0; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; font-family: var(--mono); font-size: 12px; color: var(--surface); }
+.fill.old { background: var(--bar-old); color: var(--fg); }
+.fill.new { background: var(--bar-new); }
+.axis { display: grid; grid-template-columns: 150px 1fr; gap: 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.axis div:last-child { display: flex; justify-content: space-between; }
+ul, ol { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; max-width: 72ch; }
+.note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 14px; }
+.src { font-family: var(--mono); font-size: 13px; }
+.fix { display: grid; gap: 10px; }
+.fix-item { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; }
+.fix-item .tag { font-size: 12px; font-family: var(--mono); color: var(--muted); }
+@media (max-width: 560px) { .bar-row, .axis { grid-template-columns: 96px 1fr; } h1 { font-size: 24px; } }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">FTalk · 실시간 대화 · 실기기 시험 2026-11-12</div>
+  <h1>FTalk 실시간 대화 시험 결과</h1>
+  <p class="muted">갤럭시 SM-F976N (Android 17)에서 한국어·베트남어 음성 파일로 실시간 대화를 돌려 인식률, 반응속도, 번역속도, 오류, 번역 품질을 재고, 같은 문장을 Google 번역과 비교했어요. 앱에 Google 키를 넣은 상태도 같은 음성으로 4번 더 쟀어요.</p>
+</header>
+
+<section>
+  <h2>한눈에</h2>
+  <div class="kpis">
+    <div class="kpi"><span class="label">말 끝 → 번역 표시 (한국어, 중앙값)</span><span class="val">0.62<small> 초</small></span><span class="delta ok">v3.1 1.05초 → 41% 빨라짐</span></div>
+    <div class="kpi"><span class="label">기기 번역 속도 (중앙값)</span><span class="val">33<small> ms</small></span><span class="delta muted">최대 59ms · 인터넷 불필요</span></div>
+    <div class="kpi"><span class="label">오류 (4회 · 76문장)</span><span class="val">0<small> 건</small></span><span class="delta muted">중복 0 · 조각 0 · 언어 틀림 0</span></div>
+    <div class="kpi"><span class="label">번역 품질 (베트남어→한국어)</span><span class="val">27%<small> → 68%</small></span><span class="delta ok">기기 번역 → 앱 + Google 키</span></div>
+    <div class="kpi"><span class="label">앱 + Google 키: 확정 → Google 번역 (중앙값)</span><span class="val">0.24<small> 초</small></span><span class="delta muted">90%가 0.33초 안 · 최대 0.59초 · 76/76 성공</span></div>
+  </div>
+  <p>앱이 맡은 부분(문장 나누기, 반응속도, 안정성)은 이번에 크게 좋아졌고 오류 없이 재현돼요. 남은 큰 차이는 <b>번역 엔진</b>이에요. 같은 받아쓰기를 넣어도 Google 번역이 훨씬 정확해요. <b>앱에 Google 키를 넣으면 Google 웹 번역과 같은 결과</b>가 나와요(36문장 중 35문장이 글자까지 같음). 기기 번역이 먼저 0.04초 만에 뜨고, 약 0.2초 뒤 Google 번역으로 바뀌어요. 인식률은 두 버전이 같아요. 같은 Google 인식기를 쓰기 때문이에요.</p>
+</section>
+
+<section>
+  <h2>시험 방법</h2>
+  <div class="scroll"><table>
+    <tr><th>항목</th><th>내용</th></tr>
+    <tr><td>기기</td><td>갤럭시 SM-F976N · Android 17 · Google 앱 17.72 · 기기 안 음성 인식(한국어+베트남어 함께 듣기)</td></tr>
+    <tr><td>앱</td><td>FTalk 시험판 v3.6 (오늘 고친 버전) · 비교 기준 v3.1 (오늘 아침 배포판, 같은 폰)</td></tr>
+    <tr><td>음성</td><td>① 한국어 3문장(Windows 합성 음성) + 베트남어 대화(9개 발화, 2명) + 한국어 2문장<br>② 한국어 + 베트남어 길 묻기 대화(약 12개 발화, 2명) + 한국어</td></tr>
+    <tr><td>넣는 방법</td><td>마이크 대신 음성 파일을 실제 시간에 맞춰 인식기에 직접 넣음 (시험판 전용 기능)</td></tr>
+    <tr><td>횟수</td><td>v3.6: ①×2, ②×2 · 두 번 돌린 결과가 문장 하나하나까지 같았어요</td></tr>
+    <tr><td>Google 비교</td><td>앱이 받아쓴 같은 문장을 Google 번역(translate.google.com, 한 문장씩)에 넣음</td></tr>
+    <tr><td>앱 + Google 키</td><td>FTalk 시험판 v3.7 (번역 시각 기록만 추가) · 번역 엔진 Google · 같은 음성 ①×2, ②×2 · 와이파이</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>반응속도</h2>
+  <p>한국어 음성은 파일에서 말이 실제로 끝나는 시각을 재서, 그때부터 문장이 확정되고 번역이 화면에 뜨기까지를 쟀어요. (5문장 × 회차, 중앙값)</p>
+  <div class="bars">
+    <div class="bar-row"><span class="name">v3.1 말 끝 → 확정</span><div class="track"><div class="fill old" style="width:83.3%">1.00초</div></div></div>
+    <div class="bar-row"><span class="name">v3.6 말 끝 → 확정</span><div class="track"><div class="fill new" style="width:46.3%">0.555초</div></div></div>
+    <div class="bar-row"><span class="name">v3.1 말 끝 → 번역 표시</span><div class="track"><div class="fill old" style="width:87.5%">1.05초</div></div></div>
+    <div class="bar-row"><span class="name">v3.6 말 끝 → 번역 표시</span><div class="track"><div class="fill new" style="width:51.7%">0.62초</div></div></div>
+    <div class="bar-row"><span class="name">+ Google 키 말 끝 → Google 번역</span><div class="track"><div class="fill new" style="width:64.2%">0.77초</div></div></div>
+    <div class="axis"><div></div><div><span>0</span><span>0.3</span><span>0.6</span><span>0.9</span><span>1.2초</span></div></div>
+  </div>
+  <div class="scroll"><table>
+    <tr><th>구간</th><th>v3.1</th><th>v3.6</th><th>설명</th></tr>
+    <tr><td>문장 끝말로 끝날 때 (-요, -니다, không, nhé …)</td><td class="n">1.00초</td><td class="n">0.55초</td><td>끝말이면 짧게 기다리고 확정</td></tr>
+    <tr><td>말이 이어질 것 같을 때</td><td class="n">1.00초</td><td class="n">1.00초</td><td>문장 중간에서 끊기지 않게 그대로</td></tr>
+    <tr><td>사람이 바뀌거나 0.65초 쉰 뒤 새 말</td><td class="n">1.00초</td><td class="n">0.65~0.85초</td><td>새 말이 들리는 순간 앞 문장 확정</td></tr>
+    <tr><td>확정 → 번역 표시</td><td class="n">42ms</td><td class="n">33ms</td><td>기기 번역(ML Kit), 인터넷 불필요</td></tr>
+    <tr><td>앱 + Google 키: 확정 → 기기 번역 먼저 표시</td><td class="n">–</td><td class="n">39ms</td><td>기다리는 동안 빈칸 없이 먼저 보여 줌</td></tr>
+    <tr><td>앱 + Google 키: 확정 → Google 번역으로 바뀜</td><td class="n">–</td><td class="n">0.24초</td><td>76문장 중앙값 · 90%가 0.33초 · 최대 0.59초 · 실패 0</td></tr>
+  </table></div>
+  <p class="muted">Google 번역 앱의 반응속도는 재지 못했어요. 그 앱에는 음성 파일을 직접 넣을 수 없어서, 같은 조건으로 잴 방법이 없어요. (아래 "남은 시험" 참고)</p>
+</section>
+
+<section>
+  <h2>인식률</h2>
+  <div class="scroll"><table>
+    <tr><th></th><th>한국어 글자 오류율 (CER)</th><th>베트남어 단어 오류율 (WER)</th></tr>
+    <tr><td>대화 ① v3.1</td><td class="n">7.0% (3/43)</td><td class="n">8.3% (9/108)</td></tr>
+    <tr><td>대화 ① v3.6 (2회)</td><td class="n">7.0% (3/43)</td><td class="n">8.3% (9/108)</td></tr>
+    <tr><td>길 묻기 ② v3.6 (2회)</td><td class="n">7.1% (2/28)</td><td class="n">약 9.8% (13/132)</td></tr>
+  </table></div>
+  <p>두 버전이 같아요. 받아쓰기는 폰의 Google 인식기가 하고, 앱은 그 결과를 문장으로 나누기만 해요. 이번 수정으로 사라지거나 두 번 나온 단어가 없다는 뜻이기도 해요.</p>
+  <h3>틀린 받아쓰기 (반복해서 나온 것)</h3>
+  <div class="scroll"><table>
+    <tr><th>들린 말</th><th>받아쓴 말</th><th>영향</th></tr>
+    <tr><td class="src">실례합니다</td><td class="src">신뢰합니다</td><td>합성 음성 발음 탓일 가능성 큼 · 번역 "Tín nhiệm"(신뢰)</td></tr>
+    <tr><td class="src">rẽ phải (오른쪽으로 꺾어)</td><td class="src">sẽ phải</td><td>길 안내의 핵심이 빠짐</td></tr>
+    <tr><td class="src">đi thẳng đường này (이 길로 곧장)</td><td class="src">đi tăng lương này (월급 올려)</td><td>번역이 엉뚱해짐 (Google도 "연봉 인상")</td></tr>
+    <tr><td class="src">quán rất ngon (아주 맛있는 집)</td><td class="src">quán rất mòn (아주 낡은 집)</td><td>뜻이 반대로</td></tr>
+    <tr><td class="src">đi taxi</td><td class="src">đi thật</td><td>외래어를 놓침</td></tr>
+    <tr><td class="src">chúc anh (즐겁게 ~하세요)</td><td class="src">chụp ảnh (사진 찍어)</td><td>인사말이 "사진 찍으세요"로</td></tr>
+    <tr><td class="src">tên là Minh</td><td class="src">tên là mình</td><td>사람 이름을 일반 단어로</td></tr>
+  </table></div>
+  <p class="muted">베트남어 음성은 대본이 없어서, 여러 번 받아쓴 결과와 문맥으로 정답을 복원했어요. 확신이 없는 3~4곳은 점수에서 뺐어요. 그래서 베트남어 수치는 ±2%p 정도 오차가 있을 수 있어요.</p>
+</section>
+
+<section>
+  <h2>실제 방송·드라마 음성으로 잰 인식률</h2>
+  <p>베트남어 영상 5개(브이로그 3, 드라마 1, 이야기 낭독 1)의 앞 1분씩을 폰 인식기에 넣고 방식별로 받아쓰게 했어요. 영상에는 대본이 없어서, PC의 Whisper와 폰 인식 결과를 맞대어 보고 문맥상 맞는 쪽으로 정답을 만들었어요(929단어). 아무도 확실히 못 알아들은 곳은 점수에서 뺐어요.</p>
+  <div class="scroll"><table>
+    <tr><th>방식</th><th>단어 오류율</th><th>틀림 · 빠짐 · 더함</th><th>설명</th></tr>
+    <tr><td><b>지금 앱 (기기 안, 한국어+베트남어 함께)</b></td><td class="n ok">11.4%</td><td class="n">29 · 75 · 2</td><td>기준</td></tr>
+    <tr><td>기기 안, 베트남어만</td><td class="n">11.9%</td><td class="n">33 · 76 · 2</td><td>두 언어를 함께 들어도 손해 없음</td></tr>
+    <tr><td>Google 서버 인식</td><td class="n no">33.8%</td><td class="n">30 · 284 · 0</td><td>계속 듣는 동안 몇 초씩 통째로 빠짐</td></tr>
+    <tr><td>+ 소리 크기 자동 맞춤</td><td class="n no">16.0%</td><td class="n">32 · 111 · 6</td><td>오히려 나빠짐 → 안 씀</td></tr>
+    <tr><td>+ 자주 쓰는 단어 힌트</td><td class="n">변화 없음</td><td class="n">–</td><td>기기 안 인식기가 힌트를 무시함</td></tr>
+    <tr><td>참고: Whisper (PC)</td><td class="n">10.4%</td><td class="n">56 · 40 · 1</td><td>빠짐은 적지만 없는 말을 지어냄(v4 앞 26초)</td></tr>
+  </table></div>
+  <div class="scroll"><table>
+    <tr><th>영상</th><th>지금 앱</th><th>Whisper</th><th>특징</th></tr>
+    <tr><td>v3 드라마 대화</td><td class="n ok">5.7%</td><td class="n">2.6%</td><td>또렷한 대화 → 잘 받아씀</td></tr>
+    <tr><td>v4 이야기 낭독</td><td class="n ok">2.5%</td><td class="n no">33.5%</td><td>앱이 더 정확</td></tr>
+    <tr><td>v1 쌍둥이 브이로그</td><td class="n ok">6.6%</td><td class="n">13.8%</td><td></td></tr>
+    <tr><td>v2 콘서트 브이로그</td><td class="n warn">15.8%</td><td class="n">2.3%</td><td>빠른 말 · 배경 소리에서 몇 초씩 빠짐</td></tr>
+    <tr><td>v5 여행 브이로그</td><td class="n no">26.7%</td><td class="n">6.7%</td><td>배경 음악 위의 말 6.5초가 통째로 빠짐</td></tr>
+  </table></div>
+  <div class="note">틀린 단어의 70%(106개 중 75개)는 잘못 들은 것이 아니라 <b>통째로 빠진 것</b>이에요. 인식기가 몇 초 동안 아무 글자도 보내지 않아요. 앱의 문장 나누기에서 잃는 단어는 1% 정도라 원인이 아니에요. 정답은 이 받아쓰기들로 만들었기 때문에, 모두가 함께 틀린 곳은 점수에 잡히지 않아요. 실제 오류율은 조금 더 높을 수 있어요.</div>
+  <h3>인식률을 올리는 방향</h3>
+  <ul>
+    <li><b>빠진 구간 알려 주기 (작은 수정):</b> 마이크에 말소리는 들리는데 인식기가 1.5초 넘게 아무것도 보내지 않으면 "잘 안 들렸어요, 다시 말해 주세요"를 띄워요. 실제 대화에서는 다시 말하면 되니까, 빠진 말을 모르고 넘어가는 일이 줄어요.</li>
+    <li><b>빠진 구간만 Whisper로 다시 받아쓰기 (큰 작업):</b> Whisper는 앱이 놓친 곳(v2, v5)을 잘 받아썼고, 앱은 Whisper가 지어낸 곳(v4)을 맞게 받아썼어요. 서로 약한 곳이 달라요. 빠진 몇 초만 폰에서 작은 Whisper로 다시 받아쓰는 방식이 가능해요. 모델 크기(수백 MB)와 폰 속도를 먼저 재 봐야 해요.</li>
+    <li><b>하지 않을 것:</b> 서버 인식으로 바꾸기, 소리 크기 맞춤, 단어 힌트는 이번 시험에서 효과가 없거나 나빠졌어요.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>오류와 안정성</h2>
+  <div class="scroll"><table>
+    <tr><th>항목</th><th>v3.1</th><th>v3.6 (4회, 76문장)</th></tr>
+    <tr><td>인식기 오류 (멈춤, 사용 중 등)</td><td class="n">0</td><td class="n ok">0</td></tr>
+    <tr><td>같은 문장 두 번 번역</td><td class="n">0</td><td class="n ok">0</td></tr>
+    <tr><td>문장 조각 (예: "thôi là" / "tôi là" 따로)</td><td class="n">0</td><td class="n ok">0</td></tr>
+    <tr><td>언어 판단 틀림 (한국어↔베트남어)</td><td class="n">0</td><td class="n ok">0 / 76</td></tr>
+    <tr><td>번역이 안 붙은 문장</td><td class="n warn">1 / 10</td><td class="n ok">0 / 76</td></tr>
+    <tr><td>베트남어 한 번역 단위 길이 (평균 / 최대)</td><td class="n warn">21 / 44단어</td><td class="n ok">8 / 17단어</td></tr>
+  </table></div>
+  <h3>시험 중에 찾아서 고친 문제</h3>
+  <ul>
+    <li><b>단어를 고쳐 들을 때 조각 문장:</b> 인식기가 0.1초 사이에 "thôi là"와 "tôi là"를 번갈아 보내면, 바뀔 때마다 새 문장으로 확정됐어요. 같은 구간에서 단어를 고친 것은 같은 문장으로 보게 고쳤어요.</li>
+    <li><b>메아리:</b> 확정 직후 인식기가 같은 문장을 처음부터 다시 받아쓰는 일이 있었어요("sẽ phải ở ngã tư"가 두 번). 확정 뒤 1.5초 안에 같은 말로 시작하면 걸러요.</li>
+    <li><b>인식기가 단어를 거둬들일 때:</b> 이미 보낸 단어를 지우고 다른 말로 바꾸면 앞 대화 전체가 다시 번역됐어요(에뮬레이터). 지금은 갈라진 곳 뒤만 새 말로 봐요.</li>
+    <li><b>느린 기기의 밀림:</b> 인식기가 0.7~0.9초 멈췄다가 단어를 한꺼번에 보내면 쉼으로 착각해 문장 중간에서 끊었어요. 이제는 인식기가 "그대로예요" 신호를 계속 보내는 시간만 쉼으로 세요.</li>
+  </ul>
+  <p class="muted">이 네 가지는 모두 실제 기록을 넣어 다시 확인하는 자동 테스트(9개)로 만들어 두었어요.</p>
+</section>
+
+<section>
+  <h2>번역 품질: 앱(기기 번역) vs 앱 + Google 키 vs Google 번역</h2>
+  <p>앱이 받아쓴 <b>같은 문장</b>을 둘 다에 넣고, 원래 하려던 말이 전달되는지로 채점했어요. <span class="chip s2">2</span> 뜻이 맞음 · <span class="chip s1">1</span> 일부만 맞거나 어색함 · <span class="chip s0">0</span> 틀리거나 오해할 수 있음. 채점은 Claude가 했어요.</p>
+  <div class="scroll"><table>
+    <tr><th></th><th>앱 (ML Kit, 기기 번역)</th><th>앱 + Google 키</th><th>Google 번역 (웹)</th></tr>
+    <tr><td>베트남어 → 한국어 (30문장)</td><td class="n no">16 / 60 (27%)</td><td class="n ok">41 / 60 (68%)</td><td class="n ok">41 / 60 (68%)</td></tr>
+    <tr><td>└ 뜻이 완전히 맞은 문장</td><td class="n">3 / 30</td><td class="n">16 / 30</td><td class="n">16 / 30</td></tr>
+    <tr><td>└ 받아쓰기가 맞은 24문장만</td><td class="n no">15 / 48 (31%)</td><td class="n ok">40 / 48 (83%)</td><td class="n ok">40 / 48 (83%)</td></tr>
+    <tr><td>한국어 → 베트남어 (6문장)</td><td class="n warn">7 / 12 (58%)</td><td class="n ok">10 / 12 (83%)</td><td class="n ok">10 / 12 (83%)</td></tr>
+    <tr><td>번역 속도 (확정 → 표시)</td><td class="n">33ms</td><td class="n">0.24초 <span class="muted">(먼저 기기 번역 39ms)</span></td><td class="n">–</td></tr>
+    <tr><td>인터넷 · 비용</td><td>불필요 · 무료</td><td>필요 · 매달 50만 자 무료</td><td>필요</td></tr>
+  </table></div>
+  <div class="note">받아쓰기가 틀린 문장(6개)은 둘 다 틀렸어요. 번역 엔진이 고칠 수 있는 문제가 아니에요. 받아쓰기가 맞은 문장만 보면 Google이 2.7배 정확해요.<br>앱 + Google 키의 번역은 4회 모두 아래 표의 Google 번역 열과 글자까지 같았어요(36문장 중 35문장). 다른 1문장도 "가봤는데" ↔ "가보니" 정도라 점수는 같아요. 그래서 아래 표에서는 Google 번역 열이 앱 + Google 키 결과이기도 해요.</div>
+
+  <div class="scroll"><table>
+    <tr><th>받아쓴 원문</th><th>앱 (ML Kit)</th><th></th><th>Google 번역</th><th></th></tr>
+    <tr><td class="src">신뢰합니다 <span class="muted">(실례합니다)</span></td><td>Tín nhiệm</td><td><span class="chip s0">0</span></td><td>Tôi tin tưởng bạn</td><td><span class="chip s0">0</span></td></tr>
+    <tr><td class="src">기차역은 어디에 있나요</td><td>Ga xe lửa ở đâu?</td><td><span class="chip s2">2</span></td><td>Ga tàu ở đâu?</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">감사합니다</td><td>Cảm ơn bạn</td><td><span class="chip s2">2</span></td><td>Cảm ơn</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">걸어서 얼마나 걸리나요</td><td>Mất bao lâu? <span class="muted">("걸어서" 빠짐)</span></td><td><span class="chip s1">1</span></td><td>Đi bộ mất bao lâu?</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">이 근처의 맛있는 식당이 있나요</td><td>Bạn có một điểm đến ngon gần đó</td><td><span class="chip s1">1</span></td><td>Gần đây có nhà hàng nào ngon không?</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">이 근처에 맛있는 식당이 있나요</td><td>Bạn có một nhà hàng ngon gần đây</td><td><span class="chip s1">1</span></td><td>Gần đây có nhà hàng nào ngon không?</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">xin chào tôi tên là mình rất vui được gặp bạn</td><td>안녕하세요, 나는 당신을 만나서 기쁘게 생각합니다</td><td><span class="chip s1">1</span></td><td>안녕하세요, 제 이름은 민입니다. 만나서 반갑습니다.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">chào anh nguyễn ừ</td><td>안녕하세요, Nguyen 예</td><td><span class="chip s1">1</span></td><td>안녕하세요, 응우옌 씨.</td><td><span class="chip s1">1</span></td></tr>
+    <tr><td class="src">lại rất vui được làm quen với anh</td><td>만나서 반가워</td><td><span class="chip s2">2</span></td><td>당신을 알게 되어 정말 기쁩니다.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">chị lan là người ở đâu vậy</td><td>MS LAN은 어디에 있습니까?</td><td><span class="chip s0">0</span></td><td>란 씨는 어디 출신인가요?</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">thôi là người hà nội</td><td>잘 사람들은 하노이</td><td><span class="chip s0">0</span></td><td>저는 그저 하노이 주민일 뿐입니다.</td><td><span class="chip s1">1</span></td></tr>
+    <tr><td class="src">con anh cảnh sống ở đâu <span class="muted">(còn anh …)</span></td><td>자녀는 어디에서 살고 있습니까?</td><td><span class="chip s0">0</span></td><td>아드님은 어디에 사시나요?</td><td><span class="chip s0">0</span></td></tr>
+    <tr><td class="src">tôi sống ở thành phố hồ chí minh</td><td>나는 호치민시에 살고있다</td><td><span class="chip s2">2</span></td><td>저는 호치민시에 살고 있습니다.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">hôm nay tôi đến hà nội để đi du lịch</td><td>오늘 나는 여행을 하노이에 갔다</td><td><span class="chip s1">1</span></td><td>저는 오늘 휴가차 하노이에 왔습니다.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">anh đã đi thăm hồ gươm chưa</td><td>당신은 아직 호를 방문했습니다</td><td><span class="chip s0">0</span></td><td>호안끼엠 호수에 가보셨나요?</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">rồi tôi đi sáng nay cảnh đẹp lắm</td><td>그런 다음 오늘 아침에 가게됩니다</td><td><span class="chip s0">0</span></td><td>오늘 아침에 가봤는데 경치가 정말 아름다웠어요.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">bây giờ tôi muốn uống một ly cà phê</td><td>이제 커피 한잔 마시고 싶습니다</td><td><span class="chip s2">2</span></td><td>지금 커피 한 잔 마시고 싶네요.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">vậy chúng ta cùng đi uống cà phê nhé</td><td>그래서 우리는 커피를 마시고 있습니다</td><td><span class="chip s0">0</span></td><td>그럼 커피 마시러 갈까요?</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">gần đây có một quán rất mòn <span class="muted">(ngon)</span></td><td>최근에는 매우 착용 된 가게가 있습니다</td><td><span class="chip s0">0</span></td><td>근처에 요즘 굉장히 낡은 가게가 하나 있어요.</td><td><span class="chip s0">0</span></td></tr>
+    <tr><td class="src">cảm ơn chị nhiều chúng ta đi thôi</td><td>우리가 가서 고마워</td><td><span class="chip s0">0</span></td><td>정말 감사합니다, 그럼 가시죠.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">xin lỗi chị cho tôi hỏi một chút được không ạ</td><td>죄송합니다. 조금 물어 보겠습니다</td><td><span class="chip s1">1</span></td><td>실례합니다, 부인. 여사님, 여쭤볼 게 하나 있습니다.</td><td><span class="chip s1">1</span></td></tr>
+    <tr><td class="src">đừng <span class="muted">(받아쓰기 틀림)</span></td><td>하지 마라</td><td><span class="chip s0">0</span></td><td>하지 마세요</td><td><span class="chip s0">0</span></td></tr>
+    <tr><td class="src">chợ bến thành ở đâu vậy chị tôi là khách du lịch</td><td>Ben Thanh Market은 어디에 있으며, 여동생은 관광객입니다.</td><td><span class="chip s1">1</span></td><td>벤탄 시장이 어디예요, 언니? 저 관광객이에요.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">nên không giành đường <span class="muted">(받아쓰기 틀림)</span></td><td>도로에서 이기지 않아야합니다</td><td><span class="chip s0">0</span></td><td>그러니 그 길로 가지 마세요.</td><td><span class="chip s0">0</span></td></tr>
+    <tr><td class="src">anh đi tăng lương này khoảng 200m rồi <span class="muted">(thẳng đường)</span></td><td>당신은이 급여로 200m에 가야합니다</td><td><span class="chip s0">0</span></td><td>그는 이미 약 2억 달러의 연봉 인상을 받았습니다.</td><td><span class="chip s0">0</span></td></tr>
+    <tr><td class="src">sẽ phải ở ngã tư <span class="muted">(rẽ phải)</span></td><td>교차로에 있어야합니다</td><td><span class="chip s1">1</span></td><td>교차로에 있어야 할 것입니다</td><td><span class="chip s1">1</span></td></tr>
+    <tr><td class="src">sau đó tôi đi tiếp vào xa nữa ạ</td><td>그런 다음 나는 오랫동안 가게됩니다</td><td><span class="chip s0">0</span></td><td>그러고 나서 나는 더 안쪽으로 들어갔다.</td><td><span class="chip s1">1</span></td></tr>
+    <tr><td class="src">đi thêm khoảng 5 phút nữa là thấy chợ ở bên trái</td><td>왼쪽 시장을보기 위해 약 5 분 더 자라.</td><td><span class="chip s0">0</span></td><td>5분 정도 더 걸어가시면 왼쪽에 시장이 보일 겁니다.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">từ đây đi bộ có xa không chỉ hay là tôi nên đi thật nhỉ</td><td>여기에서 멀리 떨어져서 멀리 떨어져 있거나 진짜로 가야합니까?</td><td><span class="chip s0">0</span></td><td>여기서 걸어가기엔 멀까요, 아니면 걸어가는 게 좋을까요?</td><td><span class="chip s1">1</span></td></tr>
+    <tr><td class="src">không sợ đâu đi bộ khoảng 15 phút thôi</td><td>약 15 분 걷는 것을 두려워하지 않습니다</td><td><span class="chip s1">1</span></td><td>걱정 마세요, 걸어서 15분 정도밖에 안 걸려요.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">đi bộ xem vui hơn</td><td><b>Walking more fun</b> <span class="muted">(영어로 나옴)</span></td><td><span class="chip s0">0</span></td><td>걸어다니는 게 더 재밌어요.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">chị ấy ở gần chợ có nhà vệ sinh công cộng và quán phở mang không ạ</td><td>그녀는 공공 화장실과 Pho Quantes가있는 시장 근처에 있습니다.</td><td><span class="chip s0">0</span></td><td>그녀는 시장 근처에 사나요? 근처에 공중화장실과 쌀국수집이 있나요?</td><td><span class="chip s1">1</span></td></tr>
+    <tr><td class="src">phía sau chở có một quán phở rất nổi tiếng</td><td>캐리지의 뒷면에는 매우 유명한 포 가게가 있습니다.</td><td><span class="chip s1">1</span></td><td>차 뒤편에는 아주 유명한 쌀국수집이 있습니다.</td><td><span class="chip s1">1</span></td></tr>
+    <tr><td class="src">nhà vệ sinh tẩu ngay bên cạnh</td><td>화장실 <span class="muted">(뒤가 잘림)</span></td><td><span class="chip s0">0</span></td><td>화장실은 바로 옆에 있어요.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">cảm ơn chị nhiều lắm chị giúp tôi nhiều quá</td><td>나를 돕는 데 매우 많은 감사합니다.</td><td><span class="chip s1">1</span></td><td>정말 감사합니다, 덕분에 많은 도움이 됐어요.</td><td><span class="chip s2">2</span></td></tr>
+    <tr><td class="src">chụp ảnh đi chơi vui vẻ nhé <span class="muted">(chúc anh)</span></td><td>재미 있고 사진을 찍으십시오</td><td><span class="chip s1">1</span></td><td>여행 중에 사진 찍으면서 즐거운 시간 보내세요!</td><td><span class="chip s1">1</span></td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>문맥</h2>
+  <ul>
+    <li><b>문장 사이 연결:</b> 앱은 한 문장씩 따로 번역해요. 앞 문장을 모르니 "tôi"(나), "anh/chị"(상대 호칭)의 대상이 섞여요. 예: "…chị tôi là khách du lịch" → "여동생은 관광객입니다".</li>
+    <li><b>말투:</b> 기기 번역은 한 대화 안에서 반말과 "-습니다"체가 뒤섞여요("만나서 반가워" / "기쁘게 생각합니다"). Google은 존댓말로 고르게 맞춰요.</li>
+    <li><b>질문과 제안:</b> 기기 번역은 베트남어의 질문(chưa?, không?)과 제안(nhé)을 평서문으로 자주 바꿔요. 예: "가보셨나요?" → "방문했습니다". 대화에서 가장 오해를 부르는 부분이에요.</li>
+    <li><b>Google에 여러 줄을 한꺼번에 넣으면</b> 문맥을 써서 이름까지 바로잡았어요("mình" → "민"). 한 문장씩 넣으면 그 효과는 없어요. 위 비교는 앱과 같은 조건인 한 문장씩이에요.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>보완할 곳 (효과 큰 순서)</h2>
+  <div class="fix">
+    <div class="fix-item"><span class="tag">번역 · 효과 매우 큼</span><h3>1. Google 서버 번역을 쉽게 쓰게 하기</h3><p>이번에 확인했어요. 키를 넣으면 품질이 27% → 68%로 오르고, 속도 손해는 0.2초 정도예요(기기 번역이 먼저 떠서 빈칸도 없음). 키 없이 쓰는 사람이 대부분이라면, 설정 첫 화면에서 키 넣기를 더 쉽게 안내하거나 무료 할당량 안내를 보여 주는 것이 가장 효과가 커요. 키에 Android 앱 제한을 걸었다면 패키지 이름과 SHA-1이 맞아야 해요. 설정 화면에 둘 다 보여 주면 막혔을 때 바로 고칠 수 있어요.</p></div>
+    <div class="fix-item"><span class="tag">번역 · 작은 수정</span><h3>2. 기기 번역이 영어로 내놓을 때 막기</h3><p>"đi bộ xem vui hơn" → "Walking more fun"처럼 목표 언어가 아닌 결과가 나왔어요. 결과의 글자(한글/베트남 문자)를 확인해서 다르면 문장을 조금 바꿔 다시 번역하거나, "번역 실패" 표시와 함께 원문을 크게 보여 줘요.</p></div>
+    <div class="fix-item"><span class="tag">인식 · 시험 필요</span><h3>3. 여행 단어 힌트 넣기</h3><p>rẽ phải / đi thẳng / taxi / ngon / 실례합니다 / 호텔·시장·역 이름처럼 틀린 말이 대부분 여행 핵심 단어였어요. Android 13 이상 인식기에 자주 나올 단어 목록을 줄 수 있는데, 기기 안 인식기가 실제로 반영하는지는 같은 음성으로 다시 재 봐야 해요.</p></div>
+    <div class="fix-item"><span class="tag">번역 · 중간</span><h3>4. 질문·제안이 평서문으로 바뀌는 문제</h3><p>베트남어 문장 끝 질문말(chưa, không, nhé, à)이 있으면 번역 끝에 "?"를 붙이거나, Google 키가 있을 때는 그 문장만 서버 번역으로 보내는 식으로 대화에서 가장 위험한 오해를 줄일 수 있어요.</p></div>
+    <div class="fix-item"><span class="tag">시험 · 사람 필요</span><h3>5. 진짜 목소리와 Google 번역 앱 대화 모드 비교</h3><p>마이크로 듣는 과정(소음, 거리, 두 사람 목소리 겹침, 읽어 주는 소리를 다시 받아쓰는지)과 Google 번역 앱의 음성 인식·반응속도는 이번에 재지 못했어요. 같은 음성을 PC 스피커로 틀어 두 앱에 차례로 들려주고 화면을 녹화하면 같은 조건으로 비교할 수 있어요.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>이 결과의 한계</h2>
+  <ul>
+    <li>폰 1대(갤럭시 SM-F976N)만 시험했어요. 다른 폰은 기기 안 인식기가 다를 수 있어요.</li>
+    <li>한국어 음성은 합성 음성이에요. 사람 목소리보다 발음이 딱딱해서 "실례합니다"를 놓친 것으로 보여요.</li>
+    <li>베트남어 정답은 대본이 없어 복원했어요. 인식률 수치는 대략값이에요.</li>
+    <li>번역 채점(0/1/2)은 Claude의 판단이에요. 표에 원문과 두 번역을 모두 실었으니 직접 확인할 수 있어요.</li>
+    <li>앱 + Google 키 속도는 와이파이 한 곳에서 잰 값이에요. 모바일 데이터나 해외 로밍에서는 더 느릴 수 있어요. 인터넷이 끊기면 앱은 기기 번역으로 넘어가요.</li>
+    <li>Google 쪽은 translate.google.com 웹 번역 결과예요. Google 번역 앱의 온라인 번역과 같은 서비스지만, 앱의 음성 인식은 비교하지 못했어요.</li>
+  </ul>
+</section>
+</div>
