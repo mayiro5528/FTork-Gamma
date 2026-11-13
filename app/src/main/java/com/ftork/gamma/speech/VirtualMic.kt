@@ -15,7 +15,7 @@ import java.nio.ByteOrder
  * 음성 파일을 실제 시간에 맞춰 "틀어 두고", 음성 인식이 시작될 때마다 그 시점부터의 소리를 인식기에 넣어요.
  * 진짜 마이크처럼 인식기가 쉬는 동안 지나간 소리는 들리지 않아요.
  */
-class VirtualMic(private val pcm: ShortArray) {
+class VirtualMic(private val pcm: ShortArray) : AudioFeed {
     private var startedAt = 0L
     private var writer: Thread? = null
     private var writeEnd: ParcelFileDescriptor? = null
@@ -33,7 +33,7 @@ class VirtualMic(private val pcm: ShortArray) {
 
     /** 인식기에 넘길 소리 통로. 끝난 뒤에는 조용한 소리를 계속 보내요. */
     @Synchronized
-    fun open(): ParcelFileDescriptor {
+    override fun open(): ParcelFileDescriptor {
         close()
         val (read, write) = ParcelFileDescriptor.createPipe()
         writeEnd = write
@@ -60,9 +60,17 @@ class VirtualMic(private val pcm: ShortArray) {
     }
 
     @Synchronized
-    fun close() {
+    override fun close() {
         writer?.interrupt(); writer = null
         runCatching { writeEnd?.close() }; writeEnd = null
+    }
+
+    /** 시험용: 그 시각에 "재생"되던 소리 (Google 음성 인식 시험) */
+    override fun clip(fromMs: Long, toMs: Long): ShortArray? {
+        if (startedAt <= 0) return null
+        val a = ((fromMs - startedAt) * 16).coerceIn(0, pcm.size.toLong()).toInt()
+        val b = ((toMs - startedAt) * 16).coerceIn(0, pcm.size.toLong()).toInt()
+        return if (b > a) pcm.copyOfRange(a, b) else null
     }
 
     companion object {

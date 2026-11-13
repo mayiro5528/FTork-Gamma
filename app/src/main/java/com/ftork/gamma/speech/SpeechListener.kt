@@ -141,8 +141,8 @@ class SpeechListener(private val context: Context) {
                 .putExtra(RecognizerIntent.EXTRA_ENABLE_LANGUAGE_SWITCH, RecognizerIntent.LANGUAGE_SWITCH_BALANCED)
                 .putStringArrayListExtra(RecognizerIntent.EXTRA_LANGUAGE_SWITCH_ALLOWED_LANGUAGES, arrayListOf(languageTag, alsoLanguage))
         }
-        virtualMic?.let { mic ->
-            // 시험용: 마이크 대신 음성 파일 소리를 넣어요 (디버그 빌드)
+        (virtualMic ?: feed)?.let { mic ->
+            // 앱이 받은 소리를 넣어요: 시험용 음성 파일(디버그) 또는 Google 음성 인식용 진짜 마이크(LiveMic)
             if (Build.VERSION.SDK_INT >= 33) {
                 intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE, mic.open())
                     .putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_ENCODING, android.media.AudioFormat.ENCODING_PCM_16BIT)
@@ -156,6 +156,12 @@ class SpeechListener(private val context: Context) {
     /** 시험용 가상 마이크 (디버그 빌드에서만 씀) */
     var virtualMic: VirtualMic? = null
 
+    /** Google 음성 인식을 켰을 때: 앱이 직접 받는 마이크 (Android 13+). null 이면 인식기가 직접 녹음 */
+    var feed: AudioFeed? = null
+
+    /** 지금 소리를 꺼낼 수 있는 통로 (문장 다시 받아쓰기용) */
+    val audio: AudioFeed? get() = if (Build.VERSION.SDK_INT >= 33) (virtualMic ?: feed) else null
+
     /** 듣기를 멈추고 지금까지 말한 내용으로 결과를 받아요. */
     fun finish() {
         active?.stopListening()
@@ -165,6 +171,7 @@ class SpeechListener(private val context: Context) {
     fun stop() {
         session++
         runCatching { active?.cancel() }
+        feed?.close() // 듣지 않을 때는 마이크를 꺼요 (번역 읽는 소리가 녹음되지 않게)
     }
 
     /** 인식기를 완전히 없애요. 오류가 이어질 때 새로 만들거나, 앱을 닫을 때. */

@@ -27,7 +27,7 @@
       if (c.tagName !== 'H3' && keep.indexOf(c) < 0) hide(c);
     });
     hide(ai.querySelector('.eng-card[data-eng="gpt"]'));
-    if (googleH4) googleH4.textContent = 'Google 번역 API 키 (Google 엔진에 필요)';
+    if (googleH4) googleH4.textContent = 'Google API 키 (Google 엔진: 음성 인식 + 번역)';
     // ---- 내 Google 키 만들기 안내 (앱을 받은 사람이 각자 자기 키를 만들어 써요) ----
     hide(document.getElementById('googleRestrict'));
     var help = document.createElement('div');
@@ -39,10 +39,10 @@
       '<ol class="kh-steps">' +
       '<li>PC에서 <b>console.cloud.google.com</b> 접속 → Google 계정으로 로그인</li>' +
       '<li>위쪽 프로젝트 선택 → <b>새 프로젝트</b> 만들기</li>' +
-      '<li><b>결제</b> 메뉴에서 결제 계정(카드) 연결 <small>· 매달 50만 자까지 무료, 넘으면 100만 자당 약 $20</small></li>' +
-      '<li><b>API 및 서비스 → 라이브러리</b>에서 <b>Cloud Translation API</b> 검색 → <b>사용</b></li>' +
+      '<li><b>결제</b> 메뉴에서 결제 계정(카드) 연결 <small>· 번역은 매달 50만 자, 음성 인식은 매달 60분까지 무료 · 넘으면 번역 100만 자당 약 $20, 음성 인식 1분에 약 $0.02</small></li>' +
+      '<li><b>API 및 서비스 → 라이브러리</b>에서 <b>Cloud Speech-to-Text API</b>와 <b>Cloud Translation API</b>를 각각 검색 → <b>사용</b></li>' +
       '<li><b>사용자 인증 정보 → 사용자 인증 정보 만들기 → API 키</b> → 키(AIza…) 복사</li>' +
-      '<li>(권장) 만든 키 → <b>애플리케이션 제한사항: Android 앱</b> → 항목 추가에 아래 두 값을 넣고, <b>API 제한사항</b>은 Cloud Translation API만 체크 → 저장</li>' +
+      '<li>(권장) 만든 키 → <b>애플리케이션 제한사항: Android 앱</b> → 항목 추가에 아래 두 값을 넣고, <b>API 제한사항</b>은 Cloud Speech-to-Text API와 Cloud Translation API 두 개만 체크 → 저장</li>' +
       '<li>이 화면 위 칸에 키 붙여넣기 → <b>저장</b> → 5분 뒤 <b>연결 테스트</b></li>' +
       '</ol>' +
       '<div class="kh-val"><span>패키지 이름</span><code>' + pkg + '</code><button type="button" data-copy="' + pkg + '">복사</button></div>' +
@@ -71,11 +71,12 @@
   // 엔진 카드 설명을 FTalk 실제 동작에 맞게
   try {
     ENGINES.device.name = '기기';
-    ENGINES.device.rows = [['음성 인식', 'Google 음성 인식 (Google 번역 앱과 같음)'], ['번역', 'ML Kit · 기기 안 (Google 번역 오프라인과 같은 수준)'], ['사진', 'ML Kit 글자 인식 + 기기 번역'], ['비용', '무료 · 인터넷 없이도 번역']];
+    ENGINES.device.rows = [['음성 인식', '휴대폰 기본 음성 인식 (기기 안)'], ['번역', 'ML Kit · 기기 안 (Google 번역 오프라인과 같은 수준)'], ['사진', 'ML Kit 글자 인식 + 기기 번역'], ['비용', '무료 · 인터넷 없이도 번역']];
     ENGINES.google.cfg = { stt: 'android', translate: 'google', realtime: false };
-    ENGINES.google.rows = [['음성 인식', 'Google 음성 인식 (Google 번역 앱과 같음)'], ['번역', 'Google 서버 번역 (Google 번역 앱 온라인과 같음)'], ['사진', 'ML Kit 글자 인식 + Google 번역 (실시간 카메라 미리보기는 기기 번역)'], ['비용', '매달 50만 자 무료 · Google 키 필요']];
+    ENGINES.google.rows = [['음성 인식', 'Google Cloud 음성 인식 (글자는 바로 보이고, 말이 끝나면 Google 서버가 다시 받아써서 정확하게)'], ['번역', 'Google 서버 번역 (Google 번역 앱 온라인과 같음)'], ['사진', 'ML Kit 글자 인식 + Google 번역 (실시간 카메라 미리보기는 기기 번역)'], ['비용', '번역 매달 50만 자 · 음성 인식 매달 60분 무료 · Google 키 필요']];
     var cardSmall = ai && ai.querySelector('.eng-card[data-eng="device"] small'); if (cardSmall) cardSmall.textContent = '무료 · 인터넷 없이 · 정확도 보통';
-    var gSmall = ai && ai.querySelector('.eng-card[data-eng="google"] small'); if (gSmall) gSmall.textContent = 'Google 번역 앱과 같은 서버 번역 · 키 필요';
+    var gSmall = ai && ai.querySelector('.eng-card[data-eng="google"] small'); if (gSmall) gSmall.textContent = 'Google 서버 음성 인식 + 서버 번역 · 키 필요';
+    Array.prototype.forEach.call(document.querySelectorAll('h3'), function (h) { if (h.textContent.indexOf('실기기 기능 진단 (v6.9)') >= 0) h.textContent = '실기기 기능 진단'; });
   } catch (e) {}
   ['liveOn', 'shutterHaptic'].forEach(function (id) {
     var row = document.getElementById(id); row = row && row.closest('.setting');
@@ -392,7 +393,7 @@
   try {
     aiSummaryText = function () {
       var g = ai2().translate === 'google';
-      var lines = ['음성 인식: ' + (ai2().speechService || 'Google 음성 인식'),
+      var lines = ['음성 인식: ' + (g && ai2().hasGoogleKey ? (ai2().speechService || 'Google Cloud 음성 인식') : '휴대폰 기본 음성 인식'),
         '번역: ' + (g ? (ai2().hasGoogleKey ? 'Google 서버 번역 (인터넷 끊기면 ML Kit)' : 'Google 선택됨 · 키 없음 → ML Kit 로 번역 중') : 'ML Kit · 기기 안 · 무료'),
         '읽기: 휴대폰 음성'];
       return lines.join('\n');

@@ -26,6 +26,9 @@ import com.ftork.gamma.data.TranslationResult
 import com.ftork.gamma.photo.PhotoLine
 import com.ftork.gamma.photo.PhotoTranslator
 import com.ftork.gamma.speech.SentenceSegmenter
+import com.ftork.gamma.speech.CloudSpeech
+import com.ftork.gamma.speech.LiveMic
+import com.ftork.gamma.speech.SentenceSpans
 import com.ftork.gamma.speech.Speaker
 import com.ftork.gamma.speech.MissedSpeech
 import com.ftork.gamma.speech.SpeechListener
@@ -47,6 +50,7 @@ import java.util.Locale
  * FTalk Beta 화면(index.html)이 부르는 `FriendlyNative.*` 함수들.
  * 일은 모두 FTalk 엔진으로 해요.
  *  - 음성 인식 : 휴대폰 음성 인식(SpeechRecognizer, 보통 Google) — 언어를 하나씩 정확히 지정
+ *               Google 엔진 + 키: 문장이 끝나면 그 소리를 Google Cloud 음성 인식으로 다시 받아써요
  *  - 번역      : ML Kit (기기 안, 무료)
  *  - 읽기      : 휴대폰 TextToSpeech
  *  - 사진      : ML Kit 글자 인식 + ML Kit 번역
@@ -63,6 +67,11 @@ class FriendlyBridge(private val activity: MainActivity) {
     private val engine = SmartTranslationEngine(activity, MlKitTranslationEngine().apply { log = { note(it) } })
     private val speaker = Speaker(activity)
     private val listener = SpeechListener(activity)
+    /** Google Cloud 음성 인식 (번역과 같은 키) */
+    private val cloud = CloudSpeech({ engine.googleKey }, activity.packageName, { engine.certSha1 })
+    private val liveMic by lazy { LiveMic() }
+    /** Google 음성 인식이 키·API 문제로 안 될 때 이유 (고칠 때까지 기기 인식만) */
+    private var cloudOff: String? = null
     private val photos = PhotoTranslator(engine)
     private val log = ArrayDeque<String>()
 
@@ -109,7 +118,7 @@ class FriendlyBridge(private val activity: MainActivity) {
             var mic = runCatching { com.ftork.gamma.speech.VirtualMic.load(listOf(java.io.File(activity.filesDir, name))) }
                 .onFailure { note("벤치 실패: $it") }.getOrNull() ?: return@launch
             if ("+agc" in mode) mic = com.ftork.gamma.speech.VirtualMic(com.ftork.gamma.speech.VirtualMic.agc(mic.pcmCopy()))
-            main.post { com.ftork.gamma.speech.RecognitionBench(activity, mic, mode, listener.googleService) { note(it) }.start() }
+            main.post { com.ftork.gamma.speech.RecognitionBench(activity, mic, mode, listener.googleService, if (engine.hasGoogleKey) cloud else null) { note(it) }.start() }
         }
     }
 
@@ -130,7 +139,8 @@ class FriendlyBridge(private val activity: MainActivity) {
             .put("googleKey", if (key.length > 10) key.take(6) + "…" + key.takeLast(4) else "")
             .put("package", activity.packageName)
             .put("sha1", engine.certSha1 ?: "")
-            .put("speechService", listener.serviceLabel)
+            .put("speechService", if (cloudOn()) "Google Cloud 음성 인식 (글자는 기기 인식으로 바로 보이고, 문장이 끝나면 Google 로 다시 받아써요)" else listener.serviceLabel + (cloudOff?.let { " · Google 음성 인식 꺼짐: $it" } ?: ""))
+            .put("cloudSpeech", cloudOn())
             .toString()
     }
 
@@ -148,7 +158,7 @@ class FriendlyBridge(private val activity: MainActivity) {
     /** 설정 화면의 Google 키 저장 · 삭제 (빈 값이면 삭제). OpenAI 키는 쓰지 않아요. */
     @JavascriptInterface
     fun saveKey(kind: String, value: String) {
-        if (kind == "google") engine.googleKey = value
+        if (kind == "google") { engine.googleKey = value; cloudOff = null }
     }
 
     /** 설정 화면의 "연결 테스트" */
@@ -157,10 +167,20 @@ class FriendlyBridge(private val activity: MainActivity) {
         activity.lifecycleScope.launch {
             val message = if (kind != "google") "FTalk 은 Google 키만 써요."
             else if (!engine.hasGoogleKey) "Google 키를 먼저 저장하세요."
-            else try {
-                "연결 성공 · Google 번역: 안녕하세요 → " + engine.testGoogle()
-            } catch (e: Exception) {
-                "연결 실패 · " + (e.message ?: "알 수 없는 오류") + keyIds() + "\n(키가 없거나 실패하면 기기 번역 ML Kit 로 번역해요)"
+            else {
+                val t = try {
+                    "연결 성공 · Google 번역: 안녕하세요 → " + engine.testGoogle()
+                } catch (e: Exception) {
+                    "연결 실패 · Google 번역: " + (e.message ?: "알 수 없는 오류") + "\n(키가 없거나 실패하면 기기 번역 ML Kit 로 번역해요)"
+                }
+                // 음성 인식도 같은 키로 되는지 (0.5초 조용한 소리를 보내 봐요)
+                val s = try {
+                    cloud.recognize(ShortArray(8000), "ko-KR"); cloudOff = null
+                    "연결 성공 · Google 음성 인식"
+                } catch (e: Exception) {
+                    "연결 실패 · Google 음성 인식: " + (e.message ?: "알 수 없는 오류") + "\n(안 되면 기기 음성 인식으로 들어요)"
+                }
+                t + "\n" + s + if (t.startsWith("연결 실패") || s.startsWith("연결 실패")) keyIds() else ""
             }
             activity.callJs("friendlyNativeAi", "test", JSONObject().put("message", message).toString())
         }
@@ -263,6 +283,7 @@ class FriendlyBridge(private val activity: MainActivity) {
                 emitSpeech(id, "error", "recognizer-unavailable"); emitSpeech(id, "end", ""); return@withMicPermission
             }
             speaker.stop() // 번역 읽는 소리가 마이크로 다시 들어가지 않게
+            if (!flow.carry) syncFeed()
             // 양방향 준비가 끝났으면 기기 안 인식기로 두 언어를 함께 들어요 (번갈아 듣기 없음)
             val twoWay = autoDetect && dualState == "ready"
             // 양방향: 인식기는 계속 듣고 있어요. 화면의 다음 듣기에 그대로 이어 붙여요 (다시 시작하면 첫 단어를 놓쳐요).
@@ -276,15 +297,15 @@ class FriendlyBridge(private val activity: MainActivity) {
             if (twoWay) { startFlow(id, lang, also); return@withMicPermission }
             val begin = {
                 listener.start(lang, SpeechListener.Callbacks(
-                    onReady = { if (speechId == id) { busyStreak = 0; missed.reset(now()); emitSpeech(id, "start", "") } },
+                    onReady = { if (speechId == id) { busyStreak = 0; readyAt = now(); missed.reset(readyAt); emitSpeech(id, "start", "") } },
                     onLevel = { db -> if (speechId == id) checkMissed(db) },
                     onPartial = { if (speechId == id) { missed.text(now()); if (BuildConfig.DEBUG) android.util.Log.d("FTalkTest", "부분 $it"); emitSpeech(id, "partial", it) } },
                     onLanguage = { tag -> if (speechId == id) activity.callJs("ftolkDetectedLanguage", id, tag.substringBefore('-').lowercase()) },
                     onFinal = { text ->
                         if (speechId == id) {
                             note("최종 [$lang] $text")
-                            if (text.isNotBlank()) emitSpeech(id, "final", text) else emitSpeech(id, "error", "no-speech")
-                            end(id)
+                            if (text.isNotBlank()) finalAndEnd(id, text, lang.substringBefore('-').lowercase(), false, readyAt - 300, now())
+                            else { emitSpeech(id, "error", "no-speech"); end(id) }
                         }
                     },
                     onError = { code ->
@@ -332,10 +353,17 @@ class FriendlyBridge(private val activity: MainActivity) {
         if (speechId != id) return@ui
         if (flow.active) {
             // 양방향 연속: 지금까지 말한 걸 바로 확정하고 멈춰요
-            val s = if (flow.carry) null else flow.pending.removeFirstOrNull() ?: flow.seg.onSilence()
-            flow.pending.clear()
-            if (s != null) deliver(s) else { emitSpeech(id, "error", "no-speech"); emitSpeech(id, "end", ""); speechId = 0 }
+            // 이미 확정해 둔 문장(줄 · 다시 받아쓰는 중)이 있으면 그것을, 없으면 지금까지 말한 것을
+            val queued = if (flow.carry) null else flow.pending.removeFirstOrNull() ?: refining.firstOrNull()?.s
+            val s = if (flow.carry || queued != null) null else flow.seg.onSilence()
+            val lang0 = s?.lang ?: flow.lang
+            val (f, t) = spans.take(now())
             stopFlow()
+            when {
+                queued != null -> { sendLang(id, queued.lang); emitSpeech(id, "final", queued.text); emitSpeech(id, "end", ""); speechId = 0 }
+                s != null -> finalAndEnd(id, s.text, lang0, true, f, t)
+                else -> { emitSpeech(id, "error", "no-speech"); emitSpeech(id, "end", ""); speechId = 0 }
+            }
             return@ui
         }
         finishing = true; listener.finish()
@@ -378,13 +406,13 @@ class FriendlyBridge(private val activity: MainActivity) {
             // 인식기가 밀려서 글자가 안 오는 중이면 조금 더 기다려요
             val more = flow.seg.silenceWait(android.os.SystemClock.elapsedRealtime())
             if (more > 0) { main.postDelayed(this, more); return }
-            flow.seg.onSilence()?.let { deliver(it) }
+            flow.seg.onSilence()?.let { commitFlow(it, now()) }
         }
     }
     private val carryTimeout = Runnable { if (flow.carry) { note("양방향: 화면이 다시 듣지 않아 멈춤"); stopFlow() } }
 
     private fun startFlow(id: Int, lang: String, also: String?) {
-        flow.active = true; flow.carry = false; missed.reset(now())
+        flow.active = true; flow.carry = false; missed.reset(now()); spans.reset(now())
         flow.seg.reset(); flow.pending.clear(); flow.lang = null
         listener.start(lang, SpeechListener.Callbacks(
             onReady = { busyStreak = 0; if (speechId != 0 && !flow.carry) emitSpeech(speechId, "start", "") },
@@ -399,8 +427,8 @@ class FriendlyBridge(private val activity: MainActivity) {
                 val id2 = speechId
                 flow.active = false; flow.carry = false; flow.pending.clear()
                 if (id2 != 0) {
-                    if (s != null) { sendLang(id2, s.lang); emitSpeech(id2, "final", s.text) } else emitSpeech(id2, "error", "no-speech")
-                    end(id2)
+                    if (s != null) { val (f, t) = spans.take(now()); finalAndEnd(id2, s.text, s.lang ?: flow.lang, true, f, t) }
+                    else { emitSpeech(id2, "error", "no-speech"); end(id2) }
                 } else listener.stop()
             },
             onError = { code ->
@@ -417,9 +445,8 @@ class FriendlyBridge(private val activity: MainActivity) {
                 val s = flow.seg.onSilence()
                 if (id2 != 0) {
                     // 말하던 게 있으면 그것까지는 확정해 줘요
-                    if (s != null) { sendLang(id2, s.lang); emitSpeech(id2, "final", s.text) }
-                    else emitSpeech(id2, "error", if (SpeechListener.isSilence(code) || recoverable) "no-speech" else webError(code))
-                    end(id2)
+                    if (s != null) { val (f, t) = spans.take(now()); finalAndEnd(id2, s.text, s.lang ?: flow.lang, true, f, t) }
+                    else { emitSpeech(id2, "error", if (SpeechListener.isSilence(code) || recoverable) "no-speech" else webError(code)); end(id2) }
                 } else listener.stop()
             },
         ), also, fastEndpoint, useOnDevice = true)
@@ -428,8 +455,10 @@ class FriendlyBridge(private val activity: MainActivity) {
     private fun flowPartial(p: String) {
         if (!flow.active) return
         if (BuildConfig.DEBUG) android.util.Log.d("FTalkTest", "부분 $p")
-        val r = flow.seg.onPartial(p, android.os.SystemClock.elapsedRealtime(), flow.lang)
-        r.commits.forEach { deliver(it) }
+        val at = now(); val cut = spans.splitPoint(at)
+        val r = flow.seg.onPartial(p, at, flow.lang)
+        r.commits.forEach { commitFlow(it, cut) }
+        if (r.changed) spans.partial(at)
         if (!r.changed) return
         missed.text(now())
         val shown = flow.seg.shown
@@ -486,8 +515,64 @@ class FriendlyBridge(private val activity: MainActivity) {
     /** 연속 듣기를 멈춰요 (멈춤 버튼, 모드 바꾸기, 번역 읽기 시작 등) */
     private fun stopFlow() {
         main.removeCallbacks(silenceCommit); main.removeCallbacks(carryTimeout)
-        flow.pending.clear()
+        flow.pending.clear(); refining.clear()
         if (flow.active) { flow.active = false; flow.carry = false; listener.stop() }
+    }
+
+    // ---- Google Cloud 음성 인식: 문장이 끝나면 그 구간 소리를 다시 받아써요 ----
+    // 글자는 기기 인식기가 바로 보여 주고(빠름), 확정할 때만 Google 로 바꿔요(정확). 늦거나 실패하면 기기 글자 그대로.
+    private val spans = SentenceSpans()
+    private var readyAt = 0L
+    private class Refine(var s: SentenceSegmenter.Sentence, var ready: Boolean = false)
+    private val refining = kotlin.collections.ArrayDeque<Refine>()
+
+    private fun cloudOn() = engine.usingGoogle && cloudOff == null && android.os.Build.VERSION.SDK_INT >= 33
+    /** 듣기 시작 전에: Google 음성 인식을 쓰면 앱이 직접 마이크를 받아요 (소리를 남겨 두려고) */
+    private fun syncFeed() { listener.feed = if (cloudOn()) liveMic else null }
+
+    /** 양방향: 확정된 문장을 (다시 받아써서) 순서대로 넘겨요 */
+    private fun commitFlow(s: SentenceSegmenter.Sentence, to: Long) {
+        val (f, t) = spans.take(to)
+        val job = Refine(s); refining.addLast(job)
+        refine(s.text, s.lang ?: flow.lang, f, t) { text ->
+            job.s = s.copy(text = text); job.ready = true
+            while (refining.firstOrNull()?.ready == true) { val j = refining.removeFirst(); if (flow.active) deliver(j.s) }
+        }
+    }
+
+    /** 한 번 듣기의 마지막 문장: (다시 받아써서) 넘기고 듣기를 끝내요 */
+    private fun finalAndEnd(id: Int, text: String, code: String?, announce: Boolean, from: Long, to: Long) {
+        if (speechId == id) speechId = 0
+        listener.stop()
+        refine(text, code, from, to) { t ->
+            if (announce && code != null) activity.callJs("ftolkDetectedLanguage", id, code)
+            emitSpeech(id, "final", t); emitSpeech(id, "end", "")
+        }
+    }
+
+    private fun refine(text: String, code: String?, from: Long, to: Long, done: (String) -> Unit) {
+        val pcm = if (cloudOn()) listener.audio?.clip(from, to) else null
+        if (pcm == null || pcm.size < 6400 || text.isBlank()) { done(text); return }
+        val audio = if (pcm.size > 55 * 16000) pcm.copyOfRange(pcm.size - 55 * 16000, pcm.size) else pcm
+        val tag = code?.let { bcp(it) }
+        var finished = false
+        val finish = { t: String -> if (!finished) { finished = true; done(t) } }
+        main.postDelayed({ if (!finished) { note("Google 음성 인식 늦음 → 기기 글자"); finish(text) } }, 4000)
+        activity.lifecycleScope.launch {
+            try {
+                val t = cloud.recognize(audio, tag ?: bcp(me), if (tag == null) bcp(partner) else null)
+                note("Google 음성 인식 [${code ?: "?"}] $t  (기기: $text)")
+                finish(t.ifBlank { text })
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) { finish(text); throw e }
+                note("Google 음성 인식 실패: ${e.message}")
+                if (e is CloudSpeech.Failure && e.code in setOf(0, 400, 401, 403)) {
+                    cloudOff = e.message
+                    activity.callJs("notice", "Google 음성 인식이 안 돼서 기기 인식으로 들어요. 설정 → 연결 테스트에서 이유를 볼 수 있어요.")
+                }
+                finish(text)
+            }
+        }
     }
 
     // ---- 빠진 구간 알림: 말소리는 들리는데 인식기가 글자를 안 낼 때 ----
